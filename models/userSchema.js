@@ -49,5 +49,17 @@ const userSchema = new Schema({
         type: String,
         enum: ['admin', 'user'], 
         required: true
-      }
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+      },
+    updatedAd:{
+        type : Date,
+        default : Date.now
+    }
 })
+
+const User = mongoose.model('User', userSchema);
+
+module.exports = User;
