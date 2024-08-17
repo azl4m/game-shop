@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const env = require('dotenv').config()
+const da = 5
 
 const connectDB = async()=>{
     try {
