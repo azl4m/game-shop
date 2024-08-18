@@ -3,6 +3,7 @@ const {Schema} = mongoose
 
 const userSchema = new Schema({
     username:{
+        type : String,
         unique : true,
         required : true
     },
@@ -48,7 +49,8 @@ const userSchema = new Schema({
     role: {
         type: String,
         enum: ['admin', 'user'], 
-        required: true
+        required: true,
+        default: 'user'
     },
     createdAt: {
         type: Date,
