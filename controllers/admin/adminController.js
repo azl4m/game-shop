@@ -1,3 +1,8 @@
+const path  = require('path')
+const productModel = require(path.join(__dirname,"..","..","models","productModel"))
+
+
+
 const pageNotFound = async(req,res)=>{
     try {
         res.render("page-404")
@@ -7,6 +12,7 @@ const pageNotFound = async(req,res)=>{
         
     }
 }
+//LOADING PRODUCT MANAGEMENT PAGE
 
 const productManagement = async(req,res)=>{
     try {
@@ -17,8 +23,32 @@ const productManagement = async(req,res)=>{
     }
 }
 
+// ADD PRODUCT TO DB
+
+const addProduct = async(req,res)=>{
+    console.log("inside add product api");
+    try {
+    const product = new productModel({
+        productName : req.body.title,
+        description : req.body.description,
+        variant : [req.body.platforms,req.body.version],
+    })
+    const productData  = await product.save();
+    if(productData){
+        res.send(productData)
+    } else{
+        res.send("failed adding product")
+    }
+
+   } catch (error) {
+    console.log("error adding product :"+error.message);
+    
+   }
+}
+
 module.exports = {
     pageNotFound,
-    productManagement
+    productManagement,
+    addProduct
 
 }

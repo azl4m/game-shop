@@ -9,7 +9,7 @@ const variantSchema = new mongoose.Schema({
     platforms: {
       type: [String], 
       required: true,
-      enum: ['PC', 'PS5', 'PS6', 'Xbox One', 'Steam'] // List of allowed platforms
+      enum: ['PC', 'PS5', 'PS6', 'Xbox', 'Steam'] // List of allowed platforms
     }
   });
 
@@ -49,6 +49,4 @@ const productSchema = new Schema({
       }
 })
 
-const Product = mongoose.model('Product', productSchema);
-
-module.exports = Product;
+module.exports = mongoose.model('Product', productSchema);

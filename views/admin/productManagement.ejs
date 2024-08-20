@@ -1,37 +1,53 @@
 <%- include("../partials/admin/header.ejs")%>
 
     <!-- Account Page -->
-    <div class="account-page">
-      <div class="container">
-          <div class="row">
-              <div class="col-2">
-                  <img src="images/image1.png" width="100%">
-              </div>
-              <div class="col-2">
-                  <div class="form-container">
-                      <div class="form-btn">
-                        <span>Add new product</span>
-                          <hr id="Indicator">
-                      </div>
-                      <form id="LoginForm">
-                          <input type="text" placeholder="Username">
-                          <input type="password" placeholder="Password">
-                          <button type="submit" class="btn">Login</button>
-                          <a href="">Forget Password</a>
-                      </form>
-
-                      <form id="RegForm">
-                          <input type="text" placeholder="Username">
-                          <input type="email" placeholder="Email">
-                          <input type="password" placeholder="Password">
-                          <button type="submit" class="btn">Register</button>
-                      </form>
-                  </div>
-              </div>
-          </div>
+     <form action="/admin/addProduct" method="post">
+    <div class="mb-3">
+        <label for="exampleFormControlInput1" class="form-label">Game Title</label>
+        <input name="title" type="text" class="form-control" id="exampleFormControlInput1" placeholder="game title">
+        <label for="exampleFormControlInput2" class="form-label">Version</label>
+        <input name="version" type="text" class=" min-vw-50 form-control" id="exampleFormControlInput2" placeholder="Version of the game">
+        <div>
+            <label for="platform">platforms</label>
+            <div class="form-check form-check-inline">
+                <input type="checkbox" id="PC" name="platform" value="PC">
+                <label for="PC">PC</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input type="checkbox" id="PS5" name="platform" value="PS5">
+                <label for="PS5">PS5</label>     
+            </div>
+            <div class="form-check form-check-inline">
+                <input type="checkbox" id="PS6" name="platform" value="PS6">
+                <label for="PS6">PS6</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input type="checkbox" id="XBOX" name="platform" value="XBOX">
+                <label for="XBOX">XBOX</label>
+            </div>
+            <div class="form-check form-check-inline">
+                <input type="checkbox" id="STEAM" name="platform" value="STEAM">
+                <label for="STEAM">STEAM</label>
+            </div>
+           
+        </div>
+       
+       
+       
+      
       </div>
-  </div>
+      <div class="mb-3">
+        <label for="exampleFormControlTextarea1" class="form-label">Description</label>
+        <textarea name="description" class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+      </div>
+      <div class="mb-3">
+        <label for="formFileMultiple" class="form-label">Game Images (Select a minimum of 3 images)</label>
+        <input class="form-control" type="file" id="formFileMultiple" multiple placeholder="Select a minimum of 3 images">
+      </div>
+      <input type="submit">
+    </form>
 
+    
 
 
 

@@ -5,31 +5,31 @@
 }
 
 body{
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Poppins', sans-serif !important;
 }
 
-.navbar
+.navbaR
 {
     display: flex;
     align-items: center;
     padding: 20px;
 }
 
-nav{
+naV{
     flex: 1;
     text-align: right;
 }
-nav ul{
+naV ul{
     display: inline-block;
     list-style-type: none;
 }
-nav ul li{
+naV ul li{
     display: inline-block;
     margin-right: 20px;
 }
 a{
-    text-decoration: none;
-    color: #555;
+    text-decoration: none !important;
+    color: #555 !important;
 }
 p{
     color: #555;
@@ -452,7 +452,7 @@ form a{
 /* Media query for menu */
 @media only screen and (max-width: 800px){
 
-    nav ul{
+    naV ul{
         position: absolute;
         top: 70px;
         left: 0;
@@ -461,13 +461,13 @@ form a{
         overflow: hidden;
         transition: max-height 0.5s;
     }
-    nav ul li{
+    naV ul li{
         display: block;
         margin-right: 50px;
         margin-top: 10px;
         margin-bottom: 10px;
     }
-    nav ul li a{
+    naV ul li a{
         color: white;
     }
     .menu-icon{

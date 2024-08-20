@@ -18,8 +18,10 @@ admin.use(bodyParser.urlencoded({
 }))
 admin.use(nocache());
 
-
+    
 admin.get("/pageNotFound",adminController.pageNotFound)
 admin.get('/productManagement',adminController.productManagement);
+admin.post('/addProduct',()=>console.log("going to addproduct route")
+,adminController.addProduct);
 
 module.exports = admin
