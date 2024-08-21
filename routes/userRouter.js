@@ -20,6 +20,7 @@ user.use(nocache());
 user.get("/signup",userController.signupLoad)
 user.post("/signup",userController.registerUser)
 user.get("/login",userController.loginLoad)
+user.post("/login",userController.loginUser)
 user.get("/pageNotFound",userController.pageNotFound)
 user.get('/',userController.loadHomePage);
 

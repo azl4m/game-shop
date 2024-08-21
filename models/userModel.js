@@ -10,7 +10,6 @@ const userSchema = new Schema({
   password: {
     type: String,
     required: true,
-    unique: true,
   },
   email: {
     type: String,
@@ -24,10 +23,13 @@ const userSchema = new Schema({
     sparse: true,
     default: null,
   },
-  googleId: {
-    type: String,
-    unique: true,
-  },
+//   googleId: {
+//     type: String,
+//     unique: true,
+//     required:false,
+//     sparse: true,
+//     default: null
+//   },
   firstName: {
     type: String,
     required: false,
