@@ -1,0 +1,132 @@
+.productBody {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+  
+  .pm-container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    width: 90%;
+    box-sizing: border-box;
+  }
+  
+  .pm-heading {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+  }
+  
+  .pm-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    font-size: 1rem;
+  }
+  
+  .pm-input,
+  .pm-textarea,
+  .pm-input-file {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+  
+  .pm-variant-group {
+    margin-bottom: 20px;
+  }
+  
+  .pm-checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .pm-checkbox-label {
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+  }
+  
+  .pm-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1.2rem;
+  }
+  
+  .pm-button:hover {
+    background-color: #45a049;
+  }
+  
+  /* Responsive Styles */
+  @media (max-width: 768px) {
+    .pm-container {
+      padding: 15px;
+    }
+  
+    .pm-heading {
+      font-size: 1.4rem;
+      margin-bottom: 15px;
+    }
+  
+    .pm-input,
+    .pm-textarea,
+    .pm-input-file {
+      padding: 8px;
+      font-size: 0.9rem;
+    }
+  
+    .pm-checkbox-group {
+      flex-direction: column;
+    }
+  
+    .pm-button {
+      padding: 10px;
+      font-size: 1rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .pm-container {
+      padding: 10px;
+    }
+  
+    .pm-heading {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+  
+    .pm-input,
+    .pm-textarea,
+    .pm-input-file {
+      padding: 6px;
+      font-size: 0.8rem;
+    }
+  
+    .pm-checkbox-label {
+      font-size: 0.8rem;
+    }
+  
+    .pm-button {
+      padding: 8px;
+      font-size: 0.9rem;
+    }
+  }
+  

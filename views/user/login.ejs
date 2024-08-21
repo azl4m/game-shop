@@ -2,40 +2,36 @@
 
 
 
-<div class="container-fluid">
-    <!--container-->
-    <div class="container ">
-        <div class="signup-login-form">
-            <div id="login-box">
-                <div class="row">
-                    <div class="left col-sm-6">
-                        <h1>Sign in</h1>
-                        <form action="/login" method="post">
-                        <input type="email" name="email" placeholder="Email" />
-                        <input type="password" name="password" placeholder="Password" />
-                        <input type="submit" name="signup_submit" value="Sign In" />
-                    </form>
-                        <%
+<body>
+    <div class="login-container">
+        <div class="inside-login-main">
+
+
+            <div class="login-main">
+                <form action="/login" method="post">
+                    <label for="chk" aria-hidden="true" class="login-label">Login</label>
+                    <input type="text" name="username" placeholder="User name" required="" class="login-input">
+
+                    <input type="password" name="password" placeholder="Password" required="" class="login-input">
+                    <button class="login-button">Login</button>
+                    <p class="notRegister">Not registered? <a href="/signup">Create an account</a></p>
+                    <%
 if(typeof message !== 'undefined'){
     %>
 <p style="color: rgb(255, 0, 0); font-weight: bold;"><%=  message  %></p>
 <%
 }
 %>
-                    </div>
-                    <div class="right col-sm-6">
-                        <div class="or">or</div>
-                        <div class="loginwith">Sign in with social network</div>
-                        <button class="social-signin facebook">Log in with facebook</button>
-                        <button class="social-signin twitter">Log in with Twitter</button>
-                        <button class="social-signin google">Log in with Google+</button>
-                    </div>
-                </div>
+                </form>
             </div>
+
+
         </div>
     </div>
-    <!--/container-->
-</div>
+
+</body>
+
+
 
 
 <%- include("../partials/user/footer.ejs")%>

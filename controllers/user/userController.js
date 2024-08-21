@@ -1,18 +1,16 @@
-
 const userModel = require("../../models/userModel");
-const bcrypt = require('bcrypt')
+const bcrypt = require("bcrypt");
 
 //for hashing password
 
-const securePassword = async(password)=>{
-    try {
-        const passwordHash = await bcrypt.hash(password,10)
-        return passwordHash
-    } catch (error) {
-        console.log("error hashing password :"+error);
-        
-    }
-}
+const securePassword = async (password) => {
+  try {
+    const passwordHash = await bcrypt.hash(password, 10);
+    return passwordHash;
+  } catch (error) {
+    console.log("error hashing password :" + error);
+  }
+};
 
 //Loading signup page
 
@@ -26,14 +24,15 @@ const signupLoad = async (req, res) => {
 };
 
 //register new user
+
 const registerUser = async (req, res) => {
   try {
-    const sPassword = await securePassword(req.body.password)
+    const sPassword = await securePassword(req.body.password);
     const user = new userModel({
       username: req.body.username,
       email: req.body.email,
       password: sPassword,
-      phoneNumber:req.body.mobile
+      phoneNumber: req.body.mobile,
     });
     const userData = await user.save();
     if (userData) {
@@ -72,24 +71,24 @@ const loginUser = async (req, res) => {
   try {
     console.log("inside userlogin");
     const email = req.body.email;
-    console.log(email);
+
     const password = req.body.password;
-    console.log(password);
+
     const userData = await userModel.findOne({
-        email:email,
-        isActice:true
-    })
+      email: email,
+      isActice: true,
+    });
     if (userData) {
-      console.log("inside userdata");
       const passwordMatch = await bcrypt.compare(password, userData.password);
       if (passwordMatch) {
-        res.render("login", { message: "login succesful" });
+        if (userData.role === "admin") {
+          return res.render("login", { message: "admin login succesful" });
+        }
+        res.render("login",{message:"user login succesfull"})
       } else {
-        console.log("password incorrect");
         res.render("login", { message: "password incorrect" });
       }
     } else {
-      console.log("username incorrect");
       res.render("login", { message: "username incorrect" });
     }
   } catch (error) {

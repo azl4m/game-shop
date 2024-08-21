@@ -10,6 +10,10 @@ const variantSchema = new mongoose.Schema({
       type: [String], 
       required: true,
       enum: ['PC', 'PS5', 'PS6', 'Xbox', 'Steam'] // List of allowed platforms
+    },
+    stock:{
+      type:Number,
+      required:true
     }
   });
 
@@ -22,6 +26,10 @@ const productSchema = new Schema({
         type : String,
         required : true,
     },
+    price:{
+      type:Number,
+      required:true
+        },
     images: {
         type: [String], 
         validate: {

@@ -16,11 +16,13 @@ user.use(bodyParser.urlencoded({
 user.use(nocache());
 
 
-
+//for signup
 user.get("/signup",userController.signupLoad)
 user.post("/signup",userController.registerUser)
+//for login
 user.get("/login",userController.loginLoad)
 user.post("/login",userController.loginUser)
+//for page not found
 user.get("/pageNotFound",userController.pageNotFound)
 user.get('/',userController.loadHomePage);
 
