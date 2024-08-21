@@ -1,28 +1,29 @@
 <%- include("../partials/admin/header.ejs")%>
-<div class="productBody" style="padding-top: 50px; padding-bottom: 50px;">
+<div class="login-container" style="padding-top: 50px; padding-bottom: 50px;">
     <div class="pm-container">
         <h2 class="pm-heading">Product Management</h2>
         <form class="pm-form" action="/admin/add-product" method="POST" enctype="multipart/form-data">
+          <label class="pm-label" for="pm-productName">Product Name</label>
+          <input class="pm-input" type="text" id="pm-productName" name="productName" required>
+
           <label class="pm-label" for="pm-productName">Product Name</label>
           <input class="pm-input" type="text" id="pm-productName" name="productName" required>
     
           <label class="pm-label" for="pm-description">Description</label>
           <textarea class="pm-textarea" id="pm-description" name="description" rows="4" required></textarea>
     
-          <label class="pm-label" for="pm-price">Price</label>
-          <input class="pm-input" type="number" id="pm-price" name="price" required>
-    
           <label class="pm-label" for="pm-images">Product Images (Minimum 3)</label>
           <input class="pm-input-file" type="file" id="pm-images" name="images" accept="image/*" multiple required>
     
           <div class="pm-variant-group">
             <h3 class="pm-variant-heading">Variants</h3>
-    
             <label class="pm-label" for="pm-version">Version</label>
             <input class="pm-input" type="text" id="pm-version" name="variant[0][version]" required>
-    
-            <label class="pm-label" for="pm-stock">Stock</label>
-            <input class="pm-input" type="number" id="pm-stock" name="variant[0][stock]" required>
+            
+            <div class="form-group">
+                <label class="form-label" for="stock">Stock</label>
+                <input class="form-input" type="number" id="stock" name="variant[stock]" required>
+            </div>
     
             <label class="pm-label">Platforms</label>
             <div class="pm-checkbox-group">
@@ -48,13 +49,10 @@
               </label>
             </div>
           </div>
-    
-          <label class="pm-label" for="pm-createdBy">Created By</label>
-          <input class="pm-input" type="text" id="pm-createdBy" name="createdBy">
-    
-          <label class="pm-label" for="pm-updatedBy">Updated By</label>
-          <input class="pm-input" type="text" id="pm-updatedBy" name="updatedBy">
-    
+          <label class="pm-label" for="pm-productName">Price</label>
+          <input class="pm-input" type="number" id="pm-productName" name="price" required>
+
+
           <button class="pm-button" type="submit">Add Product</button>
         </form>
       </div>
