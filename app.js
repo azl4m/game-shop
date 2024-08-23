@@ -5,9 +5,20 @@ const db = require('./config/db')
 const path = require('path')
 const userRouter = require("./routes/userRouter")
 const adminRouter = require("./routes/adminRoute")
+const session = require('express-session')
 db()
 app.use(express.json());
 app.use(express.urlencoded({extended:true}))
+app.use(session({
+    secret:process.env.SESSION_SECRET,
+    resave:false,
+    saveUninitialized:true,
+    cookie:{
+        secure:false,
+        httpOnly:true,
+        maxAge:72*60*60*1000
+    }
+}))
 const PORT = process.env.PORT||3003
 
 app.set("view engine","ejs")

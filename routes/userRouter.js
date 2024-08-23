@@ -23,11 +23,18 @@ const userController=require("../controllers/user/userController")
 //for signup
 user.get("/signup",userController.signupLoad)
 user.post("/signup",userController.registerUser)
+
+//forOTP verification
+user.get("/verifyOtp",userController.verifyOtpLoad)
+user.post("/verifyOtp",userController.verifyOtp)
+
 //for login
 user.get("/login",userController.loginLoad)
 user.post("/login",userController.loginUser)
 //for page not found
 user.get("/pageNotFound",userController.pageNotFound)
 user.get('/',userController.loadHomePage);
+
+
 
 module.exports = user

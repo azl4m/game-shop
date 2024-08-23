@@ -22,14 +22,15 @@ const userSchema = new Schema({
     unique: true,
     sparse: true,
     default: null,
+
   },
-  googleId: {
-    type: String,
-    unique: true,
-    required:false,
-    sparse: true,
-    default: null
-  },
+  // googleId: {
+  //   type: String,
+  //   unique: true,
+  //   required:false,
+  //   sparse: true,
+  //   default: null
+  // },
   firstName: {
     type: String,
     required: false,

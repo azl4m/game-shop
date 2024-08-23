@@ -1,5 +1,6 @@
 const userModel = require("../../models/userModel");
 const bcrypt = require("bcrypt");
+const nodeMailer = require('nodemailer')
 
 //for hashing password
 
@@ -11,6 +12,40 @@ const securePassword = async (password) => {
     console.log("error hashing password :" + error);
   }
 };
+
+
+//for otp generation
+
+function generateOTP() {
+  return Math.floor(100000 + Math.random()*900000).toString()
+}
+//for sending verification email
+
+const sendVerifyEmail = async(email,otp)=>{
+  try {
+    const transporter = nodeMailer.createTransport({
+      service:'gmail',
+      port:587,
+      secure:false,
+      requireTLS:true,
+      auth:{
+        user:process.env.NODE_MAILER_EMAIL,
+        pass:process.env.NODE_MAILER_PASSWORD
+      }
+    })
+    const info = await transporter.sendMail({
+      from:process.env.NODE_MAILER_EMAIL,
+      to:email,
+      subject:"Verify your email",
+      text:`Your OTP is ${otp}`,
+      html:`<b> Your OTP :${otp} </b>`
+    })
+    return info.accepted.length > 0
+  } catch (error) {
+    console.log("error sending mail :"+error);
+    return false
+  }
+}
 
 //Loading signup page
 
@@ -27,27 +62,53 @@ const signupLoad = async (req, res) => {
 
 const registerUser = async (req, res) => {
   try {
-    console.log(req.body.password);
-    
-    const sPassword = await securePassword(req.body.password);
-    const user = new userModel({
-      username: req.body.username,
-      email: req.body.email,
-      password: sPassword,
-      phoneNumber: req.body.mobile,
-    });
-    const userData = await user.save();
-    if (userData) {
-      res.redirect("/login");
-    } else {
-      console.log("signup failed");
-      res.render("signup", { message: "signup failed" });
+    const {username,email,password,cPassword,phone} = req.body
+    const findUser = await userModel.findOne({email:email});
+    if(findUser){
+      return res.render('signup',{message:"Email already in use"})
     }
+    const otp = generateOTP()
+    const emaiSent = await sendVerifyEmail(email,otp)
+    if(!emaiSent){
+      return res.json("email error")
+    }
+    req.session.userOTP = otp
+    req.session.userData = {username,email,password,phone}
+    res.redirect("/verifyOtp")
+    
   } catch (error) {
     console.log("error registering new user :" + error);
     res.render("signup", { message: "signup failed" });
   }
 };
+
+
+const verifyOtpLoad = async(req,res)=>{
+  res.render("verify-otp")
+}
+
+const verifyOtp = async(req,res)=>{
+  const otp = req.body.otp
+  if(otp===req.session.userOTP){
+    const sPassword = await securePassword(req.session.userData.password);
+    const user = new userModel({
+      username:req.session.userData.username,
+      email:req.session.userData.email,
+      password:sPassword,
+      phoneNumber:req.session.userData.phone
+    })
+    const userData = await user.save();
+    if (userData) {
+      res.render("login",{message:"login successful"});
+    } else {
+      console.log("signup failed");
+      res.render("signup", { message: "signup failed" });
+    }
+  }else{
+    res.render("verify-otp",{message:"otp verification failed"})
+  }
+}
+
 
 //load login page
 const loginLoad = async (req, res) => {
@@ -66,18 +127,17 @@ const pageNotFound = async (req, res) => {
     res.redirect("/pageNotFound");
   }
 };
-
 //for verify logging in
 
 const loginUser = async (req, res) => {
   try {
     console.log("inside userlogin");
-    const email = req.body.email;
+    const username = req.body.username;
 
     const password = req.body.password;
 
     const userData = await userModel.findOne({
-      email: email,
+      username: username,
       isActice: true,
     });
     if (userData) {
@@ -115,4 +175,6 @@ module.exports = {
   registerUser,
   loginLoad,
   loginUser,
+  verifyOtp,
+  verifyOtpLoad
 };

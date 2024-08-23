@@ -14,6 +14,13 @@
 
                     <input type="password" name="password" placeholder="Password" required="" class="login-input">
                     <button class="login-button">Login</button>
+                    <%  
+                    if(typeof message !== 'undefined'){
+                        %>
+                        <h3 style="color: red; font-weight: bold;"><%= message %></h3>
+                        <%
+                    }
+                    %>
                     <p class="notRegister">Not registered? <a href="/signup">Create an account</a></p>
                     
                 </form>
