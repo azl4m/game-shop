@@ -26,8 +26,8 @@
             
             <span id="error4" class="error-message"></span>
 
-            <label for="cpassword">Password:</label>
-            <input type="password" id="cpassword" name="password" required>
+            <label for="cpassword">Confirm Password:</label>
+            <input type="password" id="cpassword" name="cpassword" required>
 
             <span id="error5" class="error-message"></span>
 
@@ -60,7 +60,69 @@
         if(nameVal.trim()===""){
             error1.style.display = "block";
             error1.innerHTML="Please enter a valid name"
+        }else if(!namePattern.test(nameVal)){
+            error1.style.display = "block";
+            error1.innerHTML = "Name can only contain alphabets"
+        }else{
+            error1.style.display ="none";
+            error1.innerHTML=""
         }
+    }
+
+    function emailValidate(e){
+        const emailVal = emailid.value;
+        const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+        if(!emailPattern.test(emailVal)){
+            error2.style.display = "block";
+            error2.innerHTML = "Please enter a valid email";
+        }else{
+            error2.style.display = "none";
+            error2.innerHTML ="";
+        }
+
+    }
+
+    function phoneValidate(e){
+        
+        const phoneVal = phoneid.value;
+        const phonePattern = /^\d{10}$/;
+
+        if(phoneVal.trim()===""){
+            error3.style.display = "block";
+            error3.innerHTML = "Enter valid phone number"  
+        }else if(!phonePattern.test(phoneVal)){
+            error3.style.display = "block";
+            error3.innerHTML = "Enter 10 digits phone number"
+        }
+        else if(phoneVal.length!==10){
+            error3.style.display = "block";
+            error3.innerHTML = "Enter 10 digits phone number"
+        }else{
+            error3.style.display = "none";
+            error3.innerText = "";
+        }
+    }
+
+    function passValidate(e){
+        const passVal = passid.value;
+        const cpassVal = cpassid.value;
+        const passPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if(!passPattern.test(passVal)){
+            error4.style.display = "block";
+            error4.innerHTML = "Password should contain alphabets,numbers and special characters and should be atleast 8 characters long"
+        }else{
+            error4.style.display = "none";
+            error4.innerHTML = "";
+        }
+        if(passVal !== cpassVal){
+            error5.style.display = "block";
+            error5.innerHTML = "Passwords do not match"
+        }else{
+            error5.style.display = "none";
+            error5.innerHTML = "";
+        }
+
     }
 
     document.addEventListener("DOMContentLoaded",()=>{

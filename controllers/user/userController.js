@@ -27,6 +27,8 @@ const signupLoad = async (req, res) => {
 
 const registerUser = async (req, res) => {
   try {
+    console.log(req.body.password);
+    
     const sPassword = await securePassword(req.body.password);
     const user = new userModel({
       username: req.body.username,
