@@ -12,11 +12,23 @@ const pageNotFound = async(req,res)=>{
         
     }
 }
+//for loading dashboard
+
+const dashboardLoad = async(req,res)=>{
+    try {
+        res.render("dashboard")
+        
+    } catch (error) {
+        
+    }
+}
+
+
 //LOADING PRODUCT MANAGEMENT PAGE
 
-const productManagement = async(req,res)=>{
+const addProductLoad = async(req,res)=>{
     try {
-        res.render("productManagement")
+        res.render("addProduct")
     } catch (error) {
         console.log("error in loading product management page :"+error.message);
         res.redirect("/pageNotFound")
@@ -48,7 +60,8 @@ const addProduct = async(req,res)=>{
 
 module.exports = {
     pageNotFound,
-    productManagement,
-    addProduct
+    addProduct,
+    addProductLoad,
+    dashboardLoad
 
 }

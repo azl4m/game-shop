@@ -75,6 +75,7 @@ const registerUser = async (req, res) => {
     req.session.userOTP = otp
     req.session.userData = {username,email,password,phone}
     res.redirect("/verifyOtp")
+
     
   } catch (error) {
     console.log("error registering new user :" + error);
@@ -82,11 +83,12 @@ const registerUser = async (req, res) => {
   }
 };
 
-
+//for loading ot verification page
 const verifyOtpLoad = async(req,res)=>{
   res.render("verify-otp")
 }
 
+//for verifying otp
 const verifyOtp = async(req,res)=>{
   const otp = req.body.otp
   if(otp===req.session.userOTP){
@@ -99,7 +101,7 @@ const verifyOtp = async(req,res)=>{
     })
     const userData = await user.save();
     if (userData) {
-      res.render("login",{message:"login successful"});
+      res.render("login",{message:"signup successful"});
     } else {
       console.log("signup failed");
       res.render("signup", { message: "signup failed" });

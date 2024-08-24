@@ -1,31 +1,12 @@
-// const express = require('express')
-// const admin = express()
-// const path =require('path')
-// const bodyParser = require('body-parser')
-// const nocache = require('nocache')
-// const adminController = require("../controllers/admin/adminController")
-
-
-
-// admin.set('view engine','ejs')
-// admin.set('views',path.join(__dirname, '..', 'views/admin'));
-
-
-// admin.use(express.static(path.join(__dirname,"..","public")))
-// admin.use(bodyParser.json());
-// admin.use(bodyParser.urlencoded({
-//     extended:true
-// }))
-// admin.use(nocache());
 
 const express=require('express')
 const admin = express.Router()
 const adminController=require("../controllers/admin/adminController")
 
-    
+
 admin.get("/pageNotFound",adminController.pageNotFound)
-admin.get('/productManagement',adminController.productManagement);
-admin.post('/addProduct',()=>console.log("going to addproduct route")
-,adminController.addProduct);
+admin.get("/",adminController.dashboardLoad)
+admin.get('/addProduct',adminController.addProductLoad);
+admin.post('/addProduct',adminController.addProduct);
 
 module.exports = admin
