@@ -52,7 +52,12 @@ const sendVerifyEmail = async (email, otp) => {
 
 const signupLoad = async (req, res) => {
   try {
-    res.render("signup");
+    if(!req.session._id){
+      res.render("signup")
+    }else{
+      res.redirect("/")
+    }
+    
   } catch (error) {
     console.log("error loading login page :" + error);
     res.redirect("/pageNotFound");
@@ -105,7 +110,6 @@ const verifyOtp = async (req, res) => {
         password: sPassword,
       });
       const userData = await saveUser.save();
-      req.session.user = saveUser._id;
       res.json({
         success: true,
         redirectUrl: "/login",
@@ -127,8 +131,6 @@ const verifyOtp = async (req, res) => {
 
 const resendOtp = async (req, res) => {
   try {
-    console.log("inside resend otp");
-
     const { email } = req.session.userData;
     if (!email) {
       return res
@@ -161,12 +163,16 @@ const resendOtp = async (req, res) => {
 //load login page
 const loginLoad = async (req, res) => {
   try {
-    res.render("login");
+    if(!req.session._id){
+      res.render("login");
+    }else{
+      res.redirect("/")
+    }
   } catch (error) {
     console.log("error loading login page :" + error);
   }
 };
-
+//for page not found
 const pageNotFound = async (req, res) => {
   try {
     res.render("page-404");
@@ -193,9 +199,10 @@ const loginUser = async (req, res) => {
         const passwordMatch = await bcrypt.compare(password, userData.password);
         if (passwordMatch) {
           if (userData.role === "admin") {
-            return res.render("login", { message: "admin login succesful" });
+            return res.redirect("/admin/")
           }
-          res.render("login", { message: "user login succesfull" });
+          req.session._id = userData._id
+          re.redirect("/")
         } else {
           res.render("login", { message: "password incorrect" });
         }
@@ -214,7 +221,10 @@ const loginUser = async (req, res) => {
           if (userData.role === "admin") {
             return res.render("login", { message: "admin login succesful" });
           }
-          res.render("login", { message: "user login succesfull" });
+          else{
+            req.session._id = userData._id
+            res.redirect("/")
+          }
         } else {
           res.render("login", { message: "password incorrect" });
         }
@@ -228,8 +238,19 @@ const loginUser = async (req, res) => {
   }
 };
 
+//for logout
+const logout = async(req,res)=>{
+  req.session.destroy()
+  res.redirect("/")
+}
+
+
+//for loading homepage
 const loadHomePage = async (req, res) => {
   try {
+    if(req.session?.passport?.user){
+      req.session._id = req.session.passport.user
+    }
     return res.render("home");
   } catch (error) {
     console.log("homepage loading error :" + error.message);
@@ -247,4 +268,5 @@ module.exports = {
   verifyOtp,
   verifyOtpLoad,
   resendOtp,
+  logout
 };

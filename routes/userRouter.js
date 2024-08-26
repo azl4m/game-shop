@@ -18,6 +18,7 @@
 const express=require('express')
 const user=express.Router()
 const userController=require("../controllers/user/userController")
+const passport = require('passport')
 
 
 //for signup
@@ -31,10 +32,16 @@ user.post("/resendOtp",userController.resendOtp)
 //for login
 user.get("/login",userController.loginLoad)
 user.post("/login",userController.loginUser)
+//for logout
+user.get("/logout",userController.logout)
 //for page not found
 user.get("/pageNotFound",userController.pageNotFound)
 user.get('/',userController.loadHomePage);
-
+//for google auth
+user.get('/auth/google',passport.authenticate('google',{scope:['profile','email']}))
+user.get('/auth/google/callback',passport.authenticate('google',{failureRedirect:"/signup"}),(req,res)=>{ 
+    res.redirect("/")
+})
 
 
 module.exports = user

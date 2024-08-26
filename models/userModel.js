@@ -4,12 +4,12 @@ const { Schema } = mongoose;
 const userSchema = new Schema({
   username: {
     type: String,
-    unique: true,
+    unique: true  ,
     required: true,
   },
   password: {
     type: String,
-    required: true,
+    required: false,
   },
   email: {
     type: String,
@@ -24,13 +24,10 @@ const userSchema = new Schema({
     default: null,
 
   },
-  // googleId: {
-  //   type: String,
-  //   unique: true,
-  //   required:false,
-  //   sparse: true,
-  //   default: null
-  // },
+  googleId: {
+    type: String,
+    unique: true
+  },
   firstName: {
     type: String,
     required: false,
