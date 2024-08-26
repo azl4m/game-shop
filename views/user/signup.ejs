@@ -29,14 +29,22 @@
             <label for="cpassword">Confirm Password:</label>
             <input type="password" id="cpassword" name="cPassword" required>
 
-            <span id="error5" class="error-message"></span>
+            <span id="error5" class="error-message">
+                <%  
+                if(typeof message !== 'undefined'){
+                    %>
+                    <%= message %>
+                    <%
+                }
+                %>
+            </span>
 
             <button type="submit">Sign Up</button>
+            <button class="googlelogin-button">Login With Google</button>
         </form>
     </div>
 
     </div>
-</body>
 
   
 <%- include("../partials/user/footer.ejs")%>

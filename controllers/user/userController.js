@@ -1,6 +1,8 @@
 const userModel = require("../../models/userModel");
 const bcrypt = require("bcrypt");
-const nodeMailer = require('nodemailer')
+const nodeMailer = require("nodemailer");
+
+const OTP_TIMEOUT = 30 * 1000;
 
 //for hashing password
 
@@ -13,39 +15,38 @@ const securePassword = async (password) => {
   }
 };
 
-
 //for otp generation
 
 function generateOTP() {
-  return Math.floor(100000 + Math.random()*900000).toString()
+  return Math.floor(100000 + Math.random() * 900000).toString();
 }
 //for sending verification email
 
-const sendVerifyEmail = async(email,otp)=>{
+const sendVerifyEmail = async (email, otp) => {
   try {
     const transporter = nodeMailer.createTransport({
-      service:'gmail',
-      port:587,
-      secure:false,
-      requireTLS:true,
-      auth:{
-        user:process.env.NODE_MAILER_EMAIL,
-        pass:process.env.NODE_MAILER_PASSWORD
-      }
-    })
+      service: "gmail",
+      port: 587,
+      secure: false,
+      requireTLS: true,
+      auth: {
+        user: process.env.NODE_MAILER_EMAIL,
+        pass: process.env.NODE_MAILER_PASSWORD,
+      },
+    });
     const info = await transporter.sendMail({
-      from:process.env.NODE_MAILER_EMAIL,
-      to:email,
-      subject:"Verify your email",
-      text:`Your OTP is ${otp}`,
-      html:`<b> Your OTP :${otp} </b>`
-    })
-    return info.accepted.length > 0
+      from: process.env.NODE_MAILER_EMAIL,
+      to: email,
+      subject: "Verify your email",
+      text: `Your OTP is ${otp}`,
+      html: `<b> Your OTP :${otp} </b>`,
+    });
+    return info.accepted.length > 0;
   } catch (error) {
-    console.log("error sending mail :"+error);
-    return false
+    console.log("error sending mail :" + error);
+    return false;
   }
-}
+};
 
 //Loading signup page
 
@@ -62,21 +63,23 @@ const signupLoad = async (req, res) => {
 
 const registerUser = async (req, res) => {
   try {
-    const {username,email,password,cPassword,phone} = req.body
-    const findUser = await userModel.findOne({email:email});
-    if(findUser){
-      return res.render('signup',{message:"Email already in use"})
-    }
-    const otp = generateOTP()
-    const emaiSent = await sendVerifyEmail(email,otp)
-    if(!emaiSent){
-      return res.json("email error")
-    }
-    req.session.userOTP = otp
-    req.session.userData = {username,email,password,phone}
-    res.redirect("/verifyOtp")
+    const { username, email, password, cPassword, phone } = req.body;
 
-    
+    const findUser = await userModel.findOne({ email: email });
+
+    if (findUser) {
+      return res.render("signup", { message: "Email already in use" });
+    } else {
+      const otp = generateOTP();
+
+      const emailSent = await sendVerifyEmail(email, otp);
+      if (!emailSent) {
+        return res.json("email error");
+      }
+      req.session.userOTP = otp;
+      req.session.userData = { username, email, password, phone };
+      res.redirect("/verifyOtp");
+    }
   } catch (error) {
     console.log("error registering new user :" + error);
     res.render("signup", { message: "signup failed" });
@@ -84,33 +87,76 @@ const registerUser = async (req, res) => {
 };
 
 //for loading ot verification page
-const verifyOtpLoad = async(req,res)=>{
-  res.render("verify-otp")
-}
+const verifyOtpLoad = async (req, res) => {
+  res.render("otp");
+};
 
 //for verifying otp
-const verifyOtp = async(req,res)=>{
-  const otp = req.body.otp
-  if(otp===req.session.userOTP){
-    const sPassword = await securePassword(req.session.userData.password);
-    const user = new userModel({
-      username:req.session.userData.username,
-      email:req.session.userData.email,
-      password:sPassword,
-      phoneNumber:req.session.userData.phone
-    })
-    const userData = await user.save();
-    if (userData) {
-      res.render("login",{message:"signup successful"});
+const verifyOtp = async (req, res) => {
+  try {
+    const otp = req.body.otp;
+    if (otp === req.session.userOTP) {
+      const user = req.session.userData;
+      const sPassword = await securePassword(user.password);
+      const saveUser = new userModel({
+        username: user.username,
+        email: user.email,
+        phoneNumber: user.phone,
+        password: sPassword,
+      });
+      const userData = await saveUser.save();
+      req.session.user = saveUser._id;
+      res.json({
+        success: true,
+        redirectUrl: "/login",
+      });
     } else {
-      console.log("signup failed");
-      res.render("signup", { message: "signup failed" });
+      res
+        .status(400)
+        .json({ success: false, message: "Invalid OTP, Please try again" });
     }
-  }else{
-    res.render("verify-otp",{message:"otp verification failed"})
+  } catch (error) {
+    console.log("error at verifying otp :" + error);
+    res
+      .status(500)
+      .json({ success: false, message: "An error occcured, Please try again" });
   }
-}
+};
 
+//foor resending otp
+
+const resendOtp = async (req, res) => {
+  try {
+    console.log("inside resend otp");
+
+    const { email } = req.session.userData;
+    if (!email) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Email not found" });
+    }
+    const otp = generateOTP();
+    req.session.userOTP = otp;
+    const emailSent = await sendVerifyEmail(email, otp);
+    if (emailSent) {
+      res.status(200).json({
+        success: true,
+        message: "Verification OTP resent succesfully",
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        message: "Failed to resent otp please try again",
+      });
+    }
+  } catch (error) {
+    console.log("error resending OTP :" + error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error Please try again",
+    });
+  }
+};
 
 //load login page
 const loginLoad = async (req, res) => {
@@ -133,27 +179,48 @@ const pageNotFound = async (req, res) => {
 
 const loginUser = async (req, res) => {
   try {
-    console.log("inside userlogin");
+    const emailReg = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const username = req.body.username;
 
-    const password = req.body.password;
-
-    const userData = await userModel.findOne({
-      username: username,
-      isActice: true,
-    });
-    if (userData) {
-      const passwordMatch = await bcrypt.compare(password, userData.password);
-      if (passwordMatch) {
-        if (userData.role === "admin") {
-          return res.render("login", { message: "admin login succesful" });
+    if (emailReg.test(username)) {
+      const email = username;
+      const userData = await userModel.findOne({
+        email: email,
+        isActice: true,
+      });
+      const password = req.body.password;
+      if (userData) {
+        const passwordMatch = await bcrypt.compare(password, userData.password);
+        if (passwordMatch) {
+          if (userData.role === "admin") {
+            return res.render("login", { message: "admin login succesful" });
+          }
+          res.render("login", { message: "user login succesfull" });
+        } else {
+          res.render("login", { message: "password incorrect" });
         }
-        res.render("login",{message:"user login succesfull"})
       } else {
-        res.render("login", { message: "password incorrect" });
+        res.render("login", { message: "username incorrect" });
       }
     } else {
-      res.render("login", { message: "username incorrect" });
+      const userData = await userModel.findOne({
+        username: username,
+        isActice: true,
+      });
+      const password = req.body.password;
+      if (userData) {
+        const passwordMatch = await bcrypt.compare(password, userData.password);
+        if (passwordMatch) {
+          if (userData.role === "admin") {
+            return res.render("login", { message: "admin login succesful" });
+          }
+          res.render("login", { message: "user login succesfull" });
+        } else {
+          res.render("login", { message: "password incorrect" });
+        }
+      } else {
+        res.render("login", { message: "username incorrect" });
+      }
     }
   } catch (error) {
     console.log("error logging in :" + error);
@@ -178,5 +245,6 @@ module.exports = {
   loginLoad,
   loginUser,
   verifyOtp,
-  verifyOtpLoad
+  verifyOtpLoad,
+  resendOtp,
 };

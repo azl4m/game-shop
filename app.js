@@ -32,5 +32,4 @@ app.get('/*', (req, res) => {
     });
 app.listen(PORT,()=>console.log("server running on :"+PORT))
 
-
 module.exports = app;

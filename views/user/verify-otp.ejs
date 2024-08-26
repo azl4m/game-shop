@@ -1,17 +1,27 @@
 <%- include("../partials/user/header.ejs")%>
 
 <form action="/verifyOtp" method="post">
-    <label for="otp">Type your OTP</label>
-    <input type="number" name="otp" required>
-    <%  
-if(typeof message !== 'undefined'){
-    %>
-    <h3 style="color: red; font-weight: bold;"><%= message %></h3>
-    <%
-}
-%>
-    <input type="submit">
+  <div class="container">
+    <h4>Enter OTP</h4>
+    <div class="input-field">
+      <input type="number"/>
+      <input type="number"/>
+      <input type="number"/>
+      <input type="number"/>
+      <button><input type="submit"></button>
+     
+    </div>
+  </div>
 </form>
 
 
-<%- include("../partials/user/footer.ejs")%>
+<% if(typeof message !== 'undefined'){ %>
+    <h3 style="color: red; font-weight: bold"><%= message %></h3>
+    <% } %>
+
+
+
+
+
+
+ <%- include("../partials/user/footer.ejs")%>

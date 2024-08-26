@@ -27,7 +27,7 @@ user.post("/signup",userController.registerUser)
 //forOTP verification
 user.get("/verifyOtp",userController.verifyOtpLoad)
 user.post("/verifyOtp",userController.verifyOtp)
-
+user.post("/resendOtp",userController.resendOtp)
 //for login
 user.get("/login",userController.loginLoad)
 user.post("/login",userController.loginUser)
