@@ -14,7 +14,7 @@
         <div class="card">
           <div class="card-action">Basic Form Elements</div>
           <div class="card-content">
-            <form class="col s12" action="/addProduct" method="post" enctype="multipart/form-data">
+            <form class="col s12" action="/admin/addProduct" method="post" enctype="multipart/form-data">
               <div class="row">
                 <div class="input-field col s6">
                   <input
@@ -63,7 +63,7 @@
                   class="pm-input"
                   type="text"
                   id="pm-version"
-                  name="variant[0][version]"
+                  name="version"
                   required
                 />
 
@@ -73,7 +73,7 @@
                     class="pm-form-input"
                     type="number"
                     id="stock"
-                    name="variant[stock]"
+                    name="stock"
                     required
                   />
                 </div>
@@ -86,7 +86,7 @@
                   <input
                     type="checkbox"
                     id="pm-platformPC"
-                    name="variant[0][platforms][]"
+                    name="platforms[0]"
                     value="PC"
                   />
                   <label class="pm-checkbox-label" for="pm-platformPS5">
@@ -95,7 +95,7 @@
                   <input
                     type="checkbox"
                     id="pm-platformPS5"
-                    name="variant[0][platforms][]"
+                    name="platforms[1]"
                     value="PS5"
                   />
                   <label class="pm-checkbox-label" for="pm-platformPS6">
@@ -104,7 +104,7 @@
                   <input
                     type="checkbox"
                     id="pm-platformPS6"
-                    name="variant[0][platforms][]"
+                    name="platforms[2]"
                     value="PS6"
                   />
                   <label class="pm-checkbox-label" for="pm-platformXbox">
@@ -113,7 +113,7 @@
                   <input
                     type="checkbox"
                     id="pm-platformXbox"
-                    name="variant[0][platforms][]"
+                    name="platforms[3]"
                     value="Xbox"
                   />
                   <label class="pm-checkbox-label" for="pm-platformSteam">

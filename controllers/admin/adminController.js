@@ -6,10 +6,10 @@ const productModel = require(path.join(
   "models",
   "productModel"
 ));
+const userModel = require("../../models/userModel");
 const multer = require("multer");
-const sharp = require('sharp')
-const fs = require('fs')
-
+const sharp = require("sharp");
+const fs = require("fs");
 
 //for handling photo upload
 
@@ -31,35 +31,34 @@ const upload = multer({
   fileFilter: function (req, file, cb) {
     checkFileType(file, cb);
   },
-}).array('productImages', 5);
+}).array("productImage", 5);
 
 // Check file type
 function checkFileType(file, cb) {
-    const filetypes = /jpeg|jpg|png|gif/;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
-  
-    if (mimetype && extname) {
-      return cb(null, true);
-    } else {
-      cb('Error: Images Only!');
-    }
+  const filetypes = /jpeg|jpg|png|gif/;
+  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
+  const mimetype = filetypes.test(file.mimetype);
+
+  if (mimetype && extname) {
+    return cb(null, true);
+  } else {
+    cb("Error: Images Only!");
   }
+}
 
 //for sharp
 const processImages = async (files) => {
-    const processedFiles = [];
-    for (const file of files) {
-      const newPath = `uploads/cropped-${Date.now()}-${file.originalname}`;
-      await sharp(file.path)
-        .resize(300, 300) // Customize as needed
-        .toFile(newPath);
-      processedFiles.push(newPath);
-      fs.unlinkSync(file.path); // Delete the original image
-    }
-    return processedFiles;
-  };
-
+  const processedFiles = [];
+  for (const file of files) {
+    const newPath = `uploads/cropped-${Date.now()}-${file.originalname}`;
+    await sharp(file.path)
+      .resize(300, 300) // Customize as needed
+      .toFile(newPath);
+    processedFiles.push(newPath);
+    fs.unlinkSync(file.path); // Delete the original image
+  }
+  return processedFiles;
+};
 
 const pageNotFound = async (req, res) => {
   try {
@@ -91,32 +90,48 @@ const addProductLoad = async (req, res) => {
 // ADD PRODUCT TO DB
 
 const addProduct = async (req, res) => {
-    upload(req, res, async function (err) {
-      if (err) {
-        return res.status(400).send({ message: err.message });
-      }
-  
-      try {
-        const { productName, description, price, variant } = req.body;
-        const images = await processImages(req.files);
-  
-        const newProduct = new productModel({
-          productName,
-          description,
-          price,
-          images,
-          variant,
-          createdBy: req.user._id, // Assuming you have user authentication
-          updatedBy: req.user._id
-        });
-  
-        await newProduct.save();
-        res.status(201).json({ message: 'Product created successfully', product: newProduct });
-      } catch (error) {
-        res.status(500).json({ message: error.message });
-      }
-    });
-  };
+  console.log("inside add product API");
+
+  upload(req, res, async function (err) {
+    if (err) {
+      console.log("error");
+
+      return res.status(400).send({ message: err.message });
+    }
+    
+    try {
+      const { productName, description, price, version, stock } = req.body;
+
+      const platforms = [
+        req.body.platforms[0],
+        req.body.platforms[1],
+        req.body.platforms[2],
+        req.body.platforms[3],
+      ];
+
+      // const admin = await userModel.findById({_id:req.session.user})
+
+      const images = await processImages(req.files);
+
+      const newProduct = new productModel({
+        productName: productName,
+        description: description,
+        price: price,
+        images: images,
+        variant: [{ version, platforms, stock }],
+        // createdBy:admin.username
+      });
+      await newProduct.save();
+      res
+        .status(201)
+        .json({ message: "Product created successfully", product: newProduct });
+    } catch (error) {
+      console.log("error");
+
+      res.status(500).json({ message: error.message });
+    }
+  });
+};
 
 module.exports = {
   pageNotFound,
