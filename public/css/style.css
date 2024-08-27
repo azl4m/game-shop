@@ -8,7 +8,7 @@ body{
     font-family: 'Poppins', sans-serif;
 }
 
-.navbar
+.template-navbar
 {
     display: flex;
     align-items: center;
@@ -27,39 +27,39 @@ nav ul li{
     display: inline-block;
     margin-right: 20px;
 }
-a{
+.template-nav-a{
     text-decoration: none;
     color: #555;
 }
 p{
     color: #555;
 }
-.container{
+.template-container{
     max-width: 1300px;
-    margin: auto;
+    margin-bottom: 5vh;
     padding-left: 25px;
     padding-right: 25px;
 }
-.row{
+.template-row{
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     justify-content: space-around;
 }
-.col-2{
+.template-col-2{
     flex-basis: 50%;
     min-width: 300px;
 }
-.col-2 img{
+.template-col-2 img{
     max-width: 100%;
     padding: 50px 0;
 }
-.col-2 h1{
+.template-col-2 h1{
     font-size: 50px;
     line-height: 60px;
     margin: 25px 0;
 }
-.btn{
+.template-btn{
     display: inline-block;
     background: #ff523b;
     color: white;
@@ -68,50 +68,50 @@ p{
     border-radius: 30px;
     transition: background 0.5s;
 }
-.btn:hover{
+.template-btn:hover{
     background: #563434;
 }
-.header{
+.template-header{
     background: radial-gradient(#fff,#ffd6d6);
 }
-.header .row{
+.template-header .template-row{
     margin-top: 70px;
 }
 .categories{
     margin: 70px 0;
 }
-.col-3{
+.template-col-3{
     flex-basis: 30%;
     min-width: 250px;
     margin-bottom: 30px;
 }
-.col-3 img{
+.template-col-3 img{
     width: 100%;
 }
-.small-container{
+.template-small-container{
     max-width: 1080px;
     margin: auto;
     padding-left: 25px;
     padding-right: 25px;
 }
-.col-4{
+.template-col-4{
     flex-basis: 25%;
     padding: 10px;
     min-width: 200px;
     margin-bottom: 50px;
     transition: transform 0.5s;
 }
-.col-4 img{
+.template-col-4 img{
     width: 100%;
 }
-.title{
+.template-title{
     text-align: center;
     margin: 0 auto 80px;
     position: relative;
     line-height: 60px;
     color: #555;
 }
-.title::after{
+.template-title::after{
     content: '';
     background: #ff523b;
     width: 80px;
@@ -126,13 +126,13 @@ h4{
     color: #555;
     font-weight: normal;
 }
-.col-4 p{
+.template-col-4 p{
     font-size: 14px;
 }
-.rating .fa{
+.rating .template-fa{
     color: #ff523b;
 }
-.col-4:hover{
+.template-col-4:hover{
     transform: translateY(-5px);
 }
 /* Offer */
@@ -141,7 +141,7 @@ h4{
     margin-top: 80px;
     padding: 30px 0;
 }
-.col-2 .offer-img{
+.template-col-2 .offer-img{
     padding: 50px;
 }
 small{
@@ -152,31 +152,31 @@ small{
 .testimonial{
     margin-top: 100px;
 }
-.testimonial .col-3{
+.testimonial .template-col-3{
     text-align: center;
     padding: 40px 20px;
     box-shadow: 0 0 20px 0px rgba(0, 0, 0, 0.1);
     cursor: pointer;
     transition: transform 0.5s;
 }
-.testimonial .col-3 img{
+.testimonial .template-col-3 img{
     width: 50px;
     margin-top: 20px;
     border-radius: 50%;
 }
-.testimonial .col-3:hover{
+.testimonial .template-col-3:hover{
     transform: translateY(-10px);
 }
-.fa.fa-quote-left{
+.template-fa.template-fa-quote-left{
     font-size: 34px;
     color: #ff523b;
 }
-.col-3 p{
+.template-col-3 p{
     font-size: 12px;
     margin: 12px 0;
     color: #777;
 }
-.testimonial .col-3 h3{
+.testimonial .template-col-3 h3{
     font-weight: 600;
     color: #555;
     font-size: 16px;
@@ -185,19 +185,19 @@ small{
 .brands{
     margin: 100px auto;
 }
-.col-5{
+.template-col-5{
     width: 160px;
 }
-.col-5 img{
+.template-col-5 img{
     width: 100%;
     cursor: pointer;
     filter: grayscale(100%);
 }
-.col-5 img:hover{
+.template-col-5 img:hover{
     filter: grayscale(0);
 }
 /* Footer */
-.footer{
+.template-footer{
     background: black;
     color: #8a8a8a;
     font-size: 14px;
@@ -205,29 +205,29 @@ small{
 }
 
 
-.footer p{
+.template-footer p{
     color: #8a8a8a;
 }
-.footer h3{
+.template-footer h3{
     color: #fff;
     margin-bottom: 20px;
 }
-.footer-col-1, .footer-col-2, .footer-col-3, .footer-col-4{
+.template-footer-col-1, .template-footer-col-2, .template-footer-col-3, .template-footer-col-4{
     min-width: 250px;
     margin-bottom: 20px;
 }
-.footer-col-1{
+.template-footer-col-1{
     flex-basis: 30%;
 }
-.footer-col-2{
+.template-footer-col-2{
     flex: 1;
     text-align: center;
 }
-.footer-col-2 img{
+.template-footer-col-2 img{
     width: 180px;
     margin-bottom: 20px;
 }
-.footer-col-3, .footer-col-4{
+.template-footer-col-3, .template-footer-col-4{
     flex-basis: 12%;
     text-align: center;
 }
@@ -240,7 +240,7 @@ ul{
 .app-logo img{
     width: 140px;
 }
-.footer hr{
+.template-footer hr{
     border: none;
     background: #b5b5b5;
     height: 1px;
@@ -256,7 +256,7 @@ ul{
 }
 
 /* All Products */
-.row-2{
+.template-row-2{
     justify-content: space-between;
     margin: 100px auto 50px;
 }
@@ -289,10 +289,10 @@ select:focus{
 .single-product{
     margin-top: 80px;
 }
-.single-product .col-2 img{
+.single-product .template-col-2 img{
     padding: 0;
 }
-.single-product .col-2{
+.single-product .template-col-2{
     padding: 20px;
 }
 .single-product h4{
@@ -317,7 +317,7 @@ select:focus{
 input:focus{
     outline: none;
 }
-.single-product .fa{
+.single-product .template-fa{
     color: #ff523b;
     margin-left: 10px;
 }
@@ -387,7 +387,7 @@ th:last-child{
     padding: 50px 0;
     background: radial-gradient(#fff, #ffd6d6);
 }
-.form-container{
+.template-form-container{
     background: #fff;
     width: 300px;
     height: 400px;
@@ -398,7 +398,7 @@ th:last-child{
     box-shadow: 0 0 20px 0px rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
-.form-container span{
+.template-form-container span{
     font-weight: bold;
     padding: 0 10px;
     color: #555;
@@ -406,10 +406,10 @@ th:last-child{
     width: 100px;
     display: inline-block;
 }
-.form-btn{
+.template-form-btn{
     display: inline-block;
 }
-.form-container form{
+.template-form-container form{
     max-width: 300px;
     padding: 0 20px;
     position: absolute;
@@ -423,13 +423,13 @@ form input{
     padding: 0 10px;
     border: 1px solid #ccc;
 }
-form .btn{
+form .template-btn{
     width: 100%;
     border: none;
     cursor: pointer;
     margin: 10px 0;
 }
-form .btn:focus{
+form .template-btn:focus{
     outline: none;
 }
 #LoginForm{
@@ -481,16 +481,16 @@ form a{
 /* Media query for 600 screen size */
 @media only screen and (max-width: 600px){
 
-    .row{
+    .template-row{
         text-align: center;
     }
-    .col-2, .col-3, .col-4{
+    .template-col-2, .template-col-3, .template-col-4{
         flex-basis: 100%;
     }
-    .single-product .row{
+    .single-product .template-row{
         text-align: left;
     }
-    .single-product .col-2{
+    .single-product .template-col-2{
         padding: 20px 0;
     }
     .single-product h1{

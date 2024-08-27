@@ -214,7 +214,7 @@ const loginUser = async (req, res) => {
         const passwordMatch = await bcrypt.compare(password, userData.password);
         if (passwordMatch) {
           if (userData.role === "admin") {
-            return res.render("login", { message: "admin login succesful" });
+           res.redirect("/admin")
           }
           else{
             req.session.user = userData._id
@@ -246,7 +246,11 @@ const loadHomePage = async (req, res) => {
     if(req.session?.passport?.user){
       req.session.user = req.session.passport.user
     }
-    return res.render("home");
+    if(req.session.user){
+      const user = await userModel.findById({_id:req.session.user})
+      return res.render("home",{message:user.username})
+    }
+     res.render("home");
   } catch (error) {
     console.log("homepage loading error :" + error.message);
     res.status(500).send("Server Error");
