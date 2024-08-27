@@ -12,7 +12,7 @@ passport.use(
       callbackURL: "/auth/google/callback",
     },
     async (accessToken, refereshToken, profile, done) => {
-      try {
+      try {     
         let user = await userModel.findOne({ googleId: profile.id });
         if (user) {
           return done(null, user);

@@ -14,30 +14,30 @@
         <div class="card">
           <div class="card-action">Basic Form Elements</div>
           <div class="card-content">
-            <form class="col s12">
+            <form class="col s12" action="/addProduct" method="post" enctype="multipart/form-data">
               <div class="row">
                 <div class="input-field col s6">
                   <input
-                    id="first_name"
+                    id="productName"
                     type="text"
                     class="validate"
-                    name="name"
+                    name="productName"
                   />
-                  <label for="first_name">Product Name</label>
+                  <label for="productName">Product Name</label>
                 </div>
                 <div class="input-field col s6">
                   <input
-                    id="last_name"
+                    id="price"
                     type="number"
                     class="validate"
                     name="price"
                   />
-                  <label for="last_name">Price</label>
+                  <label for="price">Price</label>
                 </div>
               </div>
               <div class="row">
                 <div class="input-field col s12">
-                  <input id="description" type="text" class="validate" />
+                  <input id="description" type="text" class="validate" name="description" />
                   <label for="description">Description</label>
                 </div>
               </div>
@@ -49,7 +49,7 @@
                   class="pm-input-file"
                   type="file"
                   id="pm-images"
-                  name="images"
+                  name="productImage"
                   accept="image/*"
                   multiple
                   required
