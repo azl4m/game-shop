@@ -52,12 +52,7 @@ const sendVerifyEmail = async (email, otp) => {
 
 const signupLoad = async (req, res) => {
   try {
-    if(!req.session.user){
-      res.render("signup")
-    }else{
-      res.redirect("/")
-    }
-    
+    res.render("signup")
   } catch (error) {
     console.log("error loading login page :" + error);
     res.redirect("/pageNotFound");
@@ -163,11 +158,7 @@ const resendOtp = async (req, res) => {
 //load login page
 const loginLoad = async (req, res) => {
   try {
-    if(!req.session.user){
       res.render("login");
-    }else{
-      res.redirect("/")
-    }
   } catch (error) {
     console.log("error loading login page :" + error);
   }
@@ -204,7 +195,7 @@ const loginUser = async (req, res) => {
             return res.redirect("/admin/")
           }
           req.session.user = userData._id
-          re.redirect("/")
+          res.redirect("/")
         } else {
           res.render("login", { message: "username or password incorrect" });
         }
@@ -226,7 +217,7 @@ const loginUser = async (req, res) => {
             return res.render("login", { message: "admin login succesful" });
           }
           else{
-            req.session._id = userData._id
+            req.session.user = userData._id
             res.redirect("/")
           }
         } else {

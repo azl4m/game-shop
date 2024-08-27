@@ -19,10 +19,11 @@ const express=require('express')
 const user=express.Router()
 const userController=require("../controllers/user/userController")
 const passport = require('passport')
+const auth = require('../middlewares/auth')
 
 
 //for signup
-user.get("/signup",userController.signupLoad)
+user.get("/signup",auth.isLogout,userController.signupLoad)
 user.post("/signup",userController.registerUser)
 
 //forOTP verification
@@ -30,7 +31,7 @@ user.get("/verifyOtp",userController.verifyOtpLoad)
 user.post("/verifyOtp",userController.verifyOtp)
 user.post("/resendOtp",userController.resendOtp)
 //for login
-user.get("/login",userController.loginLoad)
+user.get("/login",auth.isLogout,userController.loginLoad)
 user.post("/login",userController.loginUser)
 //for logout
 user.get("/logout",userController.logout)
