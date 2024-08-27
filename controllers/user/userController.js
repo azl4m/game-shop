@@ -52,7 +52,7 @@ const sendVerifyEmail = async (email, otp) => {
 
 const signupLoad = async (req, res) => {
   try {
-    if(!req.session._id){
+    if(!req.session.user){
       res.render("signup")
     }else{
       res.redirect("/")
@@ -163,7 +163,7 @@ const resendOtp = async (req, res) => {
 //load login page
 const loginLoad = async (req, res) => {
   try {
-    if(!req.session._id){
+    if(!req.session.user){
       res.render("login");
     }else{
       res.redirect("/")
@@ -191,9 +191,11 @@ const loginUser = async (req, res) => {
     if (emailReg.test(username)) {
       const email = username;
       const userData = await userModel.findOne({
-        email: email,
-        isActice: true,
+        email: email
       });
+      if(userData.isActice===false){
+        return res.render('login',{message:"You are blocked by admin"})
+      }
       const password = req.body.password;
       if (userData) {
         const passwordMatch = await bcrypt.compare(password, userData.password);
@@ -201,19 +203,21 @@ const loginUser = async (req, res) => {
           if (userData.role === "admin") {
             return res.redirect("/admin/")
           }
-          req.session._id = userData._id
+          req.session.user = userData._id
           re.redirect("/")
         } else {
-          res.render("login", { message: "password incorrect" });
+          res.render("login", { message: "username or password incorrect" });
         }
       } else {
-        res.render("login", { message: "username incorrect" });
+        res.render("login", { message: "username or password incorrect" });
       }
     } else {
       const userData = await userModel.findOne({
         username: username,
-        isActice: true,
       });
+      if(userData.isActice===false){
+        return res.render('login',{message:"You are blocked by admin"})
+      }
       const password = req.body.password;
       if (userData) {
         const passwordMatch = await bcrypt.compare(password, userData.password);
@@ -226,10 +230,10 @@ const loginUser = async (req, res) => {
             res.redirect("/")
           }
         } else {
-          res.render("login", { message: "password incorrect" });
+          res.render("login", { message: "username or password incorrect" });
         }
       } else {
-        res.render("login", { message: "username incorrect" });
+        res.render("login", { message: "username or password incorrect" });
       }
     }
   } catch (error) {
@@ -249,7 +253,7 @@ const logout = async(req,res)=>{
 const loadHomePage = async (req, res) => {
   try {
     if(req.session?.passport?.user){
-      req.session._id = req.session.passport.user
+      req.session.user = req.session.passport.user
     }
     return res.render("home");
   } catch (error) {
