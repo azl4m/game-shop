@@ -44,11 +44,11 @@
               <li><a class="template-nav-a" href="products.html">Products</a></li>
               <li><a class="template-nav-a" href="">About</a></li>
               <li><a class="template-nav-a" href="">Contact</a></li>
-              <% if(typeof message !== 'undefined'){
+              <% if(typeof userDetails !== 'undefined'){
                 %>
                 <li class="dropdown">
                 
-                <a href="" class="template-nav-a dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><%= message %></a>
+                <a href="" class="template-nav-a dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><%= userDetails.username %></a>
                 <div class="dropdown-menu">
                   <a href="/userProfile" class="dropdown-item">Profile</a>
                   <a href="/logout" class="dropdown-item">Logout</a>
@@ -56,19 +56,19 @@
             </li>
 
               <% } %>
-              <% if(typeof message === 'undefined'){
+              <% if(typeof userDetails === 'undefined'){
                 %>
                 <li><a class="template-nav-a" href="/login">Login</a></li>
                 
               <% } %>
-              <% if(typeof message === 'undefined'){
+              <% if(typeof userDetails === 'undefined'){
                 %>
                 <li><a class="template-nav-a" href="/signup">Signup</a></li>
                 
               <% } %>
             </ul>
           </nav>
-          <% if(typeof message !== 'undefined'){
+          <% if(typeof userDetails !== 'undefined'){
             %>
             <a href="cart.html"
             ><img src="images/cart.png" width="30px" height="30px"

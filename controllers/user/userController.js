@@ -4,8 +4,9 @@ const nodeMailer = require("nodemailer");
 
 const OTP_TIMEOUT = 30 * 1000;
 
-//for hashing password
 
+
+//for hashing password
 const securePassword = async (password) => {
   try {
     const passwordHash = await bcrypt.hash(password, 10);
@@ -15,13 +16,16 @@ const securePassword = async (password) => {
   }
 };
 
-//for otp generation
 
+
+//for otp generation
 function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
-//for sending verification email
 
+
+
+//for sending verification email
 const sendVerifyEmail = async (email, otp) => {
   try {
     const transporter = nodeMailer.createTransport({
@@ -48,19 +52,21 @@ const sendVerifyEmail = async (email, otp) => {
   }
 };
 
-//Loading signup page
 
+
+//Loading signup page
 const signupLoad = async (req, res) => {
   try {
-    res.render("signup")
+    res.render("signup");
   } catch (error) {
     console.log("error loading login page :" + error);
     res.redirect("/pageNotFound");
   }
 };
 
-//register new user
 
+
+//register new user
 const registerUser = async (req, res) => {
   try {
     const { username, email, password, cPassword, phone } = req.body;
@@ -86,10 +92,14 @@ const registerUser = async (req, res) => {
   }
 };
 
+
+
 //for loading ot verification page
 const verifyOtpLoad = async (req, res) => {
   res.render("otp");
 };
+
+
 
 //for verifying otp
 const verifyOtp = async (req, res) => {
@@ -122,8 +132,8 @@ const verifyOtp = async (req, res) => {
   }
 };
 
-//foor resending otp
 
+//foor resending otp
 const resendOtp = async (req, res) => {
   try {
     const { email } = req.session.userData;
@@ -158,11 +168,13 @@ const resendOtp = async (req, res) => {
 //load login page
 const loginLoad = async (req, res) => {
   try {
-      res.render("login");
+    res.render("login");
   } catch (error) {
     console.log("error loading login page :" + error);
   }
 };
+
+
 //for page not found
 const pageNotFound = async (req, res) => {
   try {
@@ -172,6 +184,8 @@ const pageNotFound = async (req, res) => {
     res.redirect("/pageNotFound");
   }
 };
+
+
 //for verify logging in
 
 const loginUser = async (req, res) => {
@@ -182,20 +196,21 @@ const loginUser = async (req, res) => {
     if (emailReg.test(username)) {
       const email = username;
       const userData = await userModel.findOne({
-        email: email
+        email: email,
       });
-      if(userData.isActice===false){
-        return res.render('login',{message:"You are blocked by admin"})
+      if (userData.isActive === false) {
+        return res.render("login", { message: "You are blocked by admin" });
       }
       const password = req.body.password;
       if (userData) {
         const passwordMatch = await bcrypt.compare(password, userData.password);
         if (passwordMatch) {
           if (userData.role === "admin") {
-            return res.redirect("/admin/")
+            req.session.admin = userData.username;
+            return res.redirect("/admin/");
           }
-          req.session.user = userData._id
-          res.redirect("/")
+          req.session.user = userData._id;
+          res.redirect("/");
         } else {
           res.render("login", { message: "username or password incorrect" });
         }
@@ -206,19 +221,19 @@ const loginUser = async (req, res) => {
       const userData = await userModel.findOne({
         username: username,
       });
-      if(userData.isActice===false){
-        return res.render('login',{message:"You are blocked by admin"})
+      if (userData.isActive === false) {
+        return res.render("login", { message: "You are blocked by admin" });
       }
       const password = req.body.password;
       if (userData) {
         const passwordMatch = await bcrypt.compare(password, userData.password);
         if (passwordMatch) {
           if (userData.role === "admin") {
-           res.redirect("/admin")
-          }
-          else{
-            req.session.user = userData._id
-            res.redirect("/")
+            req.session.admin = userData.username;
+            return res.redirect("/admin");
+          } else {
+            req.session.user = userData._id;
+            res.redirect("/");
           }
         } else {
           res.render("login", { message: "username or password incorrect" });
@@ -234,23 +249,22 @@ const loginUser = async (req, res) => {
 };
 
 //for logout
-const logout = async(req,res)=>{
-  req.session.destroy()
-  res.redirect("/")
-}
-
+const logout = async (req, res) => {
+  req.session.destroy();
+  res.redirect("/");
+};
 
 //for loading homepage
 const loadHomePage = async (req, res) => {
   try {
-    if(req.session?.passport?.user){
-      req.session.user = req.session.passport.user
+    if (req.session?.passport?.user) {
+      req.session.user = req.session.passport.user;
     }
-    if(req.session.user){
-      const user = await userModel.findById({_id:req.session.user})
-      return res.render("home",{message:user.username})
+    if (req.session.user) {
+      const user = await userModel.findById({ _id: req.session.user });
+      return res.render("home", { userDetails: user });
     }
-     res.render("home");
+    res.render("home");
   } catch (error) {
     console.log("homepage loading error :" + error.message);
     res.status(500).send("Server Error");
@@ -267,5 +281,5 @@ module.exports = {
   verifyOtp,
   verifyOtpLoad,
   resendOtp,
-  logout
+  logout,
 };

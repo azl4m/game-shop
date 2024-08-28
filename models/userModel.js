@@ -1,55 +1,58 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const userSchema = new Schema({
-  username: {
-    type: String,
-    unique: true  ,
-    required: true,
-  },
-  password: {
-    type: String,
-    required: false,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  phoneNumber: {
-    type: String,
-    required: false,
-    unique: true,
-    sparse: true,
-    default: null,
-
-  },
-  googleId: {
-    type: String,
-    unique: true
-  },
-  firstName: {
-    type: String,
-    required: false,
-    unique: false,
-    sparse: true,
-    default: null,
-  },
-  lastName: {
-    type: String,
-    required: false,
-    unique: false,
-    sparse: true,
-    default: null,
-  },
-  addresses: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "address",
+  const userSchema = new Schema({
+    username: {
+      type: String,
+      unique: true  ,
+      required: true,
     },
-  ],
+    password: {
+      type: String,
+      required: false,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    phoneNumber: {
+      type: String,
+      required: false,
+      unique: true,
+      sparse: true,
+      default: null,
 
-  isActice: {
+    },
+    googleId: {
+      type: String,
+      unique: true,
+      required:false,
+      default:null,
+      sparse:true
+    },
+    firstName: {
+      type: String,
+      required: false,
+      unique: false,
+      sparse: true,
+      default: null,
+    },
+    lastName: {
+      type: String,
+      required: false,
+      unique: false,
+      sparse: true,
+      default: null,
+    },
+    addresses: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "address",
+      },
+    ],
+
+  isActive: {
     type: Boolean,
     default: true,
   },

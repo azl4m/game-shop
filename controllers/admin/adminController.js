@@ -133,9 +133,84 @@ const addProduct = async (req, res) => {
   });
 };
 
+
+//load customer details page
+const userManagementLoad = async(req,res)=>{
+  try {
+    let search = "";
+    if(req.query.search){
+      search = req.query.search
+    }
+    let page = 1;
+    if(req.query.page){
+      page = req.query.page
+    }
+    const limit = 3;
+    const userData = await userModel.find({
+      role : "user",
+      $or:[
+        {name:{$regex:".*"+search+".*"}},
+        {email:{$regex:".*"+search+".*"}}
+      ]
+    })
+    .limit(limit*1)
+    .skip((page-1)*limit)
+    .exec();
+
+    const count = await userModel.find({
+      role : "user",
+      $or:[
+        {name:{$regex:".*"+search+".*"}},
+        {email:{$regex:".*"+search+".*"}}
+      ]
+    }).countDocuments();    
+    res.render('userManagement',{
+      data:userData,
+      totalPages:Math.ceil(count/limit),
+      currentPage:page
+    })
+  } catch (error) {
+    console.log("error loading user management page :"+error);
+    
+  }
+}
+
+//for blocking user
+
+const blockUser = async(req,res)=>{
+  try {
+    const id = req.query.id;
+    const user = await userModel.findById({_id:id})
+    const block = await user.updateOne({$set:{isActive:false}})
+    return res.redirect("/admin/userManagement")
+  } catch (error) {
+    console.log("error blocking user :"+error);
+    return res.redirect("/admin")
+    
+  }
+}
+
+//for unblocking user
+const unblockUser = async(req,res)=>{
+  try {
+    const id = req.query.id;
+    const user = await userModel.findById({_id:id})
+    const block = await user.updateOne({$set:{isActive:true}})
+    return res.redirect("/admin/userManagement")
+  } catch (error) {
+    console.log("error blocking user :"+error);
+    return res.redirect("/admin")
+    
+  }
+}
+
+
 module.exports = {
   pageNotFound,
   addProduct,
   addProductLoad,
   dashboardLoad,
+  userManagementLoad,
+  blockUser,
+  unblockUser
 };

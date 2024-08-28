@@ -8,6 +8,72 @@
 <!-- /. PAGE WRAPPER  -->
 </div>
 <!-- /. WRAPPER  -->
+</body>
+
+<!-- for cropper js -->
+<!-- <script>
+ document.getElementById('pm-images').addEventListener('change', function (event) {
+  const files = event.target.files;
+  const imagePreview = document.getElementById('image-preview');
+
+  if (files && files.length > 0) {
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+      imagePreview.src = e.target.result;
+      const cropper = new Cropper(imagePreview, {
+        aspectRatio: 1,
+        viewMode: 2,
+      });
+
+      document.getElementById('crop-button').addEventListener('click', function () {
+        const canvas = cropper.getCroppedCanvas();
+        const croppedImage = canvas.toBlob(function (blob) {
+          const formData = new FormData();
+
+          formData.append('croppedImage', blob, 'croppedImage.png');
+
+          // Append other form data here
+          formData.append('productName', document.getElementById('productName').value);
+          formData.append('price', document.getElementById('price').value);
+          formData.append('description', document.getElementById('description').value);
+          formData.append('version',document.getElementById('pm-version').value)
+          formData.append('stock', document.getElementById('stock').value)
+          const platforms = [];
+          document.querySelectorAll('input[name="platforms"]:checked').forEach((checkbox) => {
+          platforms.push(checkbox.value);
+          });
+          formData.append('platforms', JSON.stringify(platforms));
+          // Append other variant data similarly
+
+          // Send the form data to the server via AJAX or any preferred method
+          fetch('/admin/addProduct', {
+      method: 'POST',
+      body: formData,
+    }).then(response => {
+      if(!response.ok){
+        throw new Error("HTTP error ! :"+response.status)
+      }
+      return response.json();
+    }).then(data=>{
+        console.log("product added succesfully");
+        window.location.href = "/admin/addProducts"
+    })
+    .catch(error => {
+      console.log("error in fetch :"+error);
+      
+    });
+        });
+      });
+    };
+
+    reader.readAsDataURL(files[0]);
+  }
+});
+
+
+</script> -->
+
 <!-- JS Scripts-->
 <!-- jQuery Js -->
 <script src="/assets/js/jquery-1.10.2.js"></script>
@@ -32,7 +98,10 @@
 <!-- Custom Js -->
 <script src="/assets/js/custom-scripts.js"></script> 
 
+<!-- for cropper js -->
+<script src="https://unpkg.com/cropperjs@1.5.12/dist/cropper.min.js"></script>
 
-</body>
+
+
 
 </html>
