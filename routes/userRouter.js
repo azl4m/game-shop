@@ -20,24 +20,25 @@ const user=express.Router()
 const userController=require("../controllers/user/userController")
 const passport = require('passport')
 const auth = require('../middlewares/auth')
+const addminAuth = require('../middlewares/adminAuth')
 
 
 //for signup
-user.get("/signup",auth.isLogout,userController.signupLoad)
+user.get("/signup",addminAuth.isLogout,auth.isLogout,userController.signupLoad)
 user.post("/signup",userController.registerUser)
 
 //forOTP verification
-user.get("/verifyOtp",userController.verifyOtpLoad)
+user.get("/verifyOtp",addminAuth.isLogout,auth.isLogout,userController.verifyOtpLoad)
 user.post("/verifyOtp",userController.verifyOtp)
 user.post("/resendOtp",userController.resendOtp)
 //for login
-user.get("/login",auth.isLogout,userController.loginLoad)
+user.get("/login",addminAuth.isLogout,auth.isLogout,userController.loginLoad)
 user.post("/login",userController.loginUser)
 //for logout
 user.get("/logout",userController.logout)
 //for page not found
 user.get("/pageNotFound",userController.pageNotFound)
-user.get('/',userController.loadHomePage);
+user.get('/',addminAuth.isLogout,userController.loadHomePage);
 //for google auth
 user.get('/auth/google',passport.authenticate('google',{scope:['profile','email']}))
 user.get('/auth/google/callback',passport.authenticate('google',{failureRedirect:"/signup"}),(req,res)=>{ 

@@ -41,6 +41,10 @@ const productSchema = new Schema({
         required: true
       },
       variant: [variantSchema],
+      category:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'category'
+      },
       createdAt:{
         type : Date,
         default : Date.now

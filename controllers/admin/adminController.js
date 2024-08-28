@@ -7,6 +7,7 @@ const productModel = require(path.join(
   "productModel"
 ));
 const userModel = require("../../models/userModel");
+const categoryModel = require('../../models/categoryModel')
 const multer = require("multer");
 const sharp = require("sharp");
 const fs = require("fs");
@@ -204,6 +205,98 @@ const unblockUser = async(req,res)=>{
   }
 }
 
+//category management page loading
+const categoryManagementLoad = async(req,res)=>{
+  try {
+    const page = parseInt(req.query.page)
+    const limit = 4;
+    const skip = (page-1)*limit
+
+    const categoryData = await categoryModel.find({})
+    .sort({createdAt:-1})
+    .skip(skip)
+    .limit(limit)
+
+    const totalCategories = await categoryModel.countDocuments();
+    const totalPages = Math.ceil(totalCategories/limit)
+
+    res.render('categoryManagement',{
+      data:categoryData,
+      totalPages:totalPages,
+      currentPage:page,
+      totalCategories:totalCategories
+    })
+  } catch (error) {
+    console.log("error loading category management page :"+error);
+    return res.redirect("/admin")
+  }
+}
+//add category form
+const addCategoryLoad = async(req,res)=>{
+  try {
+
+    res.render('addCategory')
+  } catch (error) {
+    console.log("error loading add category page :"+error);
+    
+  }
+}
+//add new category
+const addCategory = async(req,res)=>{
+  try {
+    const categoryName = req.body.categoryName
+    const existingCategory = await categoryModel.findOne({categoryName:categoryName})
+    if(existingCategory){
+      return res.status(400).json({error:"Category already exists"})
+    }else{
+    const newCategory = new categoryModel({
+      categoryName:categoryName,
+    })
+    const catSave = await newCategory.save()
+    if(catSave){
+     res.render('categoryManagement')
+    }else{
+      console.log("error adding category")
+      res.render('addCategory')
+    }
+  }
+  } catch (error) {
+    console.log("error adding new category :"+error);
+    
+  }
+}
+
+//edit category page load
+const editCategoryLoad = async(req,res)=>{
+  try {
+    const categoryId = req.query.id
+    const category = await categoryModel.findById({_id:categoryId})
+    if(category){
+      return res.render('editCategory',{category:category})
+    }
+  } catch (error) {
+    console.log("error loading edit category page :"+error);
+    
+  }
+}
+//edit category
+const editCategory = async(req,res)=>{
+  try {
+    const categoryId = req.query.id
+    const categoryName = req.body.categoryName
+    const category = await categoryModel.findById({_id:categoryId})
+    const updateCategory = await category.updateOne({$set:{categoryName:categoryName}})
+    if(updateCategory){
+      res.redirect("/admin/categoryManagement")
+    }else{
+      res.status(400).json({error:"error editing category"})
+    }
+  } catch (error) {
+    console.log("error editing category");
+    
+  }
+}
+
 
 module.exports = {
   pageNotFound,
@@ -212,5 +305,10 @@ module.exports = {
   dashboardLoad,
   userManagementLoad,
   blockUser,
-  unblockUser
+  unblockUser,
+  categoryManagementLoad,
+  addCategoryLoad,
+  addCategory,
+  editCategoryLoad,
+  editCategory
 };
