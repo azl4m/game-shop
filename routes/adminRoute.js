@@ -10,6 +10,9 @@ admin.get("/",auth.isLogin,adminController.dashboardLoad)
 //add products
 admin.get('/addProduct',auth.isLogin,adminController.addProductLoad);
 admin.post('/addProduct',auth.isLogin,adminController.addProduct);
+admin.get('/productManagement',auth.isLogin,adminController.productManagementLoad)
+admin.get('/editProduct',auth.isLogin,adminController.editProductLoad)
+admin.post('/editProduct',auth.isLogin,adminController.editProduct)
 //user management
 admin.get('/userManagement',auth.isLogin,adminController.userManagementLoad)
 admin.get('/blockUser',auth.isLogin,adminController.blockUser)

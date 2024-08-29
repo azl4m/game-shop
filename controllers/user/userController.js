@@ -1,6 +1,7 @@
 const userModel = require("../../models/userModel");
 const bcrypt = require("bcrypt");
 const nodeMailer = require("nodemailer");
+const productModel = require("../../models/productModel");
 
 const OTP_TIMEOUT = 30 * 1000;
 
@@ -271,6 +272,19 @@ const loadHomePage = async (req, res) => {
   }
 };
 
+
+//for product details page laoding
+const productDetailsLoad = async(req,res)=>{
+  try {
+    const productId = req.query.id
+    const product = await productModel.findById({_id:productId})
+    return res.render('productDetails',{product:product})
+  } catch (error) {
+    console.log("error loading product details page :"+error);
+    res.status(500).send("Server error")
+    
+  }
+}
 module.exports = {
   loadHomePage,
   pageNotFound,
@@ -282,4 +296,5 @@ module.exports = {
   verifyOtpLoad,
   resendOtp,
   logout,
+  productDetailsLoad
 };

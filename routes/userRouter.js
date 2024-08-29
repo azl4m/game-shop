@@ -36,6 +36,12 @@ user.get("/login",addminAuth.isLogout,auth.isLogout,userController.loginLoad)
 user.post("/login",userController.loginUser)
 //for logout
 user.get("/logout",userController.logout)
+//for product details page
+user.get('/productDetails',userController.productDetailsLoad)
+
+
+
+
 //for page not found
 user.get("/pageNotFound",userController.pageNotFound)
 user.get('/',addminAuth.isLogout,userController.loadHomePage);
@@ -44,6 +50,7 @@ user.get('/auth/google',passport.authenticate('google',{scope:['profile','email'
 user.get('/auth/google/callback',passport.authenticate('google',{failureRedirect:"/signup"}),(req,res)=>{ 
     res.redirect("/")
 })
+
 
 
 module.exports = user

@@ -1,0 +1,156 @@
+<%- include("../partials/admin/header.ejs")%>
+<div id="page-wrapper">
+  <div class="header">
+    <h1 class="page-header">Form Inputs Page</h1>
+    <ol class="breadcrumb">
+      <li><a href="#">Home</a></li>
+      <li><a href="#">Forms</a></li>
+      <li class="active">Data</li>
+    </ol>
+  </div>
+  <div id="page-inner">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-action">Basic Form Elements</div>
+          <div class="card-content">
+            <form class="col s12" action="/admin/editProduct" method="post" enctype="multipart/form-data">
+              <div class="row">
+                <div class="input-field col s6">
+                  <input
+                    id="productName"
+                    type="text"
+                    class="validate"
+                    name="productName"
+                    value="<%=product.productName%>"
+                  />
+                  <label for="productName">Product Name</label>
+                </div>
+                <div class="input-field col s6">
+                  <input
+                    id="price"
+                    type="number"
+                    class="validate"
+                    name="price"
+                    value="<%=product.price%>"
+                  />
+                  <label for="price">Price</label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="input-field col s12">
+                  <input id="description" type="text" class="validate" name="description" value="<%=product.description%>"/>
+                  <label for="description">Description</label>
+                </div>
+              </div>
+              <div class="row">
+                <label class="pm-label" for="pm-images"
+                  >Product Images (Minimum 3)</label
+                >
+                <input
+                  class="pm-input-file"
+                  type="file"
+                  id="pm-images"
+                  name="productImage"
+                  accept="image/*"
+                  multiple
+                  value="<%=product.images%>"
+                />
+              </div>
+              <div id="cropper-container">
+                <img id="image-preview" style="max-width: 100%;" />
+              </div>
+              
+              <button id="crop-button" type="button">Crop Image</button>
+
+              <div class="pm-variant-group">
+                <h3 class="pm-variant-heading">Variants</h3>
+                <label class="pm-label" for="pm-version">Version</label>
+                <input
+                  class="pm-input"
+                  type="text"
+                  id="pm-version"
+                  name="version"
+                  required
+                  value="<%=product.variant[0].version%>"
+                />
+
+                <div class="pm-form-group">
+                  <label class="pm-form-label" for="stock">Stock</label>
+                  <input
+                    class="pm-form-input"
+                    type="number"
+                    id="stock"
+                    name="stock"
+                    required
+                    value="<%=product.variant[0].stock%>"
+                  />
+                </div>
+
+                <label class="pm-label">Platforms</label>
+                <div class="pm-checkbox-group">
+                  <label class="pm-checkbox-label" for="pm-platformPC">
+                    PC
+                  </label>
+                  <input
+                    type="checkbox"
+                    id="pm-platformPC"
+                    name="platforms[0]"
+                    value="PC"
+                  />
+                  <label class="pm-checkbox-label" for="pm-platformPS5">
+                    PS5
+                  </label>
+                  <input
+                    type="checkbox"
+                    id="pm-platformPS5"
+                    name="platforms[1]"
+                    value="PS5"
+                  />
+                  <label class="pm-checkbox-label" for="pm-platformPS6">
+                    PS6
+                  </label>
+                  <input
+                    type="checkbox"
+                    id="pm-platformPS6"
+                    name="platforms[2]"
+                    value="PS6"
+                  />
+                  <label class="pm-checkbox-label" for="pm-platformXbox">
+                    Xbox
+                  </label>
+                  <input
+                    type="checkbox"
+                    id="pm-platformXbox"
+                    name="platforms[3]"
+                    value="Xbox"
+                  />
+                  <label class="pm-checkbox-label" for="pm-platformSteam">
+                    Steam
+                  </label>
+                  <input
+                    type="checkbox"
+                    id="pm-platformSteam"
+                    name="platforms[4]"
+                    value="Steam"
+                  />
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col s12">
+                  <div class="input-field inline">
+                    <input type="submit" />
+                  </div>
+                </div>
+              </div>
+            </form>
+            <div class="clearBoth"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%- include("../partials/admin/footer.ejs")%>
+  </div>
+</div>
