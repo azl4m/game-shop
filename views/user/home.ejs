@@ -8,13 +8,13 @@
         <div class="template-small-container">
             <div class="template-row">
                 <div class="template-col-3">
-                    <img src="images/category-1.jpg">
+                    <img src="gameImages/fifa.jpg">
                 </div>
                 <div class="template-col-3">
-                    <img src="images/category-2.jpg">
+                    <img src="gameImages/gta6.png">
                 </div>
                 <div class="template-col-3">
-                    <img src="images/category-3.jpg">
+                    <img src="gameImages/starwars.jpg">
                 </div>
             </div>
         </div>
@@ -24,10 +24,12 @@
 
     <div class="template-small-container">
         <h2 class="template-title">Featured Products</h2>
+       
         <div class="template-row">
+            <%for(let i=0;i<products.length;i++){%>
             <div class="template-col-4">
-                <a href="product_details.html"><img src="images/product-1.jpg"></a>
-                <h4>Red Printed T-Shirt</h4>
+                <a href="/productDetails?id=<%=products[i]._id%>"><img src="<%=products[i].images[0]%>"></a>
+                <h4><%=products[i].productName%></h4>
                 <div class="rating">
                     <i class="template-fa template-fa-star"></i>
                     <i class="template-fa template-fa-star"></i>
@@ -35,45 +37,9 @@
                     <i class="template-fa template-fa-star"></i>
                     <i class="template-fa template-fa-star-o"></i>
                 </div>
-                <p>$50.00</p>
+                <p>₹<%=products[i].price%></p>
             </div>
-            <div class="template-col-4">
-                <img src="images/product-2.jpg">
-                <h4>Red Printed T-Shirt</h4>
-                <div class="rating">
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star-o"></i>
-                </div>
-                <p>$50.00</p>
-            </div>
-            <div class="template-col-4">
-                <img src="images/product-3.jpg">
-                <h4>Red Printed T-Shirt</h4>
-                <div class="rating">
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star-o"></i>
-                </div>
-                <p>$50.00</p>
-            </div>
-            <div class="template-col-4">
-                <img src="images/product-4.jpg">
-                <h4>Red Printed T-Shirt</h4>
-                <div class="rating">
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star-o"></i>
-                </div>
-                <p>$50.00</p>
-            </div>
+            <%}%>
         </div>
         <h2 class="template-title">Latest Products</h2>
         <div class="template-row">

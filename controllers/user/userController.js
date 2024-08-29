@@ -258,14 +258,15 @@ const logout = async (req, res) => {
 //for loading homepage
 const loadHomePage = async (req, res) => {
   try {
+    const products = await productModel.find({})
     if (req.session?.passport?.user) {
       req.session.user = req.session.passport.user;
     }
     if (req.session.user) {
       const user = await userModel.findById({ _id: req.session.user });
-      return res.render("home", { userDetails: user });
+      return res.render("home", { userDetails: user,products:products });
     }
-    res.render("home");
+    res.render("home",{products:products});
   } catch (error) {
     console.log("homepage loading error :" + error.message);
     res.status(500).send("Server Error");

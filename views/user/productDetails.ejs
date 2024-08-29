@@ -26,11 +26,9 @@
             <h4>₹<%=product.price%></h4>
             <select>
                 <option>Select Variant</option>
-                <option>XXL</option>
-                <option>XL</option>
-                <option>L</option>
-                <option>M</option>
-                <option>S</option>
+                <% product.variant[0].platforms.forEach(function(platform) { %>
+                <option><%= platform %></option>
+                <% }); %>
             </select>
             <input type="number" value="1">
             <a href="" class="template-btn">Add To Cart</a>
