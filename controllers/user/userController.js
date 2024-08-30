@@ -258,7 +258,7 @@ const logout = async (req, res) => {
 //for loading homepage
 const loadHomePage = async (req, res) => {
   try {
-    const products = await productModel.find({})
+    const products = await productModel.find({isDeleted:false})
     if (req.session?.passport?.user) {
       req.session.user = req.session.passport.user;
     }
@@ -279,6 +279,10 @@ const productDetailsLoad = async(req,res)=>{
   try {
     const productId = req.query.id
     const product = await productModel.findById({_id:productId})
+    if (req.session.user) {
+      const user = await userModel.findById({ _id: req.session.user });
+      return res.render("productDetails", { userDetails: user,product:product });
+    }
     return res.render('productDetails',{product:product})
   } catch (error) {
     console.log("error loading product details page :"+error);

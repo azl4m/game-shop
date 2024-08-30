@@ -225,6 +225,35 @@ const editProduct = async (req, res) => {
     }
   });
 };
+//delete and restore product
+const deleteProduct = async(req,res)=>{
+  try {
+    const product = await productModel.findById({_id:req.query.id})
+    const deleteProduct = await product.updateOne({$set:{isDeleted:true}})
+    if(deleteProduct){
+     return res.redirect("/admin/productManagement")
+    }
+    return res.status(500).json({error:"Server error"})
+  } catch (error) {
+    console.log("error deleting product :"+error);
+    return res.status(500).json({error:"Server error"})
+    
+  }
+}
+const restoreProduct = async(req,res)=>{
+  try {
+    const product = await productModel.findById({_id:req.query.id})
+    const deleteProduct = await product.updateOne({$set:{isDeleted:false}})
+    if(deleteProduct){
+      return res.redirect("/admin/productManagement")
+    }
+    return res.status(500).json({error:"Server error"})
+  } catch (error) {
+    console.log("error deleting product :"+error);
+    return res.status(500).json({error:"Server error"})
+    
+  }
+}
 
 //load customer details page
 const userManagementLoad = async (req, res) => {
@@ -346,7 +375,7 @@ const addCategory = async (req, res) => {
       });
       const catSave = await newCategory.save();
       if (catSave) {
-        res.render("categoryManagement");
+        res.redirect("/admin/categoryManagement");
       } else {
         console.log("error adding category");
         res.render("addCategory");
@@ -387,7 +416,31 @@ const editCategory = async (req, res) => {
     console.log("error editing category");
   }
 };
-
+//list and unlist category
+const unlistCategory = async(req,res)=>{
+  try {
+    const category = await categoryModel.findById({_id:req.query.id})
+    const unlist = await category.updateOne({$set:{isListed:false}})
+    if(unlist){
+      return res.redirect("/admin/categoryManagement")
+    }return res.status(500).json({error:"internal server error"})
+  } catch (error) {
+    console.log("error unlisting category :"+error);
+    res.status(500).json({error:"internal server error"})
+  }
+}
+const listCategory = async(req,res)=>{
+  try {
+    const category = await categoryModel.findById({_id:req.query.id})
+    const list = await category.updateOne({$set:{isListed:true}})
+    if(list){
+      return res.redirect("/admin/categoryManagement")
+    }return res.status(500).json({error:"internal server error"})
+  } catch (error) {
+    console.log("error listing category :"+error);
+    return res.status(500).json({error:"internal server error"})
+  }
+}
 module.exports = {
   pageNotFound,
   addProduct,
@@ -403,5 +456,9 @@ module.exports = {
   editCategory,
   productManagementLoad,
   editProductLoad,
-  editProduct
+  editProduct,
+  unlistCategory,
+  listCategory,
+  deleteProduct,
+  restoreProduct
 };

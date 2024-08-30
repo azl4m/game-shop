@@ -51,6 +51,19 @@
                                         <td class="">
                                           <button class="btn"><a href="/admin/editProduct?id=<%=data[i]._id%>">Edit Product Details</a></button>
                                         </td>
+                                        <td class="">
+                                            
+                                          <% if (data[i].isDeleted
+                                           === false) { %>
+                                              <button class="btn-danger">
+                                                  <a style="text-decoration: none; color: rgb(255, 255, 255);" href="/admin/deleteProduct?id=<%= data[i]._id %>">Delete Product</a>
+                                              </button>
+                                          <% } else { %>
+                                              <button class="btn">
+                                                  <a style="text-decoration: none; color: rgb(255, 255, 255);" href="/admin/restoreProduct?id=<%= data[i]._id %>">Restore Product</a>
+                                              </button>
+                                          <% } %>
+                                      </td>
                                     </tr>
                                 <% } %>
                             <% } %>

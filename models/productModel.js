@@ -45,6 +45,11 @@ const productSchema = new Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:'category'
       },
+      isDeleted:{
+        type:Boolean,
+        default:false
+      }
+      ,
       createdAt:{
         type : Date,
         default : Date.now

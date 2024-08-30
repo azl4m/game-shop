@@ -7,6 +7,11 @@ const categorySchema = new Schema({
         required:true,
         unique:true
     },
+    isListed:{
+      type:Boolean,
+      default:true
+    }
+    ,
     createdAt:{
         type : Date,
         default : Date.now

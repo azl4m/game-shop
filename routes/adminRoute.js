@@ -13,6 +13,8 @@ admin.post('/addProduct',auth.isLogin,adminController.addProduct);
 admin.get('/productManagement',auth.isLogin,adminController.productManagementLoad)
 admin.get('/editProduct',auth.isLogin,adminController.editProductLoad)
 admin.post('/editProduct',auth.isLogin,adminController.editProduct)
+admin.get('/deleteProduct',auth.isLogin,adminController.deleteProduct)
+admin.get('/restoreProduct',auth.isLogin,adminController.restoreProduct)
 //user management
 admin.get('/userManagement',auth.isLogin,adminController.userManagementLoad)
 admin.get('/blockUser',auth.isLogin,adminController.blockUser)
@@ -23,4 +25,6 @@ admin.get('/addCategory',auth.isLogin,adminController.addCategoryLoad)
 admin.post('/addCategory',auth.isLogin,adminController.addCategory)
 admin.get('/editCategory',auth.isLogin,adminController.editCategoryLoad)
 admin.post('/editCategory',auth.isLogin,adminController.editCategory)
+admin.get('/unlistCategory',auth.isLogin,adminController.unlistCategory)
+admin.get('/listCategory',auth.isLogin,adminController.listCategory)
 module.exports = admin

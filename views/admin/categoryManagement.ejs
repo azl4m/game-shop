@@ -52,6 +52,18 @@
                                                 <a style="text-decoration: none; color: rgb(255, 255, 255);" href="/admin/editCategory?id=<%= data[i]._id %>">EDIT</a>
                                             </button>
                                         </td>
+                                        <td class="">
+                                            
+                                          <% if (data[i].isListed === false) { %>
+                                              <button class="btn-danger">
+                                                  <a style="text-decoration: none; color: rgb(255, 255, 255);" href="/admin/listCategory?id=<%= data[i]._id %>">List Category</a>
+                                              </button>
+                                          <% } else { %>
+                                              <button class="btn">
+                                                  <a style="text-decoration: none; color: rgb(255, 255, 255);" href="/admin/unlistCategory?id=<%= data[i]._id %>">Unlist Category</a>
+                                              </button>
+                                          <% } %>
+                                      </td>
                                     </tr>
                                 <% } %>
                             <% } %>
