@@ -12,7 +12,7 @@
     <div class="login-wrap-unique">
       <div class="padding-eight-all-unique bg-white-unique">
         <div class="heading-s1-unique">
-          <h3>Email Verification Page</h3>
+          <h3>Verify your account</h3>
         </div>
         <form
           id="otpForm"
@@ -21,6 +21,10 @@
           onsubmit="return validateOTPForm()"
         >
           <div class="form-group-unique">
+            <p class="sub-title">
+              Enter the OTP you received to
+              <span class="phone-number"><%=email%></span>
+            </p>
             <label for="otp">Enter OTP:</label>
             <input
               type="text"

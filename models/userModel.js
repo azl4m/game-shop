@@ -51,6 +51,10 @@ const { Schema } = mongoose;
         ref: "address",
       },
     ],
+    isVerified:{
+      type:Boolean,
+      default:false
+    },
 
   isActive: {
     type: Boolean,

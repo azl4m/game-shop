@@ -5,8 +5,6 @@ const productModel = require("../../models/productModel");
 
 const OTP_TIMEOUT = 30 * 1000;
 
-
-
 //for hashing password
 const securePassword = async (password) => {
   try {
@@ -17,14 +15,10 @@ const securePassword = async (password) => {
   }
 };
 
-
-
 //for otp generation
 function generateOTP() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
-
-
 
 //for sending verification email
 const sendVerifyEmail = async (email, otp) => {
@@ -53,8 +47,6 @@ const sendVerifyEmail = async (email, otp) => {
   }
 };
 
-
-
 //Loading signup page
 const signupLoad = async (req, res) => {
   try {
@@ -65,24 +57,28 @@ const signupLoad = async (req, res) => {
   }
 };
 
-
-
 //register new user
 const registerUser = async (req, res) => {
   try {
     const { username, email, password, cPassword, phone } = req.body;
 
     const findUser = await userModel.findOne({ email: email });
-
     if (findUser) {
       return res.render("signup", { message: "Email already in use" });
     } else {
       const otp = generateOTP();
-
       const emailSent = await sendVerifyEmail(email, otp);
       if (!emailSent) {
         return res.json("email error");
       }
+      const passwordHash = await securePassword(password)
+      const user = new userModel({
+        username:username,
+        email:email,
+        password:passwordHash,
+        phoneNumber:phone
+      })
+      await user.save()
       req.session.userOTP = otp;
       req.session.userData = { username, email, password, phone };
       res.redirect("/verifyOtp");
@@ -93,27 +89,34 @@ const registerUser = async (req, res) => {
   }
 };
 
-
-
 //for loading ot verification page
 const verifyOtpLoad = async (req, res) => {
-  res.render("otp");
+  const email = req.session?.userData?.email;
+  res.render("otp", { email: email });
 };
-
-
 
 //for verifying otp
 const verifyOtp = async (req, res) => {
   try {
+    console.log(req.session.userOTP);
     const otp = req.body.otp;
     if (otp === req.session.userOTP) {
       const user = req.session.userData;
+      const userExist = await userModel.findOne({email:user.email})
+      if(userExist){
+        await userExist.updateOne({$set:{isVerified:true}})
+        return res.json({
+          success: true,
+          redirectUrl: "/login",
+        });
+      }
       const sPassword = await securePassword(user.password);
       const saveUser = new userModel({
         username: user.username,
         email: user.email,
         phoneNumber: user.phone,
         password: sPassword,
+        isVerified: true,
       });
       const userData = await saveUser.save();
       res.json({
@@ -132,7 +135,6 @@ const verifyOtp = async (req, res) => {
       .json({ success: false, message: "An error occcured, Please try again" });
   }
 };
-
 
 //foor resending otp
 const resendOtp = async (req, res) => {
@@ -175,7 +177,6 @@ const loginLoad = async (req, res) => {
   }
 };
 
-
 //for page not found
 const pageNotFound = async (req, res) => {
   try {
@@ -186,20 +187,29 @@ const pageNotFound = async (req, res) => {
   }
 };
 
-
 //for verify logging in
 
 const loginUser = async (req, res) => {
   try {
     const emailReg = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    const username = req.body.username;
-
-    if (emailReg.test(username)) {
-      const email = username;
+    const phone = req.body.phoneNumber;
+    if (emailReg.test(phone)) {
+      const email = phone;
       const userData = await userModel.findOne({
         email: email,
       });
-      if (userData.isActive === false) {
+      
+      if (userData.isVerified === false) {
+        const { username, email, password, phoneNumber } = userData;
+        const otp = generateOTP();
+        const emailSent = await sendVerifyEmail(email, otp);
+        if (!emailSent) {
+          return res.json("email error");
+        }
+        req.session.userOTP = otp;
+        req.session.userData = { username, email, password, phone };
+        return res.redirect("/verifyOtp");
+      } else if (userData.isActive === false) {
         return res.render("login", { message: "You are blocked by admin" });
       }
       const password = req.body.password;
@@ -207,7 +217,7 @@ const loginUser = async (req, res) => {
         const passwordMatch = await bcrypt.compare(password, userData.password);
         if (passwordMatch) {
           if (userData.role === "admin") {
-            req.session.admin = userData.username;
+            req.session.admin = userData._id;
             return res.redirect("/admin/");
           }
           req.session.user = userData._id;
@@ -220,9 +230,19 @@ const loginUser = async (req, res) => {
       }
     } else {
       const userData = await userModel.findOne({
-        username: username,
+        phoneNumber: phone,
       });
-      if (userData.isActive === false) {
+      if (userData.isVerified === false) {
+        const { username, email, password, phoneNumber } = userData;
+        const otp = generateOTP();
+        const emailSent = await sendVerifyEmail(email, otp);
+        if (!emailSent) {
+          return res.json("email error");
+        }
+        req.session.userOTP = otp;
+        req.session.userData = { username, email, password, phone };
+        res.redirect("/verifyOtp");
+      } else if (userData.isActive === false) {
         return res.render("login", { message: "You are blocked by admin" });
       }
       const password = req.body.password;
@@ -237,9 +257,11 @@ const loginUser = async (req, res) => {
             res.redirect("/");
           }
         } else {
+          console.log("error 3");
           res.render("login", { message: "username or password incorrect" });
         }
       } else {
+        console.log("error 4");
         res.render("login", { message: "username or password incorrect" });
       }
     }
@@ -258,38 +280,39 @@ const logout = async (req, res) => {
 //for loading homepage
 const loadHomePage = async (req, res) => {
   try {
-    const products = await productModel.find({isDeleted:false})
+    const products = await productModel.find({ isDeleted: false });
     if (req.session?.passport?.user) {
       req.session.user = req.session.passport.user;
     }
     if (req.session.user) {
       const user = await userModel.findById({ _id: req.session.user });
-      return res.render("home", { userDetails: user,products:products });
+      return res.render("home", { userDetails: user, products: products });
     }
-    res.render("home",{products:products});
+    res.render("home", { products: products });
   } catch (error) {
     console.log("homepage loading error :" + error.message);
     res.status(500).send("Server Error");
   }
 };
 
-
 //for product details page laoding
-const productDetailsLoad = async(req,res)=>{
+const productDetailsLoad = async (req, res) => {
   try {
-    const productId = req.query.id
-    const product = await productModel.findById({_id:productId})
+    const productId = req.query.id;
+    const product = await productModel.findById({ _id: productId });
     if (req.session.user) {
       const user = await userModel.findById({ _id: req.session.user });
-      return res.render("productDetails", { userDetails: user,product:product });
+      return res.render("productDetails", {
+        userDetails: user,
+        product: product,
+      });
     }
-    return res.render('productDetails',{product:product})
+    return res.render("productDetails", { product: product });
   } catch (error) {
-    console.log("error loading product details page :"+error);
-    res.status(500).send("Server error")
-    
+    console.log("error loading product details page :" + error);
+    res.status(500).send("Server error");
   }
-}
+};
 module.exports = {
   loadHomePage,
   pageNotFound,
@@ -301,5 +324,5 @@ module.exports = {
   verifyOtpLoad,
   resendOtp,
   logout,
-  productDetailsLoad
+  productDetailsLoad,
 };
