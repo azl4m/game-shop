@@ -14,7 +14,7 @@
         <div class="card">
           <div class="card-action">Basic Form Elements</div>
           <div class="card-content">
-            <form class="col s12" action="/admin/addProduct" method="post" enctype="multipart/form-data">
+            <form class="col s12" action="/admin/addProduct" method="post" enctype="multipart/form-data" id="prodForm">
               <div class="row">
                 <div class="input-field col s6">
                   <input
@@ -23,6 +23,7 @@
                     class="validate"
                     name="productName"
                   />
+                  <span id="error1" class="error-message"></span>
                   <label for="productName">Product Name</label>
                 </div>
                 <div class="input-field col s6">
@@ -32,12 +33,14 @@
                     class="validate"
                     name="price"
                   />
+                  <span id="error2" class="error-message"></span>
                   <label for="price">Price</label>
                 </div>
               </div>
               <div class="row">
                 <div class="input-field col s12">
                   <input id="description" type="text" class="validate" name="description" />
+                  <span id="error3" class="error-message"></span>
                   <label for="description">Description</label>
                 </div>
               </div>
@@ -64,16 +67,19 @@
               <div class="pm-variant-group">
                 <h3 class="pm-variant-heading">Variants</h3>
                 <label class="pm-label" for="pm-version">Version</label>
+                <span id="error4" class="error-message"></span>
+
                 <input
                   class="pm-input"
                   type="text"
-                  id="pm-version"
+                  id="version"
                   name="version"
                   required
                 />
 
                 <div class="pm-form-group">
                   <label class="pm-form-label" for="stock">Stock</label>
+                  <span id="error5" class="error-message"></span>
                   <input
                     class="pm-form-input"
                     type="number"
@@ -146,7 +152,115 @@
         </div>
       </div>
     </div>
-
+    <script>
+      const nameid = document.getElementById("productName")
+      const priceid = document.getElementById("price")
+      const descriptionid = document.getElementById("description")
+      const versionid = document.getElementById("version")
+      const stockid = document.getElementById("version")
+      const error1 = document.getElementById("error1")
+      const error2 = document.getElementById("error2")
+      const error3 = document.getElementById("error3")
+      const error4 = document.getElementById("error4")
+      const error5 = document.getElementById("error5")
+      const prodForm = document.getElementById("prodForm")
+    
+      function nameValidate(e){
+        const nameVal = nameid.value
+        const namePattern = /^(?!\d+$)[a-zA-Z0-9]+$/;
+        if(nameVal.trim()===""){
+          error1.style.display = "block"
+          error1.innerHTML = "Please Enter a Valid Product Name"
+        }else if(!namePattern.test(nameVal)){
+          error1.style.display = "block"
+          error1.innerHTML = "Name can only contain Numbers and Alphabets"
+        }else{
+          error1.style.display = "none"
+          error1.innerHTML = ""
+        }
+      }
+      function priceValidate(e){
+        const priceVal = priceid.value
+        const pricePattern = /^\d+$/;
+        if(priceVal.trim()===""){
+          error2.style.display = "block"
+          error2.innerHTML = "Please enter a valid price"
+        }else if(!pricePattern.test(priceVal)){
+          error2.style.display = "block"
+          error2.innerHTML = "Price can only include numbers"
+        }
+        else{
+          error2.style.display = "block"
+          error2.innerHTML = ""
+        }
+      }
+      function descriptionValidate(e){
+        const descriptionVal = descriptionid.value
+        const descriptionPattern = /^(\b[a-zA-Z0-9]+\b\s*){60,}$/;
+        if(descriptionVal.trim()===""){
+          error3.style.display = "block"
+          error3.innerHTML = "Enter a valid description"
+        }
+        else if(!descriptionPattern.test(descriptionVal)){
+          error3.style.display = "block"
+          error3.innerHTML = "Description should contain atleast 60 words and no special characters are allowed"
+        }
+        else{
+          error3.style.display = "none"
+          error3.innerHTML = ""
+        }
+      }
+      function versionValidate(e){
+        const priceversionVal = versionid.value
+        const versionPattern = /^\d+(\.\d+)?$/;
+        if(priceVal.trim()===""){
+          error4.style.display = "block"
+          error4.innerHTML = "Please enter a valid version"
+        }else if(!pricePattern.test(priceVal)){
+          error4.style.display = "block"
+          error4.innerHTML = "Price can only include numbers and a single dot"
+        }
+        else{
+          error4.style.display = "block"
+          error4.innerHTML = ""
+        }
+      }
+      function stockValidate(e){
+        const stockVal = stockid.value
+        const stockPattern = /^\d+$/;
+        if(stockVal.trim()===""){
+          error5.style.display = "block"
+          error5.innerHTML = "Please enter a valid stock"
+        }else if(!stockPattern.test(stockVal)){
+          error5.style.display = "block"
+          error5.innerHTML = "Stock can only include numbers"
+        }
+        else{
+          error5.style.display = "block"
+          error5.innerHTML = ""
+        }
+      }
+    
+    
+    
+      document.addEventListener("DOMContentLoaded",()=>{
+            prodForm.addEventListener("submit",(e)=>{
+                nameValidate();
+                priceValidate()
+                descriptionValidate()
+                stockValidate()
+                versionValidate()
+                if(!nameid||!priceid||!descriptionid||!versionid||!stockid){
+                    console.log("One or more elements not found")
+                }
+                if(error1.innerHTML||error2.innerHTML||error3.innerHTML||error4.innerHTML||error5.innerHTML){
+                    e.preventDefault();
+                }
+            })
+        })
+    
+    </script>
+    
     <%- include("../partials/admin/footer.ejs")%>
   </div>
 </div>

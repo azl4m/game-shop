@@ -14,7 +14,7 @@
         <div class="card">
           <div class="card-action">Basic Form Elements</div>
           <div class="card-content">
-            <form class="col s12" action="/admin/addCategory" method="post">
+            <form class="col s12" action="/admin/addCategory" method="post" id="catForm">
               <div class="row">
                 <div class="input-field col s6">
                   <input
@@ -23,6 +23,7 @@
                     class="validate"
                     name="categoryName"
                   />
+                  <span id="error1" class="error-message"></span>
                   <label for="categoryName">Category Name</label>
                 </div>
               </div>
@@ -40,7 +41,40 @@
         </div>
       </div>
     </div>
-
     <%- include("../partials/admin/footer.ejs")%>
   </div>
 </div>
+<script>
+  const nameid = document.getElementById("categoryName")
+  const error1 = document.getElementById("error1")
+  const catForm = document.getElementById("catForm")
+  
+  function nameValidate(e) {
+    const nameVal = nameid.value;
+    const namePattern = /^[A-Za-z\s]+$/;
+    if(nameVal.trim()===""){
+      error1.style.display = "block"
+      error1.innerHTML = "Please enter a valid Category Name"
+    }else if(!namePattern.test(nameVal)){
+      error1.style.display = "block"
+      error1.innerHTML = "Name can only contain alphabets"
+    }
+    else{
+      error1.style.display = "none"
+      error1.innerHTML = ""
+    }
+  }
+  document.addEventListener("DOMContentLoaded",()=>{
+        catForm.addEventListener("submit",(e)=>{
+            nameValidate();
+            if(!nameid){
+                console.log("One or more elements not found")
+            }
+            if(error1.innerHTML){
+                e.preventDefault();
+            }
+        })
+    })
+
+</script>
+

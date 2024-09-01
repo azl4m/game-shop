@@ -25,6 +25,7 @@
                                     aria-controls="dataTables-example"
                                     name="search"
                                     id="search"
+                                    value="<%=searchQuery%>"
                                     />
                                  <input type="submit" value="Search">
                               </form>
@@ -40,6 +41,8 @@
                               <th>Name</th>
                               <th>Price</th>
                               <th>Edit</th>
+                              <th>List/Unlist from store</th>
+                              <th>Delete</th>
                            </tr>
                         </thead>
                         <tbody>
@@ -49,20 +52,23 @@
                                         <td><%= data[i].productName %></td>
                                         <td><%= data[i].price %></td>
                                         <td class="">
-                                          <button class="btn"><a href="/admin/editProduct?id=<%=data[i]._id%>">Edit Product Details</a></button>
+                                          <button class="btn-alert"><a href="/admin/editProduct?id=<%=data[i]._id%>">Edit Product Details</a></button>
                                         </td>
                                         <td class="">
                                             
-                                          <% if (data[i].isDeleted
-                                           === false) { %>
+                                          <% if (data[i].isListed
+                                           === true) { %>
                                               <button class="btn-danger">
-                                                  <a style="text-decoration: none; color: rgb(255, 255, 255);" href="/admin/deleteProduct?id=<%= data[i]._id %>">Delete Product</a>
+                                                  <a style="text-decoration: none; color: rgb(255, 255, 255);" href="/admin/unlistProduct?id=<%= data[i]._id %>">Unlist Product</a>
                                               </button>
                                           <% } else { %>
-                                              <button class="btn">
+                                              <button class="btn-primary">
                                                   <a style="text-decoration: none; color: rgb(255, 255, 255);" href="/admin/restoreProduct?id=<%= data[i]._id %>">Restore Product</a>
                                               </button>
                                           <% } %>
+                                      </td>
+                                      <td>
+                                       <button class="btn-danger" onclick="deleteProduct('<%=data[i]._id%>')">DELETE</button>
                                       </td>
                                     </tr>
                                 <% } %>
@@ -78,16 +84,25 @@
       <div class="col-sm-6">
          <div class="dataTables_paginate paging_simple_numbers" id="dataTables-example_paginate">
             <ul class="pagination">
-               <% if(typeof totalPages !== 'undefined'){
-                %>
-                <% for(let i = 1;i<totalPages.length;i++){%>
-                    <li class="page-item paginate_button <%=(i===currentPage) ? 'active' : '' %>" aria-controls="dataTables-example" tabindex="0"><a href=">page=<%=i%>"><%=page%></a></li>
-                <%}%>
-               <%}%>
-               
+               <% if(typeof totalPages !== 'undefined' && totalPages > 0){ %>
+                  <% for(let i = 1; i <= totalPages; i++){ %>
+                     <li class="page-item paginate_button <%= (i === parseInt(currentPage)) ? 'active' : '' %>" aria-controls="dataTables-example" tabindex="0">
+                        <a href="?page=<%= i %>&search=<%= searchQuery %>"><%= i %></a>
+                     </li>
+                  <% } %>
+               <% } %>
             </ul>
          </div>
       </div>
+      
+      <script>
+         function deleteProduct(id){
+            const confirmation = confirm("Do you really want to delete this product ?")
+            if(confirmation){
+               window.location.href = "/admin/deleteProduct?id="+id
+            }
+         }
+      </script>
       <%- include("../partials/admin/footer.ejs")%>
    </div>
 </div>

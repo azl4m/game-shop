@@ -129,7 +129,7 @@ const addProduct = async (req, res) => {
     }
   });
 };
-//product management page load
+// product management page load
 const productManagementLoad = async (req, res) => {
   try {
     let search = "";
@@ -138,25 +138,38 @@ const productManagementLoad = async (req, res) => {
     }
     let page = 1;
     if (req.query.page) {
-      page = req.query.page;
+      page = parseInt(req.query.page, 10); 
     }
     const limit = 3;
+    
+    // Query to fetch products with pagination and search
     const productData = await productModel
-      .find({})
-      .limit(limit * 1)
+      .find({
+        isDeleted: false,
+        productName: { $regex: ".*" + search + ".*", $options: "i" } // Case-insensitive search
+      })
+      .limit(limit)
       .skip((page - 1) * limit)
       .exec();
 
+    // Query to count the total number of matching products
     const count = await productModel
-      .find({ name: { $regex: ".*" + search + ".*" } })
+      .find({
+        isDeleted: false, 
+        productName: { $regex: ".*" + search + ".*", $options: "i" } // Case-insensitive search
+      })
       .countDocuments();
+    
+    // Render the product management page
     res.render("productManagement", {
       data: productData,
       totalPages: Math.ceil(count / limit),
       currentPage: page,
+      searchQuery: search, 
     });
   } catch (error) {
-    console.log("error loading user management page :" + error);
+    console.log("Error loading product management page: " + error);
+    res.status(500).send("Error loading the page."); // Optional: Send an error response
   }
 };
 //edit product page load
@@ -225,11 +238,11 @@ const editProduct = async (req, res) => {
     }
   });
 };
-//delete and restore product
-const deleteProduct = async(req,res)=>{
+//unlist and restore product
+const unlistProduct = async(req,res)=>{
   try {
     const product = await productModel.findById({_id:req.query.id})
-    const deleteProduct = await product.updateOne({$set:{isDeleted:true}})
+    const deleteProduct = await product.updateOne({$set:{isListed:false}})
     if(deleteProduct){
      return res.redirect("/admin/productManagement")
     }
@@ -243,7 +256,7 @@ const deleteProduct = async(req,res)=>{
 const restoreProduct = async(req,res)=>{
   try {
     const product = await productModel.findById({_id:req.query.id})
-    const deleteProduct = await product.updateOne({$set:{isDeleted:false}})
+    const deleteProduct = await product.updateOne({$set:{isListed:true}})
     if(deleteProduct){
       return res.redirect("/admin/productManagement")
     }
@@ -254,49 +267,69 @@ const restoreProduct = async(req,res)=>{
     
   }
 }
+//deleteProduct
+const deleteProduct = async(req,res)=>{
+  try {
+    const id = req.query.id
+    const product = await productModel.findById({_id:id})
+    const deleteProduct = await product.updateOne({$set:{isDeleted:true}})
+    if(deleteProduct){
+      return res.redirect("/admin/productManagement")
+    }else{
+      res.status(400).json({error:"Error deleting product"})
+    }
+  } catch (error) {
+    console.log("error deleting product :"+error);
+    res.status(500).json({error:"Internal server error"})
+    
+  }
+}
 
-//load customer details page
+
+// Load customer details page
 const userManagementLoad = async (req, res) => {
   try {
-    let search = "";
-    if (req.query.search) {
-      search = req.query.search;
-    }
-    let page = 1;
-    if (req.query.page) {
-      page = req.query.page;
-    }
-    const limit = 3;
+    const search = req.query.search || "";
+    const page = parseInt(req.query.page, 10) || 1; // Ensure 'page' is an integer
+    const limit = 5;
+
+    // Fetch user data with pagination and search
     const userData = await userModel
       .find({
         role: "user",
         $or: [
-          { name: { $regex: ".*" + search + ".*" } },
-          { email: { $regex: ".*" + search + ".*" } },
+          { name: { $regex: ".*" + search + ".*", $options: "i" } }, // Case-insensitive search
+          { email: { $regex: ".*" + search + ".*", $options: "i" } }, // Case-insensitive search
         ],
       })
-      .limit(limit * 1)
+      .limit(limit)
       .skip((page - 1) * limit)
       .exec();
 
+    // Count total documents that match the search criteria
     const count = await userModel
       .find({
         role: "user",
         $or: [
-          { name: { $regex: ".*" + search + ".*" } },
-          { email: { $regex: ".*" + search + ".*" } },
+          { name: { $regex: ".*" + search + ".*", $options: "i" } }, // Case-insensitive search
+          { email: { $regex: ".*" + search + ".*", $options: "i" } }, // Case-insensitive search
         ],
       })
       .countDocuments();
+
+    // Render the user management page
     res.render("userManagement", {
       data: userData,
       totalPages: Math.ceil(count / limit),
       currentPage: page,
+      searchQuery: search, // Pass the search query to retain it in the search box
     });
   } catch (error) {
-    console.log("error loading user management page :" + error);
+    console.log("Error loading user management page: " + error);
+    res.status(500).send("Error loading the page."); // Optional: Send an error response
   }
 };
+
 
 //for blocking user
 
@@ -333,7 +366,7 @@ const categoryManagementLoad = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const categoryData = await categoryModel
-      .find({})
+      .find({isDeleted:false})
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -390,7 +423,7 @@ const addCategory = async (req, res) => {
 const editCategoryLoad = async (req, res) => {
   try {
     const categoryId = req.query.id;
-    const category = await categoryModel.findById({ _id: categoryId });
+    const category = await categoryModel.findById({ _id: categoryId});
     if (category) {
       return res.render("editCategory", { category: category });
     }
@@ -441,6 +474,21 @@ const listCategory = async(req,res)=>{
     return res.status(500).json({error:"internal server error"})
   }
 }
+//delete category
+const deleteCategory = async(req,res)=>{
+  try {
+    const id = req.query.id
+    const category = await categoryModel.findById({_id:id});
+    const deleteCat = await category.updateOne({$set:{isDeleted:true}})
+    if(deleteCat){
+      return res.redirect("/admin/categoryManagement")
+    }
+  } catch (error) {
+    console.log("error deleting category :"+error);
+    res.status(500).json({error:"Internal server error"})
+    
+  }
+}
 module.exports = {
   pageNotFound,
   addProduct,
@@ -460,5 +508,7 @@ module.exports = {
   unlistCategory,
   listCategory,
   deleteProduct,
-  restoreProduct
+  restoreProduct,
+  deleteCategory,
+  unlistProduct
 };

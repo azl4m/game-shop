@@ -25,6 +25,7 @@
                                     aria-controls="dataTables-example"
                                     name="search"
                                     id="search"
+                                    value="<%=searchQuery%>"
                                     />
                                  <input type="submit" value="Search">
                               </form>
@@ -53,12 +54,10 @@
                                         <td class="">
                                             
                                             <% if (data[i].isActive === false) { %>
-                                                <button class="btn-danger">
-                                                    <a style="text-decoration: none; color: rgb(255, 255, 255);" href="/admin/unblockUser?id=<%= data[i]._id %>">UNBLOCK</a>
-                                                </button>
+                                                <button class="btn-danger" onclick="unblockuser('<%=data[i]._id%>')">
+                                                   UNBLOCK                                                </button>
                                             <% } else { %>
-                                                <button class="btn">
-                                                    <a style="text-decoration: none; color: rgb(255, 255, 255);" href="/admin/blockUser?id=<%= data[i]._id %>">BLOCK</a>
+                                                <button class="btn" onclick="blockuser('<%=data[i]._id%>')">BLOCK
                                                 </button>
                                             <% } %>
                                         </td>
@@ -78,14 +77,35 @@
             <ul class="pagination">
                <% if(typeof totalPages !== 'undefined'){
                 %>
-                <% for(let i = 1;i<totalPages.length;i++){%>
-                    <li class="page-item paginate_button <%=(i===currentPage) ? 'active' : '' %>" aria-controls="dataTables-example" tabindex="0"><a href=">page=<%=i%>"><%=page%></a></li>
+                <% for(let i = 1;i<=totalPages;i++){%>
+                    <li class="page-item paginate_button <%=(i===currentPage) ? 'active' : '' %>" aria-controls="dataTables-example" tabindex="0"><a href="?page=<%=i%>"><%=i%></a></li>
                 <%}%>
                <%}%>
                
             </ul>
          </div>
       </div>
+      <script>
+         
+         
+         function unblockuser(_id){
+            const confirmation = confirm("Are you sure you want to unblock this user ?")
+            if(confirmation){
+               window.location.href = "/admin/unblockUser?id="+_id
+            }
+            else{
+               console.log("not hello");
+               
+            }
+         }
+
+         function blockuser(_id){
+            const confirmation = confirm("Are you sure you want to block this user ?")
+            if(confirmation){
+               window.location.href = "/admin/blockUser?id="+_id
+            }
+         }
+      </script>
       <%- include("../partials/admin/footer.ejs")%>
    </div>
 </div>

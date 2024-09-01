@@ -280,7 +280,7 @@ const logout = async (req, res) => {
 //for loading homepage
 const loadHomePage = async (req, res) => {
   try {
-    const products = await productModel.find({ isDeleted: false });
+    const products = await productModel.find({ isListed: true ,isDeleted:false});
     if (req.session?.passport?.user) {
       req.session.user = req.session.passport.user;
     }

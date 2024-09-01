@@ -64,6 +64,9 @@
                                               </button>
                                           <% } %>
                                       </td>
+                                      <td>
+                                       <button class="btn-danger" onclick="deleteCategory('<%=data[i]._id%>')">Delete</button>
+                                      </td>
                                     </tr>
                                 <% } %>
                             <% } %>
@@ -86,6 +89,14 @@
                <%}%>
                
             </ul>
+            <script>
+               function deleteCategory(id){
+                  const confirmation = confirm("Do you really want to delete this category ?")
+                  if(confirmation){
+                     window.location.href = "/admin/deleteCategory?id="+id
+                  }
+               }
+            </script>
          </div>
       </div>
       <%- include("../partials/admin/footer.ejs")%>

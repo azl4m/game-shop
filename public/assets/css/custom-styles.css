@@ -109,6 +109,12 @@ label {
   -moz-box-shadow: 0 0 10px #757575;
   /* -webkit-box-shadow: 0 0 10px #757575; */
 }
+.error-message{
+	color: red;
+	font-size: 0.75rem;
+	font-weight: bold;
+	display: none;
+}
 .top-navbar .nav > li > a:hover,
 .top-navbar .nav > li > a:focus {
   text-decoration: none;

@@ -48,6 +48,10 @@ const productSchema = new Schema({
       isDeleted:{
         type:Boolean,
         default:false
+      },
+      isListed:{
+        type:Boolean,
+        default:true
       }
       ,
       createdAt:{
