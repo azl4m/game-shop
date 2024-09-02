@@ -25,6 +25,7 @@
                                     aria-controls="dataTables-example"
                                     name="search"
                                     id="search"
+                                    value="<%=searchQuery%>"
                                     />
                                  <input type="submit" value="Search">
                               </form>
@@ -83,8 +84,8 @@
             <ul class="pagination">
                <% if(typeof totalPages !== 'undefined'){
                 %>
-                <% for(let i = 1;i<totalPages.length;i++){%>
-                    <li class="page-item paginate_button <%=(i===currentPage) ? 'active' : '' %>" aria-controls="dataTables-example" tabindex="0"><a href=">page=<%=i%>"><%=page%></a></li>
+                <% for(let i = 1;i<=totalPages;i++){%>
+                    <li class="page-item paginate_button <%=(i===currentPage) ? 'active' : '' %>" aria-controls="dataTables-example" tabindex="0"><a href="?page=<%=i%>"><%=i%></a></li>
                 <%}%>
                <%}%>
                

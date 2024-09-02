@@ -13,9 +13,10 @@ const { platform } = require("os");
 const storage = multer.diskStorage({
   destination: "../../public/uploads/", // Set the upload destination
   filename: function (req, file, cb) {
+    const name = req.body.productName
     cb(
       null,
-      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
+      name + "-" + Date.now()
     );
   },
 });
@@ -46,7 +47,7 @@ function checkFileType(file, cb) {
 const processImages = async (files) => {
   const processedFiles = [];
   for (const file of files) {
-    const newPath = `public/uploads/cropped-${Date.now()}-${file.originalname}`;
+    const newPath = `public/uploads/cropped-${file.originalname}`;
     await sharp(file.path)
       .resize(300, 300) // Customize as needed
       .toFile(newPath);
@@ -76,7 +77,8 @@ const dashboardLoad = async (req, res) => {
 
 const addProductLoad = async (req, res) => {
   try {
-    res.render("addProduct");
+    const category = await categoryModel.find({isListed:true})
+    res.render("addProduct",{category:category});
   } catch (error) {
     console.log("error in loading product management page :" + error.message);
     res.redirect("/pageNotFound");
@@ -358,33 +360,46 @@ const unblockUser = async (req, res) => {
   }
 };
 
-//category management page loading
+// Category management page loading
 const categoryManagementLoad = async (req, res) => {
   try {
-    const page = parseInt(req.query.page);
+    const search = req.query.search || ""; // Get the search query from the request
+    const page = parseInt(req.query.page) || 1; // Ensure page is an integer and default to 1 if not provided
     const limit = 4;
     const skip = (page - 1) * limit;
 
+    // Fetch category data with pagination, search, and sorting
     const categoryData = await categoryModel
-      .find({isDeleted:false})
+      .find({
+        isDeleted: false,
+        name: { $regex: ".*" + search + ".*", $options: "i" }, // Case-insensitive search on 'name'
+      })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
 
-    const totalCategories = await categoryModel.countDocuments();
+    // Count total documents that match the search criteria
+    const totalCategories = await categoryModel.countDocuments({
+      isDeleted: false,
+      name: { $regex: ".*" + search + ".*", $options: "i" }, // Case-insensitive search on 'name'
+    });
+
     const totalPages = Math.ceil(totalCategories / limit);
 
+    // Render the category management page
     res.render("categoryManagement", {
       data: categoryData,
       totalPages: totalPages,
       currentPage: page,
       totalCategories: totalCategories,
+      searchQuery: search, // Pass the search query to the view
     });
   } catch (error) {
-    console.log("error loading category management page :" + error);
+    console.log("Error loading category management page: " + error);
     return res.redirect("/admin");
   }
 };
+
 //add category form
 const addCategoryLoad = async (req, res) => {
   try {
@@ -479,7 +494,7 @@ const deleteCategory = async(req,res)=>{
   try {
     const id = req.query.id
     const category = await categoryModel.findById({_id:id});
-    const deleteCat = await category.updateOne({$set:{isDeleted:true}})
+    const deleteCat = await category.updateOne({$set:{isDeleted:true,isListed:false}})
     if(deleteCat){
       return res.redirect("/admin/categoryManagement")
     }
