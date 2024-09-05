@@ -2,8 +2,6 @@
 const isLogin = async(req,res,next)=>{
     try {
         if(req.session.user){
-            
-
         }
         else{
             return res.redirect('/')

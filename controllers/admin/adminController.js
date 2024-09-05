@@ -44,7 +44,9 @@ function checkFileType(file, cb) {
 }
 
 //for sharp
-const processImages = async (files) => {
+const 
+
+processImages = async (files) => {
   const processedFiles = [];
   for (const file of files) {
     const newPath = `public/uploads/cropped-${file.originalname}`;
