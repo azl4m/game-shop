@@ -5,7 +5,6 @@ const categoryModel = require("../../models/categoryModel");
 const multer = require("multer");
 const sharp = require("sharp");
 const fs = require("fs");
-const { platform } = require("os");
 
 //for handling photo upload
 
@@ -44,12 +43,13 @@ function checkFileType(file, cb) {
 }
 
 //for sharp
-const 
 
-processImages = async (files) => {
+processImages = async (files,name) => {
   const processedFiles = [];
+  let i = 0;
   for (const file of files) {
-    const newPath = `public/uploads/cropped-${file.originalname}`;
+    const newPath = `public/uploads/cropped-${name}-${i}${path.extname(file.originalname)}`;
+    i++;
     await sharp(file.path)
       .resize(300, 300) // Customize as needed
       .toFile(newPath);
@@ -99,7 +99,6 @@ const addProduct = async (req, res) => {
 
     try {
       const { productName, description, price, version, stock } = req.body;
-
       const platforms = [
         req.body.platforms[0],
         req.body.platforms[1],
@@ -109,7 +108,8 @@ const addProduct = async (req, res) => {
 
       // const admin = await userModel.findById({_id:req.session.user})
 
-      const images = await processImages(req.files);
+      
+      const images = await processImages(req.files,req.body.productName);
 
       const newProduct = new productModel({
         productName: productName,
@@ -127,7 +127,7 @@ const addProduct = async (req, res) => {
       .status(400)
       .json({ message: "Product creation failed" });
     } catch (error) {
-      console.log("error :"+error);
+      console.log("error at add product :"+error);
 
       res.status(500).json({ message: error.message });
     }
@@ -144,7 +144,7 @@ const productManagementLoad = async (req, res) => {
     if (req.query.page) {
       page = parseInt(req.query.page, 10); 
     }
-    const limit = 3;
+    const limit = 10;
     
     // Query to fetch products with pagination and search
     const productData = await productModel
@@ -181,8 +181,10 @@ const editProductLoad = async(req,res)=>{
   try {
     const productId = req.query.id;
     const product = await productModel.findById({_id:productId})
+    const category = await categoryModel.find({isDeleted:false,isListed:true})
     res.render('editProduct',{
-      product:product
+      product:product,
+      category:category
     })
   } catch (error) {
     console.log("error loadin edit product :"+error);
@@ -227,7 +229,6 @@ const editProduct = async (req, res) => {
         },
         // createdBy:admin.username
       });
-      console.log(newProduct);
       
       if (newProduct) {
         return res.redirect("/admin");
@@ -365,25 +366,25 @@ const unblockUser = async (req, res) => {
 // Category management page loading
 const categoryManagementLoad = async (req, res) => {
   try {
-    const search = req.query.search || ""; // Get the search query from the request
-    const page = parseInt(req.query.page) || 1; // Ensure page is an integer and default to 1 if not provided
-    const limit = 4;
+    const search = req.query.search || ""; // Get search query
+    const page = parseInt(req.query.page) || 1; // Default page is 1
+    const limit = 10; // Limit per page
     const skip = (page - 1) * limit;
 
-    // Fetch category data with pagination, search, and sorting
+    // Fetch categories with pagination, search, and sorting
     const categoryData = await categoryModel
       .find({
         isDeleted: false,
-        name: { $regex: ".*" + search + ".*", $options: "i" }, // Case-insensitive search on 'name'
+        categoryName: { $regex: ".*" + search + ".*", $options: "i" },
       })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
+    
 
-    // Count total documents that match the search criteria
     const totalCategories = await categoryModel.countDocuments({
       isDeleted: false,
-      name: { $regex: ".*" + search + ".*", $options: "i" }, // Case-insensitive search on 'name'
+      categoryName: { $regex: ".*" + search + ".*", $options: "i" },
     });
 
     const totalPages = Math.ceil(totalCategories / limit);
@@ -394,7 +395,7 @@ const categoryManagementLoad = async (req, res) => {
       totalPages: totalPages,
       currentPage: page,
       totalCategories: totalCategories,
-      searchQuery: search, // Pass the search query to the view
+      searchQuery: search, // Pass search query to view
     });
   } catch (error) {
     console.log("Error loading category management page: " + error);
