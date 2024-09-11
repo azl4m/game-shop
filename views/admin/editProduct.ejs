@@ -44,6 +44,20 @@
                 </div>
               </div>
               <div class="row">
+                <label for="selected images">Selected images</label>
+                <% for(let i=0;i<product.images.length;i++){ %>
+                  <div class="col-md-12" style="display: block;">
+                    <div class="mb-4" style="display: block;">
+                      <td>
+                        <input type="hidden" name="" id="imageDatas" value="<%=product.images[i]%>">
+                        <img src="../../public/<%=product.images[i]%>" alt="product image" >
+                        <i onclick="deleteSingleImage('<%=product.images[i]%>','<%=product._id%>')" style="position: absolute; margin-left: .5rem; cursor: pointer;"></i>
+                      </td>
+                    </div>
+                  </div>
+                  <%}%>
+              </div>
+              <div class="row">
                 <label class="pm-label" for="pm-images"
                   >Product Images (Minimum 3)</label
                 >
@@ -165,5 +179,21 @@
     </div>
 
     <%- include("../partials/admin/footer.ejs")%>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script>
+      function deleteSingleImage(imageId,productId){
+        $.ajax({
+          url:"/admin/deleteImage",
+          method:'post',
+          data:{imageNameToServer:imageId,productIdToServer:productId},
+          success:(response=>{
+            if(response.status===true){
+              window.location.reload()
+            }
+          })
+        })
+      }
+    </script>
   </div>
 </div>
+

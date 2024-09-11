@@ -44,7 +44,7 @@ function checkFileType(file, cb) {
 
 //for sharp
 
-processImages = async (files,name) => {
+const processImages = async (files,name) => {
   const processedFiles = [];
   let i = 0;
   for (const file of files) {
@@ -110,12 +110,13 @@ const addProduct = async (req, res) => {
 
       
       const images = await processImages(req.files,req.body.productName);
-
+      const categoryId = await categoryModel.findOne({categoryName:req.body.category})
       const newProduct = new productModel({
         productName: productName,
         description: description,
         price: price,
         images: images,
+        category:categoryId._id,
         variant: [{ version, platforms, stock }],
         // createdBy:admin.username
       });
@@ -144,7 +145,7 @@ const productManagementLoad = async (req, res) => {
     if (req.query.page) {
       page = parseInt(req.query.page, 10); 
     }
-    const limit = 10;
+    const limit = 3;
     
     // Query to fetch products with pagination and search
     const productData = await productModel
@@ -181,7 +182,7 @@ const editProductLoad = async(req,res)=>{
   try {
     const productId = req.query.id;
     const product = await productModel.findById({_id:productId})
-    const category = await categoryModel.find({isDeleted:false,isListed:true})
+    const category = await categoryModel.find({})
     res.render('editProduct',{
       product:product,
       category:category
@@ -213,7 +214,7 @@ const editProduct = async (req, res) => {
         req.body.platforms[1],
         req.body.platforms[2],
         req.body.platforms[3],
-      ]:product.variant[platform]
+      ]:product.variant[platforms]
 
       // const admin = await userModel.findById({_id:req.session.user})
 
@@ -237,12 +238,18 @@ const editProduct = async (req, res) => {
       .status(500)
       .json({ message: "Product editing failed", product: newProduct });
     } catch (error) {
-      console.log("error");
+      console.log("error :"+error);
 
       res.status(500).json({ message: error.message });
     }
   });
 };
+//deleteImage
+const deleteSingleImage = async(req,res)=>{
+
+}
+
+
 //unlist and restore product
 const unlistProduct = async(req,res)=>{
   try {
@@ -454,6 +461,10 @@ const editCategory = async (req, res) => {
   try {
     const categoryId = req.query.id;
     const categoryName = req.body.categoryName;
+    const existingCat = await categoryModel.findOne({categoryName:categoryName})
+    if(existingCat){
+      return res.status(400).json({error:"Category name already exists please choose another one"})
+    }
     const category = await categoryModel.findById({ _id: categoryId });
     const updateCategory = await category.updateOne({
       $set: { categoryName: categoryName },
