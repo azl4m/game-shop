@@ -114,12 +114,11 @@
                               />
                         </div>
                         <label class="pm-label">Platforms</label>
-                        <label class="pm-label">Platforms</label>
                 <div class="pm-checkbox-group">
-                  <label class="pm-checkbox-label" for="pm-platformPC">
+                  <!-- <label class="pm-checkbox-label" for="pm-platformPC">
                     PC
-                  </label>
-                  <input
+                  </label> -->
+                  <!-- <input
                     type="checkbox"
                     id="pm-platformPC"
                     name="platforms[0]"
@@ -151,7 +150,13 @@
                     id="pm-platformXbox"
                     name="platforms[3]"
                     value="Xbox"
-                  />
+                  /> -->
+                  <select id="platforms" name="platforms" multiple style="display: block;">
+                    <option value="PC">PC</option>
+                    <option value="PS6">PS6</option>
+                    <option value="Xbox">Xbox</option>
+                    <option value="Steam">Steam</option>
+                  </select>
                 </div>
                      </div>
                </div>

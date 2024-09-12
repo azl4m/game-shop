@@ -2,6 +2,7 @@ const userModel = require("../../models/userModel");
 const bcrypt = require("bcrypt");
 const nodeMailer = require("nodemailer");
 const productModel = require("../../models/productModel");
+const cartModel = require("../../models/cartModel")
 
 const OTP_TIMEOUT = 30 * 1000;
 
@@ -313,6 +314,78 @@ const productDetailsLoad = async (req, res) => {
     res.status(500).send("Server error");
   }
 };
+
+//add to cart
+const addToCart = async(req,res)=>{
+  try {
+    const productId = req.query.id
+    const quantity = parseInt(req.query.quantity)
+    const platform = req.query.platform
+    const userId = req.session.user
+    let cart = await cartModel.findOne({userId:userId})
+    if (cart) {
+      const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
+      if (itemIndex > -1) {
+        cart.items[itemIndex].quantity += quantity;
+      } else {
+        cart.items.push({ productId, quantity ,platform});
+      }
+      cart.updatedAt = Date.now();
+      await cart.save();
+    } else {
+      cart = new cartModel({ userId, items: [{ productId, quantity, platform }] });
+      await cart.save();
+    }
+    res.status(200).json(cart);
+   
+  } catch (error) {
+    console.log("error at add to cart :"+error);
+    return res.status(500).json({message:error.message})
+    
+  }
+}
+//get cart
+const cartLoad = async(req,res)=>{
+  try {
+    const userId = req.session.user;
+    const user = await userModel.findOne({ _id: userId });
+
+    if (user) {
+      // Fetch the cart for the user
+      const cart = await cartModel.findOne({ userId: userId }).populate({
+        path: 'items.productId',
+        model: 'Product',
+        select: 'productName images price' // Include only necessary fields
+      });
+
+      if (cart) {
+        // Extract product IDs and quantity for further use
+        const items = cart.items.map(item => ({
+          productId: item.productId._id,
+          quantity: item.quantity,
+          productName: item.productId.productName,
+          images: item.productId.images,
+          price: item.productId.price 
+        }));
+
+        res.render('cart', {
+          cart: cart,
+          items: items,
+          userDetails: user
+        });
+      } else {
+        res.status(404).json({ message: "Cart not found" });
+      }
+    } else {
+      res.status(400).json({ message: "User not found" });
+    }
+  } catch (error) {
+    console.log("error loading cart :"+error);
+    res.status(500).json({message:"Internal server error"})
+    
+  }
+}
+
 module.exports = {
   loadHomePage,
   pageNotFound,
@@ -325,4 +398,6 @@ module.exports = {
   resendOtp,
   logout,
   productDetailsLoad,
+  addToCart,
+  cartLoad
 };

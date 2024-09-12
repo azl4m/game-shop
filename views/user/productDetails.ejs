@@ -18,15 +18,17 @@
             <p>Home / T-Shirt</p>
             <h1><%=product.productName%></h1>
             <h4>₹<%=product.price%></h4>
-            <select>
+            <select id="variantSelect">
                 <option>Select Variant</option>
                 <% product.variant[0].platforms.forEach(function(platform) { %>
-                <option><%= platform %></option>
+                <% if (platform !== null) { %>
+                    <option id="platform" value="<%=platform%>"><%= platform %></option>
+                <% } %>
                 <% }); %>
             </select>
-            <input type="number" value="1">
-            <a href="" class="template-btn">Add To Cart</a>
-
+            <input type="number" value="1" id="quantity">
+            <a href="#" id="addToCartBtn" class="template-btn">Add To Cart</a>
+        
             <h3>Product Details <i class="template-fa template-fa-indent"></i></h3>
             <br>
             <p><%=product.description%></p>
@@ -69,4 +71,26 @@
         </div>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const quantityInput = document.getElementById('quantity');
+        const addToCartBtn = document.getElementById('addToCartBtn');
+        const platformInput = document.getElementById('platform')
+        const productId = '<%= product._id %>'; // Assuming you have the product ID in your template
+
+        function updateAddToCartLink() {
+            const quantity = quantityInput.value;
+            const platform = platformInput.value
+            const baseUrl = '/addToCart';
+            addToCartBtn.href = `${baseUrl}?id=${productId}&quantity=${quantity}&platform=${platform}`;
+        }
+
+        // Update link on quantity change
+        quantityInput.addEventListener('input', updateAddToCartLink);
+
+        // Initial update
+        updateAddToCartLink();
+    });
+</script>
+
 <%- include("../partials/user/footer.ejs")%>

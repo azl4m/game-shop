@@ -38,8 +38,9 @@ user.post("/login",userController.loginUser)
 user.get("/logout",userController.logout)
 //for product details page
 user.get('/productDetails',userController.productDetailsLoad)
-
-
+//for cart
+user.get("/addToCart",addminAuth.isLogout,auth.isLogin,userController.addToCart)
+user.get("/cart",addminAuth.isLogout,auth.isLogin,userController.cartLoad)
 
 
 //for page not found
