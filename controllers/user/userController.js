@@ -15,6 +15,23 @@ const securePassword = async (password) => {
     console.log("error hashing password :" + error);
   }
 };
+//cart value calculation
+const calculateCartTotals = (cart) => {
+  let subtotal = 0;
+
+  // Loop through the items in the cart and calculate the subtotal
+  cart.items.forEach(item => {
+    const price = item.productId.price || 0;  
+    const quantity = item.quantity || 0;     
+
+    subtotal += price * quantity;  // Calculate subtotal
+  });
+
+  const tax = Math.floor(subtotal * 0.18); //  18% tax rate
+  const total = Math.floor(subtotal + tax);
+
+  return { subtotal, tax, total };
+};
 
 //for otp generation
 function generateOTP() {
@@ -336,7 +353,7 @@ const addToCart = async(req,res)=>{
       cart = new cartModel({ userId, items: [{ productId, quantity, platform }] });
       await cart.save();
     }
-    res.status(200).json(cart);
+    res.redirect(`/productDetails?id=${productId}`)
    
   } catch (error) {
     console.log("error at add to cart :"+error);
@@ -359,6 +376,7 @@ const cartLoad = async(req,res)=>{
       });
 
       if (cart) {
+        const{subtotal,tax,total} = calculateCartTotals(cart)
         // Extract product IDs and quantity for further use
         const items = cart.items.map(item => ({
           productId: item.productId._id,
@@ -371,7 +389,10 @@ const cartLoad = async(req,res)=>{
         res.render('cart', {
           cart: cart,
           items: items,
-          userDetails: user
+          userDetails: user,
+          subtotal:subtotal,
+          tax:tax,
+          total:total
         });
       } else {
         res.status(404).json({ message: "Cart not found" });
@@ -385,6 +406,57 @@ const cartLoad = async(req,res)=>{
     
   }
 }
+//remove from cart
+const removeFromCart = async(req, res) => {
+  try {
+    const { itemId } = req.body;
+    const userId = req.session.user;
+    
+    const cart = await cartModel.findOne({ userId });
+    
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found' });
+    }
+    
+    // Remove the item from the cart
+    const filteredItems = cart.items.filter(item => item.productId.toString() !== itemId);
+    cart.items = filteredItems;
+
+    // Save the updated cart
+    await cart.save();
+
+    res.redirect("/cart");
+  } catch (error) {
+    console.log('Error removing item from cart:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+const updateCartQuantity = async (req, res) => {
+  try {
+    
+    const { itemId, newQuantity } = req.body;    
+    const userId = req.session.user;
+
+    const cart = await cartModel.findOne({ userId });
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found' });
+    }
+
+    // Find the item in the cart and update its quantity
+    const itemIndex = cart.items.findIndex(item => item.productId.toString() === itemId);
+    if (itemIndex !== -1) {
+      cart.items[itemIndex].quantity = newQuantity;
+    }
+
+    await cart.save();
+    res.status(200).json({ message: 'Cart updated successfully' });
+  } catch (error) {
+    console.error('Error updating cart quantity:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
 
 module.exports = {
   loadHomePage,
@@ -399,5 +471,7 @@ module.exports = {
   logout,
   productDetailsLoad,
   addToCart,
-  cartLoad
+  cartLoad,
+  removeFromCart,
+  updateCartQuantity
 };

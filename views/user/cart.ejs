@@ -17,12 +17,12 @@
                         <p><%=items[i].productName%></p>
                         <small></small>
                         <br>
-                        <a href="">Remove</a>
+                        <a href="#" class="remove-item" data-id="<%= items[i].productId%>">Remove</a>
                     </div>
                 </div>
             </td>
-            <td><input type="number" value="<%=items[i].quantity%>"></td>
-            <td><%=items[i].price%></td>
+            <td><input style="width: fit-content;" type="number" class="cart-quantity" value="<%=items[i].quantity%>" data-id="<%= items[i].productId%>"></td>
+            <td class="itemprice"><%=items[i].price%></td>
         </tr>
             <%}%>
 
@@ -31,18 +31,93 @@
         <table>
             <tr>
                 <td>Subtotal</td>
-                <td>$200.00</td>
+                <td id="subtotal"><%=subtotal%></5></td>
             </tr>
             <tr>
                 <td>Tax</td>
-                <td>$35.00</td>
+                <td id="tax"><%=tax%></td>
             </tr>
             <tr>
                 <td>Total</td>
-                <td>$230.00</td>
+                <td id="total"><%=total%></td>
             </tr>
         </table>
     </div>
 </div>
 
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const subtotalid = document.getElementById("subtotal")
+        const taxid = document.getElementById('tax')
+        const totalid = document.getElementById('total')
+
+        const quantityInputs = document.querySelectorAll('.cart-quantity');
+
+    quantityInputs.forEach(input => {
+        input.addEventListener('change', async (event) => {
+            const newQuantity = event.target.value;
+            const itemId = event.target.getAttribute('data-id');
+
+            if (newQuantity < 1) {
+                alert('Quantity cannot be less than 1');
+                return;
+            }
+
+            // Send the new quantity to the server
+            try {
+                const response = await fetch(`/updateCartQuantity`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ itemId, newQuantity })
+                });
+
+                if (response.ok) {
+                    // Reload the page to show updated cart or update the subtotal dynamically
+                    window.location.reload();
+                } else {
+                    console.error('Failed to update quantity');
+                }
+            } catch (error) {
+                console.error('Error updating quantity:', error);
+            }
+        });
+    });
+
+        
+
+
+        
+      const removeLinks = document.querySelectorAll('.remove-item');
+    
+      removeLinks.forEach(link => {
+        link.addEventListener('click', async (event) => {
+          event.preventDefault(); // Prevent the default link behavior
+          const itemId = link.getAttribute('data-id'); // Get the item ID
+          console.log("item :"+itemId);
+          
+          // Send a request to the server to remove the item
+          try {
+            const response = await fetch(`/removeFromCart`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ itemId })
+            });
+    
+            if (response.ok) {
+              window.location.reload(); // Reload the page after removal
+            } else {
+              console.error('Failed to remove item from cart');
+            }
+          } catch (error) {
+            console.error('Error removing item from cart:', error);
+          }
+        });
+      });
+    });
+    </script>
+    
 <%- include("../partials/user/footer.ejs")%>

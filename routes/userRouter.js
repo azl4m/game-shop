@@ -41,7 +41,8 @@ user.get('/productDetails',userController.productDetailsLoad)
 //for cart
 user.get("/addToCart",addminAuth.isLogout,auth.isLogin,userController.addToCart)
 user.get("/cart",addminAuth.isLogout,auth.isLogin,userController.cartLoad)
-
+user.post('/removeFromCart',addminAuth.isLogout,auth.isLogin,userController.removeFromCart)
+user.post('/updateCartQuantity',addminAuth.isLogout,auth.isLogin,userController.updateCartQuantity)
 
 //for page not found
 user.get("/pageNotFound",userController.pageNotFound)
