@@ -74,6 +74,10 @@ const { Schema } = mongoose;
     type: Date,
     default: Date.now,
   },
+  token:{
+    type:String,
+    default:''
+}
 });
 
 const User = mongoose.model("User", userSchema);

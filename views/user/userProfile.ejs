@@ -1,4 +1,6 @@
 <%- include("../partials/user/header.ejs")%>
+
+
 <div class="body-userprofile">
     
 
@@ -44,7 +46,7 @@
                     <a href="/addressManagement">Addresses</a><br/>
                     <a href="/ordersManagement">Orders</a><br/>
                     <p>Links</p>
-                    <a href="">Forgot Password</a><br/>
+                    <!-- <a class="template-btn" href="/forgotPassword">Forgot Password</a><br/> -->
                 </div>
             </div>
             <div class="col-md-8">
@@ -74,6 +76,7 @@
                                         <p><%=userDetails.email%></p>
                                     </div>
                                 </div>
+                                
                                 <div class="row">
                                     <div class="col-md-6">
                                         <label>Phone</label>
@@ -145,5 +148,7 @@
     </form>           
 </div>
 </div>
+<script>
+</script>
 
 <%- include("../partials/user/footer.ejs")%>

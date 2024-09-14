@@ -4,6 +4,7 @@ const nodeMailer = require("nodemailer");
 const productModel = require("../../models/productModel");
 const cartModel = require("../../models/cartModel")
 const addressModel = require('../../models/addressModel')
+const randomString = require('randomstring')
 
 const OTP_TIMEOUT = 30 * 1000;
 
@@ -508,6 +509,94 @@ const userProfileLoad = async(req,res)=>{
     
   }
 }
+
+const sendForgotPassword = async (username,email, token) => {
+  try {
+    const transporter = nodeMailer.createTransport({
+      service: "gmail",
+      port: 587,
+      secure: false,
+      requireTLS: true,
+      auth: {
+        user: process.env.NODE_MAILER_EMAIL,
+        pass: process.env.NODE_MAILER_PASSWORD,
+      },
+    });
+    const info = await transporter.sendMail({
+      from: process.env.NODE_MAILER_EMAIL,
+      to: email,
+      subject: "Reset Your Password",
+      text: ``,
+      html: `<h6>Hi ${username},</h6><br>
+      <p>Click here to <a href="http://127.0.0.1:3000/resetPassword?token=${token}"> rest your password</p>`,
+    });
+    return info.accepted.length > 0;
+  } catch (error) {
+    console.log("error sending mail :" + error);
+    return false;
+  }
+};
+
+const forgotPassword = async(req,res)=>{
+  try {
+    const email = req.body.email
+    const user = await userModel.findOne({email:email})
+    if(user){
+      const token = randomString.generate()
+      const updateUser = await userModel.updateOne({email:email},{
+        $set:{token:token}
+      })
+      const sendMail = await sendForgotPassword(user.username,email,token)
+      if(sendMail){
+        return res.status(200).json({message:"Please Check Your Email To Reset Your Password",redirectUrl:"/login"})
+      }else{
+        return res.status(500).json({message:"Error sending email"})
+      }
+    }else{
+      return res.status(500).json({ message: 'User not found Please Check your email' });
+    }
+
+  } catch (error) {
+    console.log("error at forgot password :"+error);
+    return res.status(500).json({message:"Internal Server Error"})
+  }
+}
+const resetPasswordLoad = async(req,res)=>{
+  try {
+    const token = req.query.token
+    const user = await userModel.findOne({token:token})
+    if(user){
+      res.render('resetPassword',{user:user})
+    }
+    else{
+      return res.status(500).json({message:"No user found"})
+    }
+  } catch (error) {
+    console.log("error loading reset password page :"+error);
+    
+  }
+}
+const resetPassword = async(req,res)=>{
+  try {
+    const {userid,password} = req.body
+    const sPassword = await securePassword(password)
+    const reset = await userModel.updateOne({_id:userid},{
+      $set:{
+        password:sPassword,
+        token:""
+      }
+    })
+    if(reset){
+      res.status(200).json({message:"Password reset Succesfully"})
+    }else{
+      res.status(400).json({message:"Internal Server Error"})
+    }
+
+  } catch (error) {
+    console.log("error resetting password :"+error);
+    
+  }
+}
 module.exports = {
   loadHomePage,
   pageNotFound,
@@ -526,5 +615,8 @@ module.exports = {
   updateCartQuantity,
   addressManagementLoad,
   addAddress,
-  userProfileLoad
+  userProfileLoad,
+  forgotPassword,
+  resetPasswordLoad,
+  resetPassword
 };

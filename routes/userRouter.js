@@ -46,6 +46,10 @@ user.post('/updateCartQuantity',addminAuth.isLogout,auth.isLogin,userController.
 //address management
 user.get('/addressManagement',addminAuth.isLogout,auth.isLogin,userController.addressManagementLoad)
 user.post('/addAddress',addminAuth.isLogout,auth.isLogin,userController.addAddress)
+//forgot password
+user.post("/forgotPassword",addminAuth.isLogout,auth.isLogout,userController.forgotPassword)
+user.get("/resetPassword",addminAuth.isLogout,auth.isLogout,userController.resetPasswordLoad)
+user.post('/resetPassword',addminAuth.isLogout,auth.isLogout,userController.resetPassword)
 //user profile
 user.get('/userProfile',addminAuth.isLogout,auth.isLogin,userController.userProfileLoad)
 //for page not found
