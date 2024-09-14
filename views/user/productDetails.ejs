@@ -1,5 +1,51 @@
 <%- include("../partials/user/header.ejs")%>
+<style>
+    /* Toast notification styles */
+.toast {
+  visibility: hidden;
+  min-width: 250px;
+  margin-left: -125px;
+  background-color: #4CAF50; /* Green background */
+  color: white;
+  text-align: center;
+  border-radius: 2px;
+  padding: 16px;
+  position: fixed;
+  z-index: 1;
+  left: 50%;
+  bottom: 30px;
+  font-size: 17px;
+}
 
+/* Show the toast */
+.toast.show {
+  visibility: visible;
+  -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+  animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+/* Animations */
+@-webkit-keyframes fadein {
+  from {bottom: 0; opacity: 0;} 
+  to {bottom: 30px; opacity: 1;}
+}
+
+@-webkit-keyframes fadeout {
+  from {bottom: 30px; opacity: 1;} 
+  to {bottom: 0; opacity: 0;}
+}
+
+@keyframes fadein {
+  from {bottom: 0; opacity: 0;} 
+  to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes fadeout {
+  from {bottom: 30px; opacity: 1;} 
+  to {bottom: 0; opacity: 0;}
+}
+
+</style>
 <div class="template-small-container single-product">
     <div class="template-row">
         <div class="template-col-2">
@@ -42,6 +88,10 @@
         <p>View More</p>
     </div>
 </div>
+<div id="toast" class="toast">
+    Product added to the cart successfully!
+  </div>
+  
 <!-- Products -->
 <div class="template-small-container">
     <div class="template-row">
@@ -72,6 +122,15 @@
     </div>
 </div>
 <script>
+    // Function to show the toast notification
+function showToast() {
+  const toast = document.getElementById("toast");
+  toast.className = "toast show";
+  setTimeout(() => {
+    toast.className = toast.className.replace("show", "");
+  }, 3000); // The toast will disappear after 3 seconds
+}
+
     document.addEventListener('DOMContentLoaded', function () {
         const quantityInput = document.getElementById('quantity');
         const addToCartBtn = document.getElementById('addToCartBtn');
@@ -91,6 +150,27 @@
         // Initial update
         updateAddToCartLink();
     });
+    document.addEventListener('DOMContentLoaded', () => {
+    const addToCartButton = document.querySelector('.template-btn');
+
+    addToCartButton.addEventListener('click', async (event) => {
+      event.preventDefault(); // Prevent default page reload
+      const url = addToCartButton.getAttribute('href'); // URL for addToCart
+
+      try {
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          showToast(); // Show toast notification
+          setTimeout(() => {
+            window.location.href = data.redirectUrl; // Redirect after a delay
+          }, 2000); // 2-second delay before redirecting
+        }
+      } catch (error) {
+        console.error('Error adding to cart:', error);
+      }
+    });
+  });
 </script>
 
 <%- include("../partials/user/footer.ejs")%>

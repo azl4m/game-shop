@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const nodeMailer = require("nodemailer");
 const productModel = require("../../models/productModel");
 const cartModel = require("../../models/cartModel")
+const addressModel = require('../../models/addressModel')
 
 const OTP_TIMEOUT = 30 * 1000;
 
@@ -353,7 +354,7 @@ const addToCart = async(req,res)=>{
       cart = new cartModel({ userId, items: [{ productId, quantity, platform }] });
       await cart.save();
     }
-    res.redirect(`/productDetails?id=${productId}`)
+    res.status(200).json({ message: 'Product added to cart', redirectUrl: `/productDetails?id=${productId}` }); // Send success response with the redirect URL
    
   } catch (error) {
     console.log("error at add to cart :"+error);
@@ -448,7 +449,6 @@ const updateCartQuantity = async (req, res) => {
     if (itemIndex !== -1) {
       cart.items[itemIndex].quantity = newQuantity;
     }
-
     await cart.save();
     res.status(200).json({ message: 'Cart updated successfully' });
   } catch (error) {
@@ -456,8 +456,58 @@ const updateCartQuantity = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+const addressManagementLoad = async(req,res)=>{
+  try {
+    const userId = req.session.user
+    const user = await userModel.findOne({_id:userId})
+    const addresses = await addressModel.find({userId})
+    res.render('addressManagement',{
+      userDetails:user,
+      addresses:addresses
+    })
+  } catch (error) {
+    console.log("error in address management load :"+error);
+    
+  }
+}
 
+const addAddress = async(req,res)=>{
+  try {
+    const { userId, street, city, state, postalCode, country, phoneNumber, isDefault } = req.body;
+    const newAddress = new addressModel({
+      userId,
+      street,
+      city,
+      state,
+      postalCode,
+      country,
+      phoneNumber,
+      isDefault
+    });
 
+    await newAddress.save();
+
+    // Add address to user's addresses array
+    await userModel.findByIdAndUpdate(userId, { $push: { addresses: newAddress._id } });
+
+    res.redirect("/addressManagement")
+  } catch (error) {
+    console.log("error adding address :"+error);
+    
+  }
+}
+const userProfileLoad = async(req,res)=>{
+  try {
+    const userid = req.session.user
+    const user = await userModel.findOne({_id:userid})
+    res.render('userProfile',{
+      userDetails:user
+    })
+  } catch (error) {
+    console.log("error loading user profile :"+error);
+    
+  }
+}
 module.exports = {
   loadHomePage,
   pageNotFound,
@@ -473,5 +523,8 @@ module.exports = {
   addToCart,
   cartLoad,
   removeFromCart,
-  updateCartQuantity
+  updateCartQuantity,
+  addressManagementLoad,
+  addAddress,
+  userProfileLoad
 };

@@ -43,7 +43,11 @@ user.get("/addToCart",addminAuth.isLogout,auth.isLogin,userController.addToCart)
 user.get("/cart",addminAuth.isLogout,auth.isLogin,userController.cartLoad)
 user.post('/removeFromCart',addminAuth.isLogout,auth.isLogin,userController.removeFromCart)
 user.post('/updateCartQuantity',addminAuth.isLogout,auth.isLogin,userController.updateCartQuantity)
-
+//address management
+user.get('/addressManagement',addminAuth.isLogout,auth.isLogin,userController.addressManagementLoad)
+user.post('/addAddress',addminAuth.isLogout,auth.isLogin,userController.addAddress)
+//user profile
+user.get('/userProfile',addminAuth.isLogout,auth.isLogin,userController.userProfileLoad)
 //for page not found
 user.get("/pageNotFound",userController.pageNotFound)
 user.get('/',addminAuth.isLogout,userController.loadHomePage);

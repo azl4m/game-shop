@@ -1,0 +1,83 @@
+<%- include("../partials/user/header.ejs") %>
+
+
+<!-- Form to add a new address -->
+ <div class="emp-profile">
+    
+<h2>Manage Addresses</h2>
+    <form action="/addAddress" method="POST" id="addressForm">
+        <input type="hidden" name="userId" value="<%= userDetails._id %>">
+        <label for="street">Street:</label>
+        <span id="error1" class="error-message"></span>
+        <input type="text" id="street" name="street" required>
+        
+        <label for="city">City:</label>
+        <span id="error2" class="error-message"></span>
+        <input type="text" id="city" name="city" required>
+      
+        <label for="state">State:</label>
+        <span id="error3" class="error-message"></span>
+        <input type="text" id="state" name="state" required>
+      
+        <label for="postalCode">Postal Code:</label>
+        <span id="error4" class="error-message"></span>
+        <input type="text" id="postalCode" name="postalCode" required>
+      
+        <label for="country">Country:</label>
+        <span id="error5" class="error-message"></span>
+        <input type="text" id="country" name="country" required>
+      
+        <label for="phoneNumber">Phone Number:</label>
+        <span id="error6" class="error-message"></span>
+        <input type="text" id="phoneNumber" name="phoneNumber" required>
+      
+        <label for="isDefault">Set as default:</label>
+        <input type="checkbox" id="isDefault" name="isDefault">
+      
+        <input type="submit">
+      </form>
+ </div>
+
+
+<hr>
+
+<!-- List of addresses -->
+ <%if(typeof addresses !== 'undefined'){%>
+
+<div class="container">
+    <h3>Your Addresses</h3>
+    <% addresses.forEach(address => { %>
+        <div>
+          <p><%= address.street %>, <%= address.city %>, <%= address.state %> - <%= address.postalCode %>, <%= address.country %></p>
+          <p>Phone: <%= address.phoneNumber %></p>
+          <form action="/removeAddress/<%= address._id %>" method="POST">
+            <button type="submit">Remove</button>
+          </form>
+        </div>
+      <% }) %>
+</div>
+
+<%}%>
+
+<script>
+  const streetid = document.getElementById("street")
+  const cityid = document.getElementById("city")
+  const stateid = document.getElementById("state")
+  const postalid = document.getElementById("postalCode")
+  const countryid = document.getElementById("country")
+  const phoneid = document.getElementById("phoneNumber")
+  const error1 = document.getElementById('error1')
+  const error2 = document.getElementById('error2')
+  const error3 = document.getElementById('error3')
+  const error4 = document.getElementById('error4')
+  const error5 = document.getElementById('error5')
+  const error6 = document.getElementById('error6')
+  const formid = document.getElementById("addressForm")
+
+  function streetValidate(){
+
+  }
+
+</script>
+
+<%- include("../partials/user/footer.ejs") %>
