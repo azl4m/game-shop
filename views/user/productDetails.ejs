@@ -5,7 +5,6 @@
   visibility: hidden;
   min-width: 250px;
   margin-left: -125px;
-  background-color: #4CAF50; /* Green background */
   color: white;
   text-align: center;
   border-radius: 2px;
@@ -45,23 +44,41 @@
   to {bottom: 0; opacity: 0;}
 }
 
+.zoom {
+  position: absolute;
+  border: 1px solid #000;
+  width: 100px; /* Adjust size */
+  height: 100px; /* Adjust size */
+  background-repeat: no-repeat;
+  background-size: 200%; /* Adjust to control zoom level */
+  pointer-events: none;
+  visibility: hidden;
+}
+
+
 </style>
 <div class="template-small-container single-product">
     <div class="template-row">
         <div class="template-col-2">
-            <img src="<%=product.images[0]%>" width="100%" id="ProductImg">
+          <div class="img-container" style="position: relative; width: 100%; max-width: 400px;">
+            <img src="<%=product.images[0]%>" width="100%" id="ProductImg" style="max-width: 100%; object-fit: contain;" >
+            <div class="zoom" id="zoomLens" style="visibility: hidden; position: absolute; width: 100px; height: 100px; border: 1px solid #d3d3d3;">
+
+            </div>
+          </div>
+            
 
             <div class="small-img-row">
                 <%for(let i=0;i<product.images.length;i++){%>
                 <div class="small-img-col">
-                    <img src="<%=product.images[i]%>" width="100%" class="small-img" >
+                    <img src="<%=product.images[i]%>" width="100%" class="small-img" data-large="<%= product.images[i] %>">
                 </div>
                 <%}%>
             </div>
 
         </div>
         <div class="template-col-2">
-            <p>Home / T-Shirt</p>
+            <p>Home / <%=product.productName%></p>
             <h1><%=product.productName%></h1>
             <h4>₹<%=product.price%></h4>
             <select id="variantSelect">
@@ -89,7 +106,6 @@
     </div>
 </div>
 <div id="toast" class="toast">
-    Product added to the cart successfully!
   </div>
   
 <!-- Products -->
@@ -123,54 +139,152 @@
 </div>
 <script>
     // Function to show the toast notification
-function showToast() {
+function showToast(data,result) {
+  // toast.className.replace("show","");
   const toast = document.getElementById("toast");
   toast.className = "toast show";
+  toast.innerHTML = data
+  if(result){
+    toast.style.backgroundColor = "#4CAF50"
+  }
+  else{
+    toast.style.backgroundColor = "red"
+  }
   setTimeout(() => {
     toast.className = toast.className.replace("show", "");
   }, 3000); // The toast will disappear after 3 seconds
 }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        const quantityInput = document.getElementById('quantity');
-        const addToCartBtn = document.getElementById('addToCartBtn');
-        const platformInput = document.getElementById('platform')
-        const productId = '<%= product._id %>'; 
+document.addEventListener('DOMContentLoaded', function () {
+    const quantityInput = document.getElementById('quantity');
+    const addToCartBtn = document.getElementById('addToCartBtn');
+    const variantSelect = document.getElementById('variantSelect'); // Select element for platform
+    const productId = '<%= product._id %>'; 
 
-        function updateAddToCartLink() {
-            const quantity = quantityInput.value;
-            const platform = platformInput.value
-            const baseUrl = '/addToCart';
-            addToCartBtn.href = `${baseUrl}?id=${productId}&quantity=${quantity}&platform=${platform}`;
+    function updateAddToCartLink() {
+        const quantity = quantityInput.value;
+        if(quantity<=0){
+          quantityInput.value = 1
         }
+        const platform = variantSelect.value; // Get selected platform from dropdown
+        if (platform !== "Select Variant") {
+            const baseUrl = '/addToCart';
+            addToCartBtn.setAttribute('data-href', `${baseUrl}?id=${productId}&quantity=${quantity}&platform=${platform}`);
+        } else {
+            addToCartBtn.setAttribute('data-href', '#'); // Disable link if platform is invalid
+        }
+    }
 
-        // Update link on quantity change
-        quantityInput.addEventListener('input', updateAddToCartLink);
+    // Update link on quantity or platform change
+    quantityInput.addEventListener('input', updateAddToCartLink);
+    variantSelect.addEventListener('change', updateAddToCartLink);
 
-        // Initial update
-        updateAddToCartLink();
-    });
-    document.addEventListener('DOMContentLoaded', () => {
-    const addToCartButton = document.querySelector('.template-btn');
+    // Initial update
+    updateAddToCartLink();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const addToCartButton = document.getElementById('addToCartBtn');
 
     addToCartButton.addEventListener('click', async (event) => {
       event.preventDefault(); // Prevent default page reload
-      const url = addToCartButton.getAttribute('href'); // URL for addToCart
+      const platform = document.getElementById('variantSelect').value;
+
+      // Check if platform is valid before making the request
+      if (platform === "Select Variant") {
+        showToast("Please select a platform",0)
+        return;
+      }
+
+      const url = addToCartButton.getAttribute('data-href'); // Fetch URL stored in data-href
 
       try {
         const response = await fetch(url);
         if (response.ok) {
           const data = await response.json();
-          showToast(); // Show toast notification
+          showToast(data.message||"Product added succesfully !",1) // Show toast notification
           setTimeout(() => {
             window.location.href = data.redirectUrl; // Redirect after a delay
           }, 2000); // 2-second delay before redirecting
+        }
+        else{
+          showToast("Error adding product",0)
         }
       } catch (error) {
         console.error('Error adding to cart:', error);
       }
     });
-  });
+});
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    const productImg = document.getElementById('ProductImg');
+    const zoomLens = document.getElementById('zoomLens');
+    const smallImages = document.querySelectorAll('.small-img');
+
+    // Function to set the zoom lens image and main image
+    function setZoomImage(src) {
+        productImg.src = src;
+        zoomLens.style.backgroundImage = `url(${src})`;
+    }
+
+    // Function to handle zoom
+    function zoom(e) {
+        const rect = productImg.getBoundingClientRect();
+        const x = e.clientX - rect.left; // Get mouse X position relative to the image
+        const y = e.clientY - rect.top;  // Get mouse Y position relative to the image
+
+        // Ensure the cursor is inside the image bounds
+        if (x < 0 || y < 0 || x > productImg.offsetWidth || y > productImg.offsetHeight) {
+            zoomLens.style.visibility = 'hidden'; // Hide the zoom lens if outside the image
+            return;
+        } else {
+            zoomLens.style.visibility = 'visible'; // Show the zoom lens
+        }
+
+        // Calculate the position of the zoom lens
+        let lensX = x - zoomLens.offsetWidth / 2;
+        let lensY = y - zoomLens.offsetHeight / 2;
+
+        // Restrict the lens within image bounds
+        lensX = Math.max(0, Math.min(lensX, productImg.offsetWidth - zoomLens.offsetWidth));
+        lensY = Math.max(0, Math.min(lensY, productImg.offsetHeight - zoomLens.offsetHeight));
+
+        // Move the zoom lens
+        zoomLens.style.left = `${lensX}px`;
+        zoomLens.style.top = `${lensY}px`;
+
+        // Calculate zoom ratio based on background size
+        const zoomFactor = 2; // You can adjust the zoom factor
+        zoomLens.style.backgroundSize = `${productImg.offsetWidth * zoomFactor}px ${productImg.offsetHeight * zoomFactor}px`;
+
+        // Set the background position for zoom effect
+        const bgPosX = (lensX / productImg.offsetWidth) * 100;
+        const bgPosY = (lensY / productImg.offsetHeight) * 100;
+        zoomLens.style.backgroundPosition = `${bgPosX}% ${bgPosY}%`;
+    }
+
+    // Initialize zoom on the main image
+    function initZoom() {
+        productImg.addEventListener('mousemove', zoom);
+        productImg.addEventListener('mouseenter', () => zoomLens.style.visibility = 'visible');
+        productImg.addEventListener('mouseleave', () => zoomLens.style.visibility = 'hidden');
+    }
+
+    // Add click event listener to each thumbnail
+    smallImages.forEach(thumbnail => {
+        thumbnail.addEventListener('click', function () {
+            const newSrc = thumbnail.src;
+            setZoomImage(newSrc);
+        });
+    });
+
+    // Initialize the zoom effect
+    initZoom();
+});
+
+
+
 </script>
 
 <%- include("../partials/user/footer.ejs")%>

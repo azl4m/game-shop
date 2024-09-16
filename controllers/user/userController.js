@@ -4,6 +4,7 @@ const nodeMailer = require("nodemailer");
 const productModel = require("../../models/productModel");
 const cartModel = require("../../models/cartModel")
 const addressModel = require('../../models/addressModel')
+const categoryModel = require("../../models/categoryModel")
 const randomString = require('randomstring')
 
 const OTP_TIMEOUT = 30 * 1000;
@@ -320,14 +321,16 @@ const productDetailsLoad = async (req, res) => {
   try {
     const productId = req.query.id;
     const product = await productModel.findById({ _id: productId });
+    const category = categoryModel.findOne({_id:product.category})
     if (req.session.user) {
       const user = await userModel.findById({ _id: req.session.user });
       return res.render("productDetails", {
         userDetails: user,
         product: product,
+        category:category
       });
     }
-    return res.render("productDetails", { product: product });
+    return res.render("productDetails", { product: product,category:category });
   } catch (error) {
     console.log("error loading product details page :" + error);
     res.status(500).send("Server error");

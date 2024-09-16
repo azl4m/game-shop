@@ -5,7 +5,7 @@
 visibility: hidden;
 min-width: 250px;
 margin-left: -125px;
-background-color: #dd2020; /* Green background */
+/* background-color: #dd2020; */
 color: white;
 text-align: center;
 border-radius: 2px;
@@ -65,7 +65,14 @@ to {bottom: 0; opacity: 0;}
             placeholder="Password"
             required=""
             class="login-input"
-          /><i class="fa-solid fa-eye" ></i>
+          />
+          <!-- <i class="fa-solid fa-eye" ></i> -->
+          <a id="forgotlink"
+          href="/forgotPassword"
+          class=""
+          style="display: flex ;text-align: center; justify-content: center; color: #dd2020; text-decoration: none;"
+          >Forgot Password</a
+        >
      
         <input type="submit" class="login-button" />
         <a
@@ -74,12 +81,6 @@ to {bottom: 0; opacity: 0;}
           style="text-align: center; justify-content: center;text-decoration: none;"
           >Login With Google</a
         >
-        <a id="forgotlink"
-        href="/forgotPassword"
-        class="googlelogin-button"
-        style="text-align: center; justify-content: center; background-color: #dd2020; text-decoration: none;"
-        >Forgot Password</a
-      >
         <% if(typeof message !== 'undefined'){ %>
         <h3 style="color: red; font-weight: bold"><%= message %></h3>
         <% } %>
@@ -94,51 +95,65 @@ to {bottom: 0; opacity: 0;}
   </div>
 </div>
 <script>
-      function showToast(message) {
+function showToast(message,result) {
   const toast = document.getElementById("toast");
-  toast.innerHTML = message
+  toast.innerHTML = message;
   toast.className = "toast show";
+  if(result){
+    toast.style.backgroundColor = "green"
+  }else{
+    toast.style.backgroundColor = "red"
+  }
   setTimeout(() => {
     toast.className = toast.className.replace("show", "");
   }, 3000); // The toast will disappear after 3 seconds
 }
-document.addEventListener('DOMContentLoaded',()=>{
-  const emailid = document.getElementById("email")
-  const forgotlink = document.getElementById("forgotlink")
-  const url = forgotlink.getAttribute('href')
-  forgotlink.addEventListener('click',async(event)=>{
-    event.preventDefault()
-    const email = emailid.value
+
+document.addEventListener('DOMContentLoaded', () => {
+  const emailid = document.getElementById("email");
+  const forgotlink = document.getElementById("forgotlink");
+  const url = forgotlink.getAttribute('href');
+
+  forgotlink.addEventListener('click', async (event) => {
+    event.preventDefault();
+
+    const email = emailid.value;
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-if(!emailPattern.test(email)){
-  alert("Please enter your email to reset your password")
-  return
-}else{
-  try {
-    const response = await fetch('/forgotPassword', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }), // Sending the email value in the request body
-      });
+    if (!emailPattern.test(email)) {
+      showToast("Please enter your email to reset your password",0);
+      return;
+    } else {
+      // Show loading notification immediately
+      showToast("Processing your request...",0);
+
+      try {
+        const response = await fetch('/forgotPassword', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email }), // Sending the email value in the request body
+        });
+
         if (response.ok) {
           const data = await response.json();
-          showToast(data.message); // Show toast notification
+          showToast(data.message,1); // Show success message
           setTimeout(() => {
             window.location.href = data.redirectUrl; // Redirect after a delay
           }, 2000); // 2-second delay before redirecting
-        }else{
-          const data = await response.json()
-          showToast(data.message||"Something Went Wrong")
+        } else {
+          const data = await response.json();
+          showToast(data.message || "Something Went Wrong",1);
         }
       } catch (error) {
-        console.error('Error adding to cart:', error);
+        console.error('Error sending request:', error);
+        showToast("An error occurred. Please try again.");
       }
-}
-  })
-})
+    }
+  });
+});
+
   
 </script>
 <%- include("../partials/user/footer.ejs")%>
