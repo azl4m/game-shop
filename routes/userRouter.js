@@ -46,6 +46,10 @@ user.post('/updateCartQuantity',addminAuth.isLogout,auth.isLogin,userController.
 //address management
 user.get('/addressManagement',addminAuth.isLogout,auth.isLogin,userController.addressManagementLoad)
 user.post('/addAddress',addminAuth.isLogout,auth.isLogin,userController.addAddress)
+user.get('/setDefaultAddress',addminAuth.isLogout,auth.isLogin,userController.setDefaultAdress)
+user.get('/editAddress',addminAuth.isLogout,auth.isLogin,userController.editAddressLoad)
+user.post('/editAddress',addminAuth.isLogout,auth.isLogin,userController.editAddress)
+user.get('/deleteAddress',addminAuth.isLogout,auth.isLogin,userController.deleteAddress)
 //forgot password
 user.post("/forgotPassword",addminAuth.isLogout,auth.isLogout,userController.forgotPassword)
 user.get("/resetPassword",addminAuth.isLogout,auth.isLogout,userController.resetPasswordLoad)

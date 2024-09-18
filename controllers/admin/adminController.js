@@ -48,12 +48,16 @@ const processImages = async (files, name) => {
     const newPath = `public/uploads/cropped-${name}-${i}${path.extname(
       file.originalname
     )}`;
+    try {
+      await sharp(file.path)
+        .resize(300, 300) // Customize as needed
+        .toFile(newPath);
+      processedFiles.push(`uploads/cropped-${name}-${i}${path.extname(file.originalname)}`);
+      fs.unlinkSync(file.path);
+    } catch (error) {
+      console.error('Error processing image:', error);
+    }
     i++;
-    await sharp(file.path)
-      .resize(300, 300) // Customize as needed
-      .toFile(newPath);
-    processedFiles.push(newPath);
-    // fs.unlinkSync(file.path); // Delete the original image
   }
   return processedFiles;
 };
@@ -105,8 +109,8 @@ const addProduct = async (req, res) => {
         req.body.platforms[3],
       ];
 
-      // const admin = await userModel.findById({_id:req.session.user})
-
+      // const admin = await userModel.findById({_id:req.session.user}
+      console.log('Files received:', req.files);
       const images = await processImages(req.files, req.body.productName);
       const categoryId = await categoryModel.findOne({
         categoryName: req.body.category,

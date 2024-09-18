@@ -10,10 +10,14 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "/auth/google/callback",
+      passReqToCallback:true
     },
-    async (accessToken, refereshToken, profile, done) => {
+    async (req,accessToken, refereshToken, profile, done) => {
       try {     
         let user = await userModel.findOne({ googleId: profile.id });
+        if(user && !user.isActive){
+          return req.res.redirect("/login?message=blocked")
+                }
         if (user) {
           return done(null, user);
         } else {

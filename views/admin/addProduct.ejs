@@ -192,7 +192,7 @@ const prodForm = document.getElementById("prodForm");
 // Validate Product Name
 function nameValidate() {
     const nameVal = nameid.value;
-    const namePattern = /^(?!\d+$)[a-zA-Z0-9]+$/;
+    const namePattern = /^(?!\d+$)[a-zA-Z0-9\s]+$/;
     if (nameVal.trim() === "") {
         error1.style.display = "block";
         error1.innerHTML = "Please Enter a Valid Product Name";

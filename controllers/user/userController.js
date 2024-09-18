@@ -192,6 +192,10 @@ const resendOtp = async (req, res) => {
 //load login page
 const loginLoad = async (req, res) => {
   try {
+    const message = req.query.message
+    if(message==="blocked"){
+      return res.render("login", { message: "You are blocked by admin" });
+    }
     res.render("login");
   } catch (error) {
     console.log("error loading login page :" + error);
@@ -477,7 +481,12 @@ const addressManagementLoad = async(req,res)=>{
 
 const addAddress = async(req,res)=>{
   try {
-    const { userId, street, city, state, postalCode, country, phoneNumber, isDefault } = req.body;
+    const { userId, street, city, state, postalCode, country, phoneNumber } = req.body;
+    let {isDefault} = req.body
+    isDefault = isDefault==="on"?true:false
+    if(isDefault){
+      await addressModel.updateMany({},{$set:{isDefault:false}})
+    }
     const newAddress = new addressModel({
       userId,
       street,
@@ -486,11 +495,9 @@ const addAddress = async(req,res)=>{
       postalCode,
       country,
       phoneNumber,
-      isDefault
+      isDefault:isDefault
     });
-
-    await newAddress.save();
-
+    await newAddress.save();  
     // Add address to user's addresses array
     await userModel.findByIdAndUpdate(userId, { $push: { addresses: newAddress._id } });
 
@@ -500,6 +507,78 @@ const addAddress = async(req,res)=>{
     
   }
 }
+const setDefaultAdress = async(req,res)=>{
+  try {
+    const addressid = req.query.id
+    await addressModel.updateMany({},{$set:{isDefault:false}})
+    await addressModel.findOneAndUpdate({_id:addressid},{$set:{isDefault:true}})
+    res.redirect("/addressManagement")
+  } catch (error) {
+    console.log("error setting default address :"+error);
+    
+  }
+}
+const editAddressLoad = async(req,res)=>{
+  try {
+    const addressid = req.query.id
+    const userid = req.session.user
+    const user = await userModel.findOne({_id:userid})
+    const address = await addressModel.findOne({_id:addressid})
+    if(address){
+      res.render('editAddress',{address:address,userDetails:user})
+    }
+  } catch (error) {
+    console.log("error loading edit address :"+error);
+    
+  }
+}
+const editAddress = async(req,res)=>{
+  try {
+    const { addressid, street, city, state, postalCode, country, phoneNumber } = req.body;
+    let {isDefault} = req.body
+    isDefault = isDefault==="on"?true:false
+    if(isDefault){
+      await addressModel.updateMany({},{$set:{isDefault:false}})
+    }
+    const userid = req.session.user
+    const updateAddress = await addressModel.updateOne({_id:addressid},{$set:{
+      street:street,
+      userId:userid,
+      city:city,
+      state:state,
+      postalCode:postalCode,
+      country:country,
+      phoneNumber:phoneNumber,
+      isDefault:isDefault
+    }})
+    if(updateAddress){
+      return res.redirect('/addressManagement')
+    }return res.status(500).json({message:"Internal server error"})
+  } catch (error) {
+    console.log("error editing address :"+error);
+    return res.status(500).json({message:"Internal server error"})
+    
+  }
+}
+const deleteAddress = async(req,res)=>{
+  try {
+    const addressid = req.query.id
+    const address = await addressModel.findOne({_id:addressid})
+    if(address.isDefault){
+      await addressModel.updateOne({isDefault:false},{$set:{isDefault:true}})
+    }
+    const deleteAddress = await addressModel.deleteOne({_id:addressid})
+    if(deleteAddress){
+      return res.redirect("/addressManagement")
+    }
+    res.status(500).json({message:"Internal Server Error"})
+  } catch (error) {
+    console.log("error removing address :"+error);
+    return res.status(500).json({message:"Internal Server Error"})
+    
+  }
+}
+//profile management
 const userProfileLoad = async(req,res)=>{
   try {
     const userid = req.session.user
@@ -618,6 +697,10 @@ module.exports = {
   updateCartQuantity,
   addressManagementLoad,
   addAddress,
+  editAddress,
+  editAddressLoad,
+  setDefaultAdress,
+  deleteAddress,
   userProfileLoad,
   forgotPassword,
   resetPasswordLoad,
