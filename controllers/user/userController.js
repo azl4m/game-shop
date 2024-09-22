@@ -2,10 +2,11 @@ const userModel = require("../../models/userModel");
 const bcrypt = require("bcrypt");
 const nodeMailer = require("nodemailer");
 const productModel = require("../../models/productModel");
-const cartModel = require("../../models/cartModel")
-const addressModel = require('../../models/addressModel')
-const categoryModel = require("../../models/categoryModel")
-const randomString = require('randomstring')
+const cartModel = require("../../models/cartModel");
+const addressModel = require("../../models/addressModel");
+const categoryModel = require("../../models/categoryModel");
+const orderModel = require("../../models/orderModel");
+const randomString = require("randomstring");
 
 const OTP_TIMEOUT = 30 * 1000;
 
@@ -23,17 +24,24 @@ const calculateCartTotals = (cart) => {
   let subtotal = 0;
 
   // Loop through the items in the cart and calculate the subtotal
-  cart.items.forEach(item => {
-    const price = item.productId.price || 0;  
-    const quantity = item.quantity || 0;     
+  cart.items.forEach((item) => {
+    const price = item.productId.price || 0;
+    const quantity = item.quantity || 0;
 
-    subtotal += price * quantity;  // Calculate subtotal
+    subtotal += price * quantity; // Calculate subtotal
   });
 
   const tax = Math.floor(subtotal * 0.18); //  18% tax rate
-  const total = Math.floor(subtotal + tax);
+  let total = Math.floor(subtotal + tax);
+  let delivery = 0;
+  if (total < 2000) {
+    delivery = 150;
+  }
+  if (delivery) {
+    total += delivery;
+  }
 
-  return { subtotal, tax, total };
+  return { subtotal, tax, total, delivery };
 };
 
 //for otp generation
@@ -92,14 +100,14 @@ const registerUser = async (req, res) => {
       if (!emailSent) {
         return res.json("email error");
       }
-      const passwordHash = await securePassword(password)
+      const passwordHash = await securePassword(password);
       const user = new userModel({
-        username:username,
-        email:email,
-        password:passwordHash,
-        phoneNumber:phone
-      })
-      await user.save()
+        username: username,
+        email: email,
+        password: passwordHash,
+        phoneNumber: phone,
+      });
+      await user.save();
       req.session.userOTP = otp;
       req.session.userData = { username, email, password, phone };
       res.redirect("/verifyOtp");
@@ -123,9 +131,9 @@ const verifyOtp = async (req, res) => {
     const otp = req.body.otp;
     if (otp === req.session.userOTP) {
       const user = req.session.userData;
-      const userExist = await userModel.findOne({email:user.email})
-      if(userExist){
-        await userExist.updateOne({$set:{isVerified:true}})
+      const userExist = await userModel.findOne({ email: user.email });
+      if (userExist) {
+        await userExist.updateOne({ $set: { isVerified: true } });
         return res.json({
           success: true,
           redirectUrl: "/login",
@@ -192,8 +200,8 @@ const resendOtp = async (req, res) => {
 //load login page
 const loginLoad = async (req, res) => {
   try {
-    const message = req.query.message
-    if(message==="blocked"){
+    const message = req.query.message;
+    if (message === "blocked") {
       return res.render("login", { message: "You are blocked by admin" });
     }
     res.render("login");
@@ -223,7 +231,7 @@ const loginUser = async (req, res) => {
       const userData = await userModel.findOne({
         email: email,
       });
-      
+
       if (userData.isVerified === false) {
         const { username, email, password, phoneNumber } = userData;
         const otp = generateOTP();
@@ -305,7 +313,10 @@ const logout = async (req, res) => {
 //for loading homepage
 const loadHomePage = async (req, res) => {
   try {
-    const products = await productModel.find({ isListed: true ,isDeleted:false});
+    const products = await productModel.find({
+      isListed: true,
+      isDeleted: false,
+    });
     if (req.session?.passport?.user) {
       req.session.user = req.session.passport.user;
     }
@@ -325,16 +336,19 @@ const productDetailsLoad = async (req, res) => {
   try {
     const productId = req.query.id;
     const product = await productModel.findById({ _id: productId });
-    const category = categoryModel.findOne({_id:product.category})
+    const category = categoryModel.findOne({ _id: product.category });
     if (req.session.user) {
       const user = await userModel.findById({ _id: req.session.user });
       return res.render("productDetails", {
         userDetails: user,
         product: product,
-        category:category
+        category: category,
       });
     }
-    return res.render("productDetails", { product: product,category:category });
+    return res.render("productDetails", {
+      product: product,
+      category: category,
+    });
   } catch (error) {
     console.log("error loading product details page :" + error);
     res.status(500).send("Server error");
@@ -342,36 +356,42 @@ const productDetailsLoad = async (req, res) => {
 };
 
 //add to cart
-const addToCart = async(req,res)=>{
+const addToCart = async (req, res) => {
   try {
-    const productId = req.query.id
-    const quantity = parseInt(req.query.quantity)
-    const platform = req.query.platform
-    const userId = req.session.user
-    let cart = await cartModel.findOne({userId:userId})
+    const productId = req.query.id;
+    const quantity = parseInt(req.query.quantity);
+    const platform = req.query.platform;
+    const userId = req.session.user;
+    let cart = await cartModel.findOne({ userId: userId });
     if (cart) {
-      const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
+      const itemIndex = cart.items.findIndex(
+        (item) => item.productId.toString() === productId
+      );
       if (itemIndex > -1) {
         cart.items[itemIndex].quantity += quantity;
       } else {
-        cart.items.push({ productId, quantity ,platform});
+        cart.items.push({ productId, quantity, platform });
       }
       cart.updatedAt = Date.now();
       await cart.save();
     } else {
-      cart = new cartModel({ userId, items: [{ productId, quantity, platform }] });
+      cart = new cartModel({
+        userId,
+        items: [{ productId, quantity, platform }],
+      });
       await cart.save();
     }
-    res.status(200).json({ message: 'Product added to cart', redirectUrl: `/productDetails?id=${productId}` }); // Send success response with the redirect URL
-   
+    res.status(200).json({
+      message: "Product added to cart",
+      redirectUrl: `/productDetails?id=${productId}`,
+    }); // Send success response with the redirect URL
   } catch (error) {
-    console.log("error at add to cart :"+error);
-    return res.status(500).json({message:error.message})
-    
+    console.log("error at add to cart :" + error);
+    return res.status(500).json({ message: error.message });
   }
-}
+};
 //get cart
-const cartLoad = async(req,res)=>{
+const cartLoad = async (req, res) => {
   try {
     const userId = req.session.user;
     const user = await userModel.findOne({ _id: userId });
@@ -379,29 +399,30 @@ const cartLoad = async(req,res)=>{
     if (user) {
       // Fetch the cart for the user
       const cart = await cartModel.findOne({ userId: userId }).populate({
-        path: 'items.productId',
-        model: 'Product',
-        select: 'productName images price' // Include only necessary fields
+        path: "items.productId",
+        model: "Product",
+        select: "productName images price", // Include only necessary fields
       });
 
       if (cart) {
-        const{subtotal,tax,total} = calculateCartTotals(cart)
+        const { subtotal, tax, total, delivery } = calculateCartTotals(cart);
         // Extract product IDs and quantity for further use
-        const items = cart.items.map(item => ({
+        const items = cart.items.map((item) => ({
           productId: item.productId._id,
           quantity: item.quantity,
           productName: item.productId.productName,
           images: item.productId.images,
-          price: item.productId.price 
+          price: item.productId.price,
         }));
 
-        res.render('cart', {
+        res.render("cart", {
           cart: cart,
           items: items,
           userDetails: user,
-          subtotal:subtotal,
-          tax:tax,
-          total:total
+          subtotal: subtotal,
+          tax: tax,
+          total: total,
+          deliveryCharge: delivery,
         });
       } else {
         res.status(404).json({ message: "Cart not found" });
@@ -410,82 +431,96 @@ const cartLoad = async(req,res)=>{
       res.status(400).json({ message: "User not found" });
     }
   } catch (error) {
-    console.log("error loading cart :"+error);
-    res.status(500).json({message:"Internal server error"})
-    
+    console.log("error loading cart :" + error);
+    res.status(500).json({ message: "Internal server error" });
   }
-}
+};
 //remove from cart
-const removeFromCart = async(req, res) => {
+const removeFromCart = async (req, res) => {
   try {
     const { itemId } = req.body;
     const userId = req.session.user;
-    
+
     const cart = await cartModel.findOne({ userId });
-    
+
     if (!cart) {
-      return res.status(404).json({ message: 'Cart not found' });
+      return res.status(404).json({ message: "Cart is empty" });
     }
-    
+
     // Remove the item from the cart
-    const filteredItems = cart.items.filter(item => item.productId.toString() !== itemId);
+    const filteredItems = cart.items.filter(
+      (item) => item.productId.toString() !== itemId
+    );
     cart.items = filteredItems;
 
     // Save the updated cart
     await cart.save();
-
+    if (!cart.items.length) {
+      await cartModel.deleteOne({ userId: userId });
+      return res.redirect("/");
+    }
     res.redirect("/cart");
   } catch (error) {
-    console.log('Error removing item from cart:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.log("Error removing item from cart:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
 const updateCartQuantity = async (req, res) => {
   try {
-    
-    const { itemId, newQuantity } = req.body;    
+    const { itemId, newQuantity } = req.body;
     const userId = req.session.user;
 
     const cart = await cartModel.findOne({ userId });
     if (!cart) {
-      return res.status(404).json({ message: 'Cart not found' });
+      return res.status(404).json({ message: "Cart not found" });
     }
 
     // Find the item in the cart and update its quantity
-    const itemIndex = cart.items.findIndex(item => item.productId.toString() === itemId);
+    const itemIndex = cart.items.findIndex(
+      (item) => item.productId.toString() === itemId
+    );
     if (itemIndex !== -1) {
       cart.items[itemIndex].quantity = newQuantity;
     }
     await cart.save();
-    res.status(200).json({ message: 'Cart updated successfully' });
+    res.status(200).json({ message: "Cart updated successfully" });
   } catch (error) {
-    console.error('Error updating cart quantity:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Error updating cart quantity:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
-const addressManagementLoad = async(req,res)=>{
+const addressManagementLoad = async (req, res) => {
   try {
-    const userId = req.session.user
-    const user = await userModel.findOne({_id:userId})
-    const addresses = await addressModel.find({userId})
-    res.render('addressManagement',{
-      userDetails:user,
-      addresses:addresses
-    })
+    const userId = req.session.user;
+    const user = await userModel.findOne({ _id: userId });
+    const defaultAddress = await addressModel.find({
+      $and: [{ userId: userId }, { isDefault: true }],
+    });
+    if (!defaultAddress.length) {
+      await addressModel.updateOne(
+        { userId: userId },
+        { $set: { isDefault: true } }
+      );
+    }
+    const addresses = await addressModel.find({ userId });
+    res.render("addressManagement", {
+      userDetails: user,
+      addresses: addresses,
+    });
   } catch (error) {
-    console.log("error in address management load :"+error);
-    
+    console.log("error in address management load :" + error);
   }
-}
+};
 
-const addAddress = async(req,res)=>{
+const addAddress = async (req, res) => {
   try {
-    const { userId, street, city, state, postalCode, country, phoneNumber } = req.body;
-    let {isDefault} = req.body
-    isDefault = isDefault==="on"?true:false
-    if(isDefault){
-      await addressModel.updateMany({},{$set:{isDefault:false}})
+    const { userId, street, city, state, postalCode, country, phoneNumber } =
+      req.body;
+    let { isDefault } = req.body;
+    isDefault = isDefault === "on" ? true : false;
+    if (isDefault) {
+      await addressModel.updateMany({}, { $set: { isDefault: false } });
     }
     const newAddress = new addressModel({
       userId,
@@ -495,104 +530,113 @@ const addAddress = async(req,res)=>{
       postalCode,
       country,
       phoneNumber,
-      isDefault:isDefault
+      isDefault: isDefault,
     });
-    await newAddress.save();  
+    await newAddress.save();
     // Add address to user's addresses array
-    await userModel.findByIdAndUpdate(userId, { $push: { addresses: newAddress._id } });
+    await userModel.findByIdAndUpdate(userId, {
+      $push: { addresses: newAddress._id },
+    });
 
-    res.redirect("/addressManagement")
+    res.redirect("/addressManagement");
   } catch (error) {
-    console.log("error adding address :"+error);
-    
+    console.log("error adding address :" + error);
   }
-}
-const setDefaultAdress = async(req,res)=>{
+};
+const setDefaultAdress = async (req, res) => {
   try {
-    const addressid = req.query.id
-    await addressModel.updateMany({},{$set:{isDefault:false}})
-    await addressModel.findOneAndUpdate({_id:addressid},{$set:{isDefault:true}})
-    res.redirect("/addressManagement")
+    const addressid = req.query.id;
+    await addressModel.updateMany({}, { $set: { isDefault: false } });
+    await addressModel.findOneAndUpdate(
+      { _id: addressid },
+      { $set: { isDefault: true } }
+    );
+    res.redirect("/addressManagement");
   } catch (error) {
-    console.log("error setting default address :"+error);
-    
+    console.log("error setting default address :" + error);
   }
-}
-const editAddressLoad = async(req,res)=>{
+};
+const editAddressLoad = async (req, res) => {
   try {
-    const addressid = req.query.id
-    const userid = req.session.user
-    const user = await userModel.findOne({_id:userid})
-    const address = await addressModel.findOne({_id:addressid})
-    if(address){
-      res.render('editAddress',{address:address,userDetails:user})
+    const addressid = req.query.id;
+    const userid = req.session.user;
+    const user = await userModel.findOne({ _id: userid });
+    const address = await addressModel.findOne({ _id: addressid });
+    if (address) {
+      res.render("editAddress", { address: address, userDetails: user });
     }
   } catch (error) {
-    console.log("error loading edit address :"+error);
-    
+    console.log("error loading edit address :" + error);
   }
-}
-const editAddress = async(req,res)=>{
+};
+const editAddress = async (req, res) => {
   try {
-    const { addressid, street, city, state, postalCode, country, phoneNumber } = req.body;
-    let {isDefault} = req.body
-    isDefault = isDefault==="on"?true:false
-    if(isDefault){
-      await addressModel.updateMany({},{$set:{isDefault:false}})
+    const { addressid, street, city, state, postalCode, country, phoneNumber } =
+      req.body;
+    let { isDefault } = req.body;
+    isDefault = isDefault === "on" ? true : false;
+    if (isDefault) {
+      await addressModel.updateMany({}, { $set: { isDefault: false } });
     }
-    const userid = req.session.user
-    const updateAddress = await addressModel.updateOne({_id:addressid},{$set:{
-      street:street,
-      userId:userid,
-      city:city,
-      state:state,
-      postalCode:postalCode,
-      country:country,
-      phoneNumber:phoneNumber,
-      isDefault:isDefault
-    }})
-    if(updateAddress){
-      return res.redirect('/addressManagement')
-    }return res.status(500).json({message:"Internal server error"})
+    const userid = req.session.user;
+    const updateAddress = await addressModel.updateOne(
+      { _id: addressid },
+      {
+        $set: {
+          street: street,
+          userId: userid,
+          city: city,
+          state: state,
+          postalCode: postalCode,
+          country: country,
+          phoneNumber: phoneNumber,
+          isDefault: isDefault,
+        },
+      }
+    );
+    if (updateAddress) {
+      return res.redirect("/addressManagement");
+    }
+    return res.status(500).json({ message: "Internal server error" });
   } catch (error) {
-    console.log("error editing address :"+error);
-    return res.status(500).json({message:"Internal server error"})
-    
+    console.log("error editing address :" + error);
+    return res.status(500).json({ message: "Internal server error" });
   }
-}
-const deleteAddress = async(req,res)=>{
+};
+const deleteAddress = async (req, res) => {
   try {
-    const addressid = req.query.id
-    const address = await addressModel.findOne({_id:addressid})
-    if(address.isDefault){
-      await addressModel.updateOne({isDefault:false},{$set:{isDefault:true}})
+    const addressid = req.query.id;
+    const address = await addressModel.findOne({ _id: addressid });
+    if (address.isDefault) {
+      await addressModel.updateOne(
+        { isDefault: false },
+        { $set: { isDefault: true } }
+      );
     }
-    const deleteAddress = await addressModel.deleteOne({_id:addressid})
-    if(deleteAddress){
-      return res.redirect("/addressManagement")
+    const deleteAddress = await addressModel.deleteOne({ _id: addressid });
+    if (deleteAddress) {
+      return res.redirect("/addressManagement");
     }
-    res.status(500).json({message:"Internal Server Error"})
+    res.status(500).json({ message: "Internal Server Error" });
   } catch (error) {
-    console.log("error removing address :"+error);
-    return res.status(500).json({message:"Internal Server Error"})
-    
+    console.log("error removing address :" + error);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-}
+};
 //profile management
-const userProfileLoad = async(req,res)=>{
+const userProfileLoad = async (req, res) => {
   try {
-    const userid = req.session.user
-    const user = await userModel.findOne({_id:userid})
-    res.render('userProfile',{
-      userDetails:user
-    })
+    const userid = req.session.user;
+    const user = await userModel.findOne({ _id: userid });
+    res.render("userProfile", {
+      userDetails: user,
+    });
   } catch (error) {
-    console.log("error loading user profile :"+error);
-    
+    console.log("error loading user profile :" + error);
   }
-}
+};
 
-const sendForgotPassword = async (username,email, token) => {
+const sendForgotPassword = async (username, email, token) => {
   try {
     const transporter = nodeMailer.createTransport({
       service: "gmail",
@@ -619,66 +663,162 @@ const sendForgotPassword = async (username,email, token) => {
   }
 };
 
-const forgotPassword = async(req,res)=>{
+const forgotPassword = async (req, res) => {
   try {
-    const email = req.body.email
-    const user = await userModel.findOne({email:email})
-    if(user){
-      const token = randomString.generate()
-      const updateUser = await userModel.updateOne({email:email},{
-        $set:{token:token}
-      })
-      const sendMail = await sendForgotPassword(user.username,email,token)
-      if(sendMail){
-        return res.status(200).json({message:"Please Check Your Email To Reset Your Password",redirectUrl:"/login"})
-      }else{
-        return res.status(500).json({message:"Error sending email"})
+    const email = req.body.email;
+    const user = await userModel.findOne({ email: email });
+    if (user) {
+      const token = randomString.generate();
+      const updateUser = await userModel.updateOne(
+        { email: email },
+        {
+          $set: { token: token },
+        }
+      );
+      const sendMail = await sendForgotPassword(user.username, email, token);
+      if (sendMail) {
+        return res.status(200).json({
+          message: "Please Check Your Email To Reset Your Password",
+          redirectUrl: "/login",
+        });
+      } else {
+        return res.status(500).json({ message: "Error sending email" });
       }
-    }else{
-      return res.status(500).json({ message: 'User not found Please Check your email' });
+    } else {
+      return res
+        .status(500)
+        .json({ message: "User not found Please Check your email" });
+    }
+  } catch (error) {
+    console.log("error at forgot password :" + error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+const resetPasswordLoad = async (req, res) => {
+  try {
+    const token = req.query.token;
+    const user = await userModel.findOne({ token: token });
+    if (user) {
+      res.render("resetPassword", { user: user });
+    } else {
+      return res.status(500).json({ message: "No user found" });
+    }
+  } catch (error) {
+    console.log("error loading reset password page :" + error);
+  }
+};
+const resetPassword = async (req, res) => {
+  try {
+    const { userid, password } = req.body;
+    const sPassword = await securePassword(password);
+    const reset = await userModel.updateOne(
+      { _id: userid },
+      {
+        $set: {
+          password: sPassword,
+          token: "",
+        },
+      }
+    );
+    if (reset) {
+      res.status(200).json({ message: "Password reset Succesfully" });
+    } else {
+      res.status(400).json({ message: "Internal Server Error" });
+    }
+  } catch (error) {
+    console.log("error resetting password :" + error);
+  }
+};
+
+const checkoutLoad = async (req, res) => {
+  try {
+    const userId = req.session.user;
+    const user = await userModel.findOne({ _id: userId });
+    const cart = await cartModel
+      .findOne({ userId })
+      .populate({
+        path: 'items.productId',
+        select: 'price name'
+      });
+
+    if (!cart) {
+      return res.status(400).json({ message: "No cart found" });
     }
 
-  } catch (error) {
-    console.log("error at forgot password :"+error);
-    return res.status(500).json({message:"Internal Server Error"})
-  }
-}
-const resetPasswordLoad = async(req,res)=>{
-  try {
-    const token = req.query.token
-    const user = await userModel.findOne({token:token})
-    if(user){
-      res.render('resetPassword',{user:user})
-    }
-    else{
-      return res.status(500).json({message:"No user found"})
-    }
-  } catch (error) {
-    console.log("error loading reset password page :"+error);
-    
-  }
-}
-const resetPassword = async(req,res)=>{
-  try {
-    const {userid,password} = req.body
-    const sPassword = await securePassword(password)
-    const reset = await userModel.updateOne({_id:userid},{
-      $set:{
-        password:sPassword,
-        token:""
-      }
-    })
-    if(reset){
-      res.status(200).json({message:"Password reset Succesfully"})
-    }else{
-      res.status(400).json({message:"Internal Server Error"})
-    }
+    console.log(JSON.stringify(cart, null, 2)); 
 
+    const { street, city, phone, state, pinCode, email, fullname, totalPrice, country } = req.body;
+
+    const cartItems = cart.items.map(item => {
+      if (!item.productId || !item.productId._id || !item.productId.price) {
+        throw new Error("Cart item missing product or price information");
+      }
+      return {
+        product: item.productId._id,
+        price: item.productId.price,
+        quantity: item.quantity,
+        platform: item.platform
+      };
+    });
+
+    const order = new orderModel({
+      user: userId,
+      cartItems: cartItems,
+      totalPrice: totalPrice,
+      shippingAddress: {
+        name: fullname,
+        street: street,
+        city: city,
+        phoneNumber: phone,
+        state: state,
+        postalCode: pinCode,
+        country: country
+      }
+    });
+
+    const saveOrder = await order.save();
+    await cartModel.findOneAndDelete({ userId });
+
+    res.status(200).json({ message: "checkout successful" });
   } catch (error) {
-    console.log("error resetting password :"+error);
-    
+    console.log("error at cart load :" + error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
-}
+};
+
+const getCheckoutPage = async (req, res) => {
+  try {
+    const userId = req.session.user;
+    const user = await userModel.findOne({ _id: userId });
+    const cart = await cartModel
+      .findOne({ userId: userId })
+      .populate("items.productId");
+    if (!cart) {
+      return res.status(400).json({ message: "No items in cart" });
+    }
+    const products = cart.items.map((item) => ({
+      name: item.productId.productName,
+      price: item.productId.price,
+      quantity: item.quantity,
+    }));
+
+    const addresses = await addressModel.find({ userId });
+    const defaultAddress = await addressModel.findOne({ isDefault: true });
+    const { subtotal, tax, total, delivery } = calculateCartTotals(cart);
+    res.render("checkout", {
+      addresses: addresses,
+      userDetails: user,
+      defaultAddress: defaultAddress,
+      products: products,
+      delivery: delivery,
+      tax: tax,
+      total: total,
+    });
+  } catch (error) {
+    console.log("Error fetching checkout page:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 module.exports = {
   loadHomePage,
   pageNotFound,
@@ -704,5 +844,7 @@ module.exports = {
   userProfileLoad,
   forgotPassword,
   resetPasswordLoad,
-  resetPassword
+  resetPassword,
+  checkoutLoad,
+  getCheckoutPage,
 };

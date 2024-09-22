@@ -31,18 +31,27 @@ user.post("/signup",userController.registerUser)
 user.get("/verifyOtp",addminAuth.isLogout,auth.isLogout,userController.verifyOtpLoad)
 user.post("/verifyOtp",userController.verifyOtp)
 user.post("/resendOtp",userController.resendOtp)
+
 //for login
 user.get("/login",addminAuth.isLogout,auth.isLogout,userController.loginLoad)
 user.post("/login",userController.loginUser)
+
 //for logout
 user.get("/logout",userController.logout)
+
 //for product details page
 user.get('/productDetails',userController.productDetailsLoad)
+
 //for cart
 user.get("/addToCart",addminAuth.isLogout,auth.isLogin,userController.addToCart)
 user.get("/cart",addminAuth.isLogout,auth.isLogin,userController.cartLoad)
 user.post('/removeFromCart',addminAuth.isLogout,auth.isLogin,userController.removeFromCart)
 user.post('/updateCartQuantity',addminAuth.isLogout,auth.isLogin,userController.updateCartQuantity)
+
+//checkout
+user.get("/checkout",addminAuth.isLogout,auth.isLogin,userController.getCheckoutPage)
+user.post('/checkout',addminAuth.isLogout,auth.isLogin,userController.checkoutLoad)
+
 //address management
 user.get('/addressManagement',addminAuth.isLogout,auth.isLogin,userController.addressManagementLoad)
 user.post('/addAddress',addminAuth.isLogout,auth.isLogin,userController.addAddress)
@@ -50,15 +59,19 @@ user.get('/setDefaultAddress',addminAuth.isLogout,auth.isLogin,userController.se
 user.get('/editAddress',addminAuth.isLogout,auth.isLogin,userController.editAddressLoad)
 user.post('/editAddress',addminAuth.isLogout,auth.isLogin,userController.editAddress)
 user.get('/deleteAddress',addminAuth.isLogout,auth.isLogin,userController.deleteAddress)
+
 //forgot password
 user.post("/forgotPassword",addminAuth.isLogout,auth.isLogout,userController.forgotPassword)
 user.get("/resetPassword",addminAuth.isLogout,auth.isLogout,userController.resetPasswordLoad)
 user.post('/resetPassword',addminAuth.isLogout,auth.isLogout,userController.resetPassword)
+
 //user profile
 user.get('/userProfile',addminAuth.isLogout,auth.isLogin,userController.userProfileLoad)
+
 //for page not found
 user.get("/pageNotFound",userController.pageNotFound)
 user.get('/',addminAuth.isLogout,userController.loadHomePage);
+
 //for google auth
 user.get('/auth/google',passport.authenticate('google',{scope:['profile','email']}))
 user.get('/auth/google/callback',passport.authenticate('google',{failureRedirect:"/signup"}),(req,res)=>{ 

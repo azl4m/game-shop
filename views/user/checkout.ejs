@@ -1,0 +1,439 @@
+<%- include("../partials/user/header.ejs")%>
+<style>
+  .row {
+    display: -ms-flexbox; /* IE10 */
+    display: flex;
+    -ms-flex-wrap: wrap; /* IE10 */
+    flex-wrap: wrap;
+    margin: 0 -16px;
+  }
+
+  .col-25 {
+    -ms-flex: 25%; /* IE10 */
+    flex: 25%;
+  }
+
+  .col-50 {
+    -ms-flex: 50%; /* IE10 */
+    flex: 50%;
+  }
+
+  .col-75 {
+    -ms-flex: 75%; /* IE10 */
+    flex: 75%;
+  }
+
+  .col-25,
+  .col-50,
+  .col-75 {
+    padding: 0 16px;
+  }
+
+  .container {
+    background-color: #f2f2f2;
+    padding: 5px 20px 15px 20px;
+    border: 1px solid lightgrey;
+    border-radius: 3px;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    margin-bottom: 20px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+  }
+
+  label {
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .icon-container {
+    margin-bottom: 20px;
+    padding: 7px 0;
+    font-size: 24px;
+  }
+
+  .btn {
+    background-color: #04aa6d;
+    color: white;
+    padding: 12px;
+    margin: 10px 0;
+    border: none;
+    width: 100%;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 17px;
+  }
+
+  .btn:hover {
+    background-color: #45a049;
+  }
+
+  span.price {
+    float: right;
+    color: grey;
+  }
+
+  /* Responsive layout - when the screen is less than 800px wide, make the two columns stack on top of each other instead of next to each other (and change the direction - make the "cart" column go on top) */
+  @media (max-width: 800px) {
+    .row {
+      flex-direction: column-reverse;
+    }
+    .col-25 {
+      margin-bottom: 20px;
+    }
+  }
+
+
+  .toast {
+  visibility: hidden;
+  min-width: 250px;
+  margin-left: -125px;
+  color: white;
+  text-align: center;
+  border-radius: 2px;
+  padding: 16px;
+  position: fixed;
+  z-index: 1;
+  left: 50%;
+  bottom: 30px;
+  font-size: 17px;
+}
+
+/* Show the toast */
+.toast.show {
+  visibility: visible;
+  -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+  animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+/* Animations */
+@-webkit-keyframes fadein {
+  from {bottom: 0; opacity: 0;} 
+  to {bottom: 30px; opacity: 1;}
+}
+
+@-webkit-keyframes fadeout {
+  from {bottom: 30px; opacity: 1;} 
+  to {bottom: 0; opacity: 0;}
+}
+
+@keyframes fadein {
+  from {bottom: 0; opacity: 0;} 
+  to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes fadeout {
+  from {bottom: 30px; opacity: 1;} 
+  to {bottom: 0; opacity: 0;}
+}
+
+.zoom {
+  position: absolute;
+  border: 1px solid #000;
+  width: 100px; /* Adjust size */
+  height: 100px; /* Adjust size */
+  background-repeat: no-repeat;
+  background-size: 200%; /* Adjust to control zoom level */
+  pointer-events: none;
+  visibility: hidden;
+}
+
+
+</style>
+
+<div class="row">
+  <div class="col-75">
+    <div class="container">
+      <form action="/action_page.php">
+        <div class="row">
+          <div class="col-50">
+            <h3>Billing Address</h3>
+            <label for="fname"><i class="fa fa-user"></i> Full Name</label>
+            <input
+              type="text"
+              id="fname"
+              name="firstname"
+              value="<%= (userDetails.firstName && userDetails.lastName) ? (userDetails.firstName + ' ' + userDetails.lastName) : userDetails.username %>"
+            />
+            <label for="email"><i class="fa fa-envelope"></i> Email</label>
+            <input
+              type="text"
+              id="email"
+              name="email"
+              value="<%=userDetails.email%>"
+            />
+            <label for="adr"
+              ><i class="fa fa-address-card-o"></i> Address</label
+            >
+            <input
+              type="text"
+              id="adr"
+              name="address"
+              value="<%=defaultAddress.street%>"
+            />
+            <label for="city"> Phone</label>
+            <input
+              type="text"
+              id="phoneNumber"
+              name="phone"
+              value="<%=defaultAddress.phoneNumber%>"
+            />
+
+            <div class="row">
+              <div class="col-50">
+                <label for="city"><i class="fa fa-institution"></i> City</label>
+                <input
+                  type="text"
+                  id="city"
+                  name="city"
+                  value="<%=defaultAddress.city%>"
+                />
+              </div>
+              <div class="col-50"></div>
+              <label for="state">State</label>
+              <input
+                type="text"
+                id="state"
+                name="state"
+                value="<%=defaultAddress.state%>"
+              />
+            </div>
+            <div class="col-50"></div>
+              <label for="country">Country</label>
+              <input
+                type="text"
+                id="country"
+                name="country"
+                value="<%=defaultAddress.country%>"
+              />
+            </div>
+            <div class="col-50">
+              <label for="zip">Zip</label>
+              <input
+                type="text"
+                id="zip"
+                name="zip"
+                value="<%=defaultAddress.postalCode%>"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="col-50">
+          <div class="container">
+            <h2>Select Delivery Address</h2>
+            <form id="checkout-form" method="POST" action="/checkout">
+              <div>
+                <label for="address">Select Address:</label>
+                <select name="address" id="address">
+                  <% addresses.forEach(function(address) { %>
+                  <option
+                    value="<%= address._id %>"
+                    data-street="<%= address.street %>"
+                    data-city="<%= address.city %>"
+                    data-state="<%= address.state %>"
+                    data-postalcode="<%= address.postalCode %>"
+                    data-phone="<%= address.phoneNumber %>"
+                    data-country="<%= address.country %>"
+                  >
+                    <%= address.street %>, <%= address.city %>, <%=
+                    address.state %>, <%= address.postalCode %>
+                  </option>
+                  <% }) %>
+                </select>
+              </div>
+
+              <!-- Add new address if user wants -->
+              <!-- <div>
+                    <label for="new-address">Or Add New Address:</label>
+                    <input
+                      type="text"
+                      name="newAddress"
+                      id="new-address"
+                      placeholder="Add a new address"
+                    />
+                  </div> -->
+            </form>
+          </div>
+          <div id="toast" class="toast">
+        </div>
+          <!-- <h3>Payment</h3>
+            <label for="fname">Accepted Cards</label>
+            <div class="icon-container">
+              <i class="fa fa-cc-visa" style="color: navy"></i>
+              <i class="fa fa-cc-amex" style="color: blue"></i>
+              <i class="fa fa-cc-mastercard" style="color: red"></i>
+              <i class="fa fa-cc-discover" style="color: orange"></i>
+            </div>
+            <label for="cname">Name on Card</label>
+            <input
+              type="text"
+              id="cname"
+              name="cardname"
+              value="<%= userDetails.username %>"
+            />
+            <label for="ccnum">Credit card number</label>
+            <input
+              type="text"
+              id="ccnum"
+              name="cardnumber"
+            />
+            <label for="expmonth">Exp Month</label>
+            <input
+              type="text"
+              id="expmonth"
+              name="expmonth"
+            />
+
+            <div class="row">
+              <div class="col-50">
+                <label for="expyear">Exp Year</label>
+                <input
+                  type="text"
+                  id="expyear"
+                  name="expyear"
+                />
+              </div>
+              <div class="col-50">
+                <label for="cvv">CVV</label>
+                <input type="text" id="cvv" name="cvv" />
+              </div>
+            </div>
+          </div> -->
+          <div class="container">
+            <h4>
+              Cart
+              <span class="price" style="color: black">
+                <i class="fa fa-shopping-cart"></i>
+                <b><%=products.length%></b>
+              </span>
+            </h4>
+            <%products.forEach(product=>{%>
+            <p>
+              <%=product.name%> <span class="price"><%=product.price%></span>
+              <span class="price"><%=product.quantity%> X </span>
+            </p>
+            <%})%>
+            <hr />
+            <p>
+              Delivery
+              <span class="price" style="color: black"
+                ><b><%=delivery%></b></span
+              >
+            </p>
+            <p>
+              Tax
+              <span class="price" style="color: black"><b><%=tax%></b></span>
+            </p>
+            <p>
+              Total
+              <span class="price" style="color: black"><b id="totalPrice"><%=total%></b></span>
+            </p>
+          </div>
+        </div>
+        <label>
+          <input type="checkbox" checked="checked" name="sameadr" /> Shipping
+          address same as billing
+        </label>
+        <a id="submitLink" class="btn" href="">Proceed to order</a>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-25"></div>
+</div>
+<script>
+function showToast(data,result) {
+  // toast.className.replace("show","");
+  const toast = document.getElementById("toast");
+  toast.className = "toast show";
+  toast.innerHTML = data
+  if(result){
+    toast.style.backgroundColor = "#4CAF50"
+  }
+  else{
+    toast.style.backgroundColor = "red"
+  }
+  setTimeout(() => {
+    toast.className = toast.className.replace("show", "");
+  }, 3000); // The toast will disappear after 3 seconds
+}
+
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const addressSelect = document.getElementById("address");
+
+    // Get form fields
+    const streetField = document.getElementById("adr");
+    const cityField = document.getElementById("city");
+    const stateField = document.getElementById("state");
+    const postalCodeField = document.getElementById("zip");
+    const phoneField = document.getElementById("phoneNumber"); // Assuming 'Phone' field should be updated
+    const emailField = document.getElementById("email");
+    const nameField = document.getElementById("fname");
+    const priceField = document.getElementById('totalPrice')
+    const countryField = document.getElementById('country')
+    addressSelect.addEventListener("change", function () {
+      // Get selected option's dataset values
+      const selectedOption = addressSelect.options[addressSelect.selectedIndex];
+
+      const street = selectedOption.getAttribute("data-street");
+      const city = selectedOption.getAttribute("data-city");
+      const state = selectedOption.getAttribute("data-state");
+      const postalCode = selectedOption.getAttribute("data-postalcode");
+      const phone = selectedOption.getAttribute("data-phone");
+      const country = selectedOption.getAttribute("data-country");
+
+      // Update the form fields
+      streetField.value = street;
+      phoneField.value = phone; // Assuming 'city' is for phone
+      stateField.value = state;
+      postalCodeField.value = postalCode;
+      cityField.value = phone;
+      countryField.value = country
+    });
+
+    const submitLink = document.getElementById("submitLink");
+
+    submitLink.addEventListener("click", async (event) => {
+      event.preventDefault();
+      const streetVal = streetField.value;
+      const cityVal = cityField.value;
+      const phoneVal = phoneField.value;
+      const stateVal = stateField.value;
+      const zipVal = postalCodeField.value;
+      const emailVal = emailField.value;
+      const nameVal = nameField.value;
+      const priceVal = priceField.innerHTML
+      const countryVal = countryField.value
+
+      try {
+        const response = await fetch(`/checkout`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            street: streetVal,
+            city: cityVal,
+            phone: phoneVal,
+            state: stateVal,
+            pinCode: zipVal,
+            email: emailVal,
+            fullname: nameVal,
+            totalPrice:priceVal,
+            country:countryVal
+          }),
+        });
+        if(response.ok){
+            showToast("Checkout success",1)
+        }
+      } catch (error) {}
+    });
+  });
+</script>
+
+<%- include("../partials/user/footer.ejs")%>
