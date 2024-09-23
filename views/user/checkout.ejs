@@ -152,6 +152,7 @@
           <div class="col-50">
             <h3>Billing Address</h3>
             <label for="fname"><i class="fa fa-user"></i> Full Name</label>
+            <span class="error" id="error1"></span>
             <input
               type="text"
               id="fname"
@@ -159,6 +160,7 @@
               value="<%= (userDetails.firstName && userDetails.lastName) ? (userDetails.firstName + ' ' + userDetails.lastName) : userDetails.username %>"
             />
             <label for="email"><i class="fa fa-envelope"></i> Email</label>
+            <span class="error" id="error2"></span>
             <input
               type="text"
               id="email"
@@ -168,6 +170,7 @@
             <label for="adr"
               ><i class="fa fa-address-card-o"></i> Address</label
             >
+            <span class="error" id="error3"></span>
             <input
               type="text"
               id="adr"
@@ -175,6 +178,7 @@
               value="<%=defaultAddress.street%>"
             />
             <label for="city"> Phone</label>
+            <span class="error" id="error4"></span>
             <input
               type="text"
               id="phoneNumber"
@@ -185,6 +189,7 @@
             <div class="row">
               <div class="col-50">
                 <label for="city"><i class="fa fa-institution"></i> City</label>
+                <span class="error" id="error5"></span>
                 <input
                   type="text"
                   id="city"
@@ -194,6 +199,7 @@
               </div>
               <div class="col-50"></div>
               <label for="state">State</label>
+              <span class="error" id="error6"></span>
               <input
                 type="text"
                 id="state"
@@ -203,6 +209,7 @@
             </div>
             <div class="col-50"></div>
               <label for="country">Country</label>
+              <span class="error" id="error7"></span>
               <input
                 type="text"
                 id="country"
@@ -212,6 +219,7 @@
             </div>
             <div class="col-50">
               <label for="zip">Zip</label>
+              <span class="error" id="error8"></span>
               <input
                 type="text"
                 id="zip"
@@ -346,6 +354,7 @@
   <div class="col-25"></div>
 </div>
 <script>
+// for toast
 function showToast(data,result) {
   // toast.className.replace("show","");
   const toast = document.getElementById("toast");
@@ -362,9 +371,27 @@ function showToast(data,result) {
   }, 3000); // The toast will disappear after 3 seconds
 }
 
+// Function to display error messages
+function displayError(elementId, message) {
+  const errorElement = document.getElementById(elementId);
+  errorElement.innerText = message;
+  errorElement.style.color = 'red';
+}
+
+// Function to clear previous errors
+function clearErrors() {
+  const errorFields = document.querySelectorAll('.error');
+  errorFields.forEach(function (errorField) {
+    errorField.innerText = ''; // Clear error text
+  });
+}
 
   document.addEventListener("DOMContentLoaded", function () {
     const addressSelect = document.getElementById("address");
+
+
+
+
 
     // Get form fields
     const streetField = document.getElementById("adr");
@@ -376,6 +403,10 @@ function showToast(data,result) {
     const nameField = document.getElementById("fname");
     const priceField = document.getElementById('totalPrice')
     const countryField = document.getElementById('country')
+
+
+
+
     addressSelect.addEventListener("change", function () {
       // Get selected option's dataset values
       const selectedOption = addressSelect.options[addressSelect.selectedIndex];
@@ -400,6 +431,19 @@ function showToast(data,result) {
 
     submitLink.addEventListener("click", async (event) => {
       event.preventDefault();
+
+      
+    //for validation
+    
+    const error1 = document.getElementById('error1')
+    const error2 = document.getElementById('error2')
+    const error3 = document.getElementById('error3')
+    const error4 = document.getElementById('error4')
+    const error5 = document.getElementById('error5')
+    const error6 = document.getElementById('error6')
+    const error7 = document.getElementById('error7')
+
+      
       const streetVal = streetField.value;
       const cityVal = cityField.value;
       const phoneVal = phoneField.value;
@@ -409,6 +453,69 @@ function showToast(data,result) {
       const nameVal = nameField.value;
       const priceVal = priceField.innerHTML
       const countryVal = countryField.value
+
+      const nameRegex = /^[A-Za-z\s]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^\d{10}$/;
+  const zipRegex = /^\d{6}$/; 
+
+      
+  let isValid = true;
+
+
+  // Validate Full Name
+  if (!nameRegex.test(nameVal)) {
+    displayError('error1', 'Full Name should only contain letters and spaces.');
+    isValid = false;
+  }
+
+  // Validate Email
+  if (!emailRegex.test(emailVal)) {
+    displayError('error2', 'Please enter a valid email.');
+    isValid = false;
+  }
+
+  // Validate Street Address
+  if (streetVal === '') {
+    displayError('error3', 'Street Address is required.');
+    isValid = false;
+  }
+
+  // Validate City
+  if (!nameRegex.test(cityVal)) {
+    displayError('error5', 'City name should only contain letters and spaces.');
+    isValid = false;
+  }
+
+  // Validate State
+  if (!nameRegex.test(stateVal)) {
+    displayError('error6', 'State name should only contain letters and spaces.');
+    isValid = false;
+  }
+
+  // Validate Country
+  if (!nameRegex.test(countryVal)) {
+    displayError('error7', 'Country name should only contain letters and spaces.');
+    isValid = false;
+  }
+
+  // Validate Zip Code
+  if (!zipRegex.test(zipVal)) {
+    displayError('error8', 'Please enter a valid Zip Code.');
+    isValid = false;
+  }
+
+  // Validate Phone Number
+  if (!phoneRegex.test(phoneVal)) {
+    displayError('error4', 'Phone number should be 10 digits.');
+    isValid = false;
+  }
+
+  if (!isValid) {
+    return; // If validation fails, stop further processing (i.e., prevent fetch)
+  }
+
+
 
       try {
         const response = await fetch(`/checkout`, {
