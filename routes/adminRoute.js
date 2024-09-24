@@ -29,4 +29,8 @@ admin.post('/editCategory',auth.isLogin,adminController.editCategory)
 admin.get('/unlistCategory',auth.isLogin,adminController.unlistCategory)
 admin.get('/listCategory',auth.isLogin,adminController.listCategory)
 admin.get('/deleteCategory',auth.isLogin,adminController.deleteCategory)
+
+//order management
+admin.get('/orderManagement',auth.isLogin,adminController.orderManagementLoad)
+admin.get('/orderStatus',auth.isLogin,adminController.orderStatus)
 module.exports = admin

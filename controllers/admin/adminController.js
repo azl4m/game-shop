@@ -2,6 +2,7 @@ const path = require("path");
 const productModel = require("../../models/productModel");
 const userModel = require("../../models/userModel");
 const categoryModel = require("../../models/categoryModel");
+const orderModel = require("../../models/orderModel");
 const multer = require("multer");
 const sharp = require("sharp");
 const fs = require("fs");
@@ -52,10 +53,12 @@ const processImages = async (files, name) => {
       await sharp(file.path)
         .resize(300, 300) // Customize as needed
         .toFile(newPath);
-      processedFiles.push(`uploads/cropped-${name}-${i}${path.extname(file.originalname)}`);
+      processedFiles.push(
+        `uploads/cropped-${name}-${i}${path.extname(file.originalname)}`
+      );
       fs.unlinkSync(file.path);
     } catch (error) {
-      console.error('Error processing image:', error);
+      console.error("Error processing image:", error);
     }
     i++;
   }
@@ -110,7 +113,7 @@ const addProduct = async (req, res) => {
       ];
 
       // const admin = await userModel.findById({_id:req.session.user}
-      console.log('Files received:', req.files);
+      console.log("Files received:", req.files);
       const images = await processImages(req.files, req.body.productName);
       const categoryId = await categoryModel.findOne({
         categoryName: req.body.category,
@@ -207,7 +210,7 @@ const editProduct = async (req, res) => {
     try {
       const productId = req.body.productId;
       console.log(productId);
-      
+
       const product = await productModel.findById(productId);
 
       if (!product) {
@@ -246,7 +249,7 @@ const editProduct = async (req, res) => {
       // Save the updated product to the database
       await product.save();
 
-      res.redirect("/productManagement")
+      res.redirect("/productManagement");
     } catch (error) {
       console.log("Error at updating product: " + error);
       res.status(500).json({ message: error.message });
@@ -469,11 +472,9 @@ const editCategory = async (req, res) => {
       categoryName: categoryName,
     });
     if (existingCat) {
-      return res
-        .status(400)
-        .json({
-          error: "Category name already exists please choose another one",
-        });
+      return res.status(400).json({
+        error: "Category name already exists please choose another one",
+      });
     }
     const category = await categoryModel.findById({ _id: categoryId });
     const updateCategory = await category.updateOne({
@@ -531,6 +532,45 @@ const deleteCategory = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+//order management
+const orderManagementLoad = async (req, res) => {
+  try {
+    const search = req.query.search || ""; // Get search query
+    const page = parseInt(req.query.page) || 1; // Default page is 1
+    const limit = 10; // Limit per page
+    const skip = (page - 1) * limit;
+
+    const orders = await orderModel
+      .find({})
+      .populate({ path: "user", select: "username email" })
+      .sort({ orderDate: -1 })
+      .skip(skip)
+      .limit(limit);
+    const totalOrders = await orderModel.countDocuments({});
+    const totalPages = Math.ceil(totalOrders / limit);
+    res.render("orderManagement", {
+      data: orders,
+      totalPages: totalPages,
+      currentPage: page,
+      totalOrders: totalOrders,
+      searchQuery: search,
+    });
+  } catch (error) {
+    console.log("error loading order management :" + error);
+    return res.status(500).json({ message: "internal server error" });
+  }
+};
+const orderStatus = async (req,res) => {
+  try {
+    const orderid = req.query.id
+    const orderStatus = req.query.status
+    await orderModel.updateOne({_id:orderid},{$set:{orderStatus:orderStatus}})
+    return res.redirect("/admin/orderManagement")
+  } catch (error) {
+    console.log("error changing delivery status :"+error);
+    
+  }
+}
 module.exports = {
   pageNotFound,
   addProduct,
@@ -553,4 +593,6 @@ module.exports = {
   restoreProduct,
   deleteCategory,
   unlistProduct,
+  orderManagementLoad,
+  orderStatus
 };

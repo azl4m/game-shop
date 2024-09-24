@@ -1,0 +1,110 @@
+<%- include("../partials/admin/header.ejs")%>
+<div id="page-wrapper">
+   <div class="header">
+      <h1 class="page-header">Order Management</h1>
+      <ol class="breadcrumb">
+         <li><a href="/admin/">Dashboard</a></li>
+         <li class="active">Order Management</li>
+      </ol>
+   </div>
+   <div id="page-inner">
+      <div class="row">
+         <div class="col-md-12">
+            <!-- Advanced Tables -->
+            <div class="card">
+               <div class="card-action">Orders List</div>
+               <div class="card-content">
+                  <div class="table-responsive">
+                     <div class="row">
+                        <div class="col-sm-6">
+                           <div id="dataTables-example_filter" class="dataTables_filter">
+                              <form action="" method="get">
+                                 <label for="s">Search:      </label><input
+                                    type="search"
+                                    class="form-control input-sm"
+                                    aria-controls="dataTables-example"
+                                    name="search"
+                                    id="search"
+                                    value="<%=searchQuery%>"
+                                    />
+                                 <input type="submit" value="Search">
+                              </form>
+                           </div>
+                        </div>
+                     </div>
+                     <table
+                        class="table table-striped table-bordered table-hover"
+                        id="dataTables-example"
+                        >
+                        <thead>
+                           <tr>
+                              <th>Name</th>
+                              <th>Email</th>
+                              <th>Price</th>
+                              <th>Payment Method</th>
+                              <th>Order Status</th>
+                              <th>Change Status</th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                            <% if (typeof data !== 'undefined') { %>
+                                <% for (let i = 0; i < data.length; i++) { %>
+                                    <tr class="odd gradeX">
+                                        <td><%= data[i].user.username %></td>
+                                        <td><%= data[i].user.email %></td>
+                                        <td><%= data[i].totalPrice %></td>
+                                        <td><%= data[i].paymentMethod %></td>
+                                        <td><%= data[i].orderStatus %></td>
+                                        <td class="">
+                                            
+                                            <% if (data[i].orderStatus !== 'Pending') { %>
+                                                <button class="btn-warning">
+                                                    <a href="/admin/orderStatus?id=<%=data[i]._id%>&status=Pending" style="text-decoration: none; color: white;">Pending</a>                                                </button>
+                                            <% } %>
+                                            <% if (data[i].orderStatus !== 'Processing') { %>
+                                                <button class="btn-info">
+                                                    <a href="/admin/orderStatus?id=<%=data[i]._id%>&status=Processing" style="text-decoration: none; color: white;">Processing</a>                                                </button>
+                                            <% } %>
+                                            <% if (data[i].orderStatus !== 'Shipped') { %>
+                                                <button class="btn-light">
+                                                    <a href="/admin/orderStatus?id=<%=data[i]._id%>&status=Shipped" style="text-decoration: none; color: rgb(0, 0, 0);">Shipped</a>                                                </button>
+                                            <% } %>
+                                            <% if (data[i].orderStatus !== 'Delivered') { %>
+                                                <button class="btn-success">
+                                                    <a href="/admin/orderStatus?id=<%=data[i]._id%>&status=Delivered" style="text-decoration: none; color: white;">Delivered</a>                                                </button>
+                                            <% } %>
+                                            <% if (data[i].orderStatus !== 'Cancelled') { %>
+                                                <button class="btn-danger">
+                                                   <a href="/admin/orderStatus?id=<%=data[i]._id%>&status=Cancelled" style="text-decoration: none; color: white;">Cancelled</a>                                                </button>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                <% } %>
+                            <% } %>
+                         </tbody>
+                     </table>
+                  </div>
+               </div>
+            </div>
+            <!--End Advanced Tables -->
+         </div>
+      </div>
+      <div class="col-sm-6">
+         <div class="dataTables_paginate paging_simple_numbers" id="dataTables-example_paginate">
+            <ul class="pagination">
+               <% if(typeof totalPages !== 'undefined'){
+                %>
+                <% for(let i = 1;i<=totalPages;i++){%>
+                    <li class="page-item paginate_button <%=(i===currentPage) ? 'active' : '' %>" aria-controls="dataTables-example" tabindex="0"><a href="?page=<%=i%>"><%=i%></a></li>
+                <%}%>
+               <%}%>
+               
+            </ul>
+         </div>
+      </div>
+      <script>
+         
+      </script>
+      <%- include("../partials/admin/footer.ejs")%>
+   </div>
+</div>
