@@ -1,5 +1,23 @@
 <%- include("../partials/user/header.ejs")%>
 <style>
+  @media (min-width: 1025px) {
+    .h-custom {
+      height: 100vh !important;
+    }
+  }
+
+  .card-registration .select-input.form-control[readonly]:not([disabled]) {
+    font-size: 1rem;
+    line-height: 2.15;
+    padding-left: 0.75em;
+    padding-right: 0.75em;
+  }
+
+  .card-registration .select-arrow {
+    top: 13px;
+  }
+
+
     /* Toast notification styles */
 .toast {
   visibility: hidden;
@@ -55,69 +73,185 @@
   visibility: hidden;
 }
 
-
 </style>
+<section class="h-100 h-custom" style="background-color: #d2c9ff">
+  <div class="container py-5 h-100">
+    <div class="row d-flex justify-content-center align-items-center h-100">
+      <div class="col-12">
+        <div
+          class="card card-registration card-registration-2"
+          style="border-radius: 15px"
+        >
+          <div class="card-body p-0">
+            <div class="row g-0">
+              <div class="col-lg-8">
+                <div class="p-5">
+                  <div
+                    class="d-flex justify-content-between align-items-center mb-5"
+                  >
+                    <h1 class="fw-bold mb-0">Shopping Cart</h1>
+                    <h6 class="mb-0 text-muted"><%=items.length %> items</h6>
+                  </div>
+                  <hr class="my-4" />
+                  <%for(let i=0;i<items.length;i++){%>
 
-
-
-<div class="small-container cart-page">
-    <table>
-        <tr>
-            <th>Product</th>
-            <th>Quantity</th>
-            <th>Subtotal</th>
-        </tr>
-    
-            <%for(let i=0;i<items.length;i++){%>
-                <tr>
-            <td>
-                <div class="cart-info">
-                    <img src="<%=items[i].images[0]%>" alt="<%=items[i].productName%>">
-                    <div>
-                        <p><%=items[i].productName%></p>
-                        <small></small>
-                        <br>
-                        <a href="#" class="remove-item" data-id="<%= items[i].productId%>">Remove</a>
+                  <div
+                    class="row mb-4 d-flex justify-content-between align-items-center"
+                  >
+                    <div class="col-md-2 col-lg-2 col-xl-2">
+                      <img
+                        src="<%=items[i].images[0]%>"
+                        class="img-fluid rounded-3"
+                        alt="<%=items[i].productName%>"
+                      />
                     </div>
+                    <div class="col-md-3 col-lg-3 col-xl-3">
+                      <h6 class="text-muted"></h6>
+                      <h6 class="mb-0"><%=items[i].productName%></h6>
+                    </div>
+                    <div class="col-md-3 col-lg-3 col-xl-2 d-flex">
+                      <button
+                        data-mdb-button-init
+                        data-mdb-ripple-init
+                        class="btn btn-link px-2"
+                        
+                      >
+                        <i class="fas fa-minus"></i>
+                      </button>
+
+                      <input
+                        id="form1"
+                        min="0"
+                        name="quantity"
+                        value="<%=items[i].quantity%>"
+                        type="number"
+                        class="form-control form-control-sm cart-quantity"
+                        data-id="<%= items[i].productId%>">
+                      
+
+                      <button
+                        data-mdb-button-init
+                        data-mdb-ripple-init
+                        class="btn btn-link px-2"
+                        
+                      >
+                        <i class="fas fa-plus"></i>
+                      </button>
+                    </div>
+                    <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
+                      <h6 class="mb-0">₹ <%=items[i].price%></h6>
+                    </div>
+                    <div class="col-md-1 col-lg-1 col-xl-1 text-end">
+                      <a href="#!" class="text-muted"
+                        ><a href="" class="remove-item" data-id="<%= items[i].productId%>"><i class="fas fa-times"></i></a></i
+                      ></a>
+                    </div>
+                  </div>
+                  <%}%>
+                  <div id="toast" class="toast"></div>
+
+                  <hr class="my-4" />
+
+                  <hr class="my-4" />
+
+                  <div class="pt-5">
+                    <h6 class="mb-0">
+                      <a href="#!" class="text-body"
+                        ><i class="fas fa-long-arrow-alt-left me-2"></i>Back to
+                        shop</a
+                      >
+                    </h6>
+                  </div>
                 </div>
-            </td>
-            <td><input style="width: fit-content;" type="number" class="cart-quantity" value="<%=items[i].quantity%>" data-id="<%= items[i].productId%>"></td>
-            <td class="itemprice"><%=items[i].price%></td>
-        </tr>
-            <%}%>
+              </div>
+              <div class="col-lg-4 bg-body-tertiary">
+                <div class="p-5">
+                  <h3 class="fw-bold mb-5 mt-2 pt-1">Summary</h3>
+                  <hr class="my-4" />
+                  <table>
+                    <tr>
+                      <td>
+                        <h5 class="text-uppercase">items </h5>
+                      </td>
+                      <td>
+                        <h5><%=items.length %></h5>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                    <h5 id="subtotal">subtotal </h5>
+                      </td>
+                      <td>
+                        <h5>
+                          ₹<%=subtotal%>
+                        </h5>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                    <h5 id="tax">tax </h5>
+                      </td>
+                      <td>
+                        <h5>
+                        ₹<%=tax%>
+                        </h5>
+                      </td>
+                    </tr>
+                  </table>
+                   
+                  
 
-    </table>
-    <div id="toast" class="toast">
-    </div>
-    <div class="total-price">
-        <table>
-            <tr>
-                <td>Subtotal</td>
-                <td id="subtotal"><%=subtotal%></5></td>
-            </tr>
-            <tr>
-                <td>Tax</td>
-                <td id="tax"><%=tax%></td>
-            </tr>
-            <tr>
-                <td>Delivery</td>
-                <td id="delivery"><%=deliveryCharge%></td>
-            </tr>
-            <tr>
-                <td>Total</td>
-                <td id="total"><%=total%></td>
-            </tr>
-            <tr>
-                <td>
-                    <button class="btn-success p-1"><a id="checkoutLink" href="/checkout" style="text-decoration: none; color: white;">Checkout</a></button>
-                </td>
-            </tr>
-        </table>
-    </div>
-</div>
+                  
 
+                  <h5 class="text-uppercase mb-3">Shipping</h5>
+
+                  <div class="mb-4 pb-2">
+                    <select data-mdb-select-init>
+                      <option value="1">Standard-Delivery- ₹<%=deliveryCharge%></option>
+                    </select>
+                  </div>
+
+                  <h5 class="text-uppercase mb-3">Give code</h5>
+
+                  <div class="mb-5">
+                    <div data-mdb-input-init class="form-outline">
+                      <input
+                        type="text"
+                        id="form3Examplea2"
+                        class="form-control form-control-lg"
+                      />
+                      <label class="form-label" for="form3Examplea2"
+                        >Enter your code</label
+                      >
+                    </div>
+                  </div>
+
+                  <hr class="my-4" />
+
+                  <div class="d-flex justify-content-between mb-5">
+                    <h5 class="text-uppercase">Total price</h5>
+                    <h5 id="total">₹ <%=total%></h5>
+                  </div>
+
+                  <button
+                    type="button"
+                    data-mdb-button-init
+                    data-mdb-ripple-init
+                    class="btn btn-dark btn-block btn-lg"
+                    data-mdb-ripple-color="dark"
+                  ><a href="/checkout" style="text-decoration: none; color: white;" id="checkoutLink">Place order</a>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 <script>
-    function showToast(data,result) {
+  function showToast(data,result) {
   // toast.className.replace("show","");
   const toast = document.getElementById("toast");
   toast.className = "toast show";
@@ -132,45 +266,31 @@
     toast.className = toast.className.replace("show", "");
   }, 3000); // The toast will disappear after 3 seconds
 }
-
-    document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
         const checkoutLink = document.getElementById("checkoutLink")
         const subtotalid = document.getElementById("subtotal")
         const taxid = document.getElementById('tax')
         const totalid = document.getElementById('total')
 
         const quantityInputs = document.querySelectorAll('.cart-quantity');
-
-    quantityInputs.forEach(input => {
+        quantityInputs.forEach(input => {
+        // Handle manual input changes
         input.addEventListener('change', async (event) => {
-            const newQuantity = event.target.value;
-            const itemId = event.target.getAttribute('data-id');
+            await updateQuantity(event.target);
+        });
 
-            if (newQuantity < 1 || newQuantity > 5) {
-                showToast("Quantity Should be between 1 and 5",0)
-                event.target.value = Math.max(1, Math.min(5, newQuantity)); // Resets the value within the valid range
-                return;
-            }
+        // Handle plus button click
+        input.parentNode.querySelector('.btn-link.px-2 i.fas.fa-plus').parentNode.addEventListener('click', async (event) => {
+            const quantityInput = event.currentTarget.parentNode.querySelector('.cart-quantity');
+            quantityInput.stepUp(); // Increase quantity
+            await updateQuantity(quantityInput); // Call the same update logic
+        });
 
-            // Send the new quantity to the server
-            try {
-                const response = await fetch(`/updateCartQuantity`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ itemId, newQuantity })
-                });
-
-                if (response.ok) {
-                    // Reload the page to show updated cart or update the subtotal dynamically
-                    window.location.reload();
-                } else {
-                    console.error('Failed to update quantity');
-                }
-            } catch (error) {
-                console.error('Error updating quantity:', error);
-            }
+        // Handle minus button click
+        input.parentNode.querySelector('.btn-link.px-2 i.fas.fa-minus').parentNode.addEventListener('click', async (event) => {
+            const quantityInput = event.currentTarget.parentNode.querySelector('.cart-quantity');
+            quantityInput.stepDown(); // Decrease quantity
+            await updateQuantity(quantityInput); // Call the same update logic
         });
     });
 
@@ -207,6 +327,37 @@
         });
       });
     });
-    </script>
-    
+
+
+    async function updateQuantity(inputElement) {
+    const newQuantity = inputElement.value;
+    const itemId = inputElement.getAttribute('data-id');
+
+    if (newQuantity < 1 || newQuantity > 5) {
+        showToast("Quantity Should be between 1 and 5", 0);
+        inputElement.value = Math.max(1, Math.min(5, newQuantity)); // Resets the value within the valid range
+        return;
+    }
+
+    // Send the new quantity to the server
+    try {
+        const response = await fetch(`/updateCartQuantity`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ itemId, newQuantity })
+        });
+
+        if (response.ok) {
+            // Reload the page to show updated cart or update the subtotal dynamically
+            window.location.reload();
+        } else {
+            console.error('Failed to update quantity');
+        }
+    } catch (error) {
+        console.error('Error updating quantity:', error);
+    }
+}
+</script>
 <%- include("../partials/user/footer.ejs")%>
