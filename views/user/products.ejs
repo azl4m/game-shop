@@ -1,0 +1,70 @@
+<%- include("../partials/user/header.ejs")%>
+<style>
+    .products-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px; /* Adjust the space between products */
+}
+
+</style>
+<!-- All Products -->
+
+<div class="template-small-container">
+    <div class="template-row template-row-2">
+        <h2>All Products</h2>
+        <form action="" method="get">
+            <input type="text" name="search" id="search" value="<%= searchQuery %>" placeholder="search">
+            <select name="sortBy" id="sortBy">
+                <option value="date" <%= sortBy === 'date' ? 'selected' : '' %>>Sort By Date</option>
+                <option value="price" <%= sortBy === 'price' ? 'selected' : '' %>>Sort By Price</option>
+                <option value="alphabet" <%= sortBy === 'alphabet' ? 'selected' : '' %>>Sort Alphabetically</option>
+            </select>
+            <select name="sortOrder" id="sortOrder">
+                <option value="asc" <%= sortOrder === 1 ? 'selected' : '' %>>Ascending</option>
+                <option value="desc" <%= sortOrder === -1 ? 'selected' : '' %>>Descending</option>
+            </select>
+            <input type="submit" value="Search and Sort">
+        </form>
+               
+    </div>
+     <!-- Flexbox container for products -->
+     <div class="products-container">
+        <!-- Dynamically display products -->
+        <% products.forEach(function(product) { %>
+            <div class="template-col-4">
+                <a href="/productDetails?id=<%= product._id %>"><img src="<%= product.images[0] %>" alt="<%= product.productName %>"></a>
+                <h4><%= product.productName %></h4>
+                <div class="rating">
+                    <i class="template-fa template-fa-star"></i>
+                    <i class="template-fa template-fa-star"></i>
+                    <i class="template-fa template-fa-star"></i>
+                    <i class="template-fa template-fa-star"></i>
+                    <i class="template-fa template-fa-star-o"></i>
+                </div>
+                <p>₹<%= product.price %></p>
+            </div>
+        <% }) %>
+    </div>
+ 
+    <!-- <div class="template-row">
+        <div class="template-col-4">
+            <img src="images/product-9.jpg">
+            <h4>Red Printed T-Shirt</h4>
+            <div class="rating">
+                <i class="template-fa template-fa-star"></i>
+                <i class="template-fa template-fa-star"></i>
+                <i class="template-fa template-fa-star"></i>
+                <i class="template-fa template-fa-star"></i>
+                <i class="template-fa template-fa-star-o"></i>
+            </div>
+            <p>$50.00</p>
+        </div>
+    </div> -->
+    <div class="page-btn">
+        <%for(let  i=1;i<=totalPages.length;i++){%>
+        <span><%=i%></span>
+        <%}%>
+    </div>
+</div>
+
+<%- include("../partials/user/footer.ejs")%>

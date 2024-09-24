@@ -42,6 +42,9 @@ user.get("/logout",userController.logout)
 //for product details page
 user.get('/productDetails',userController.productDetailsLoad)
 
+//products
+user.get('/products',userController.productsLoad)
+
 //for cart
 user.get("/addToCart",addminAuth.isLogout,auth.isLogin,userController.addToCart)
 user.get("/cart",addminAuth.isLogout,auth.isLogin,userController.cartLoad)

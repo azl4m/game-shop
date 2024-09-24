@@ -734,22 +734,30 @@ const checkoutLoad = async (req, res) => {
   try {
     const userId = req.session.user;
     const user = await userModel.findOne({ _id: userId });
-    const cart = await cartModel
-      .findOne({ userId })
-      .populate({
-        path: 'items.productId',
-        select: 'price name'
-      });
+    const cart = await cartModel.findOne({ userId }).populate({
+      path: "items.productId",
+      select: "price name",
+    });
 
     if (!cart) {
       return res.status(400).json({ message: "No cart found" });
     }
 
-    console.log(JSON.stringify(cart, null, 2)); 
+    console.log(JSON.stringify(cart, null, 2));
 
-    const { street, city, phone, state, pinCode, email, fullname, totalPrice, country } = req.body;
+    const {
+      street,
+      city,
+      phone,
+      state,
+      pinCode,
+      email,
+      fullname,
+      totalPrice,
+      country,
+    } = req.body;
 
-    const cartItems = cart.items.map(item => {
+    const cartItems = cart.items.map((item) => {
       if (!item.productId || !item.productId._id || !item.productId.price) {
         throw new Error("Cart item missing product or price information");
       }
@@ -757,7 +765,7 @@ const checkoutLoad = async (req, res) => {
         product: item.productId._id,
         price: item.productId.price,
         quantity: item.quantity,
-        platform: item.platform
+        platform: item.platform,
       };
     });
 
@@ -772,8 +780,8 @@ const checkoutLoad = async (req, res) => {
         phoneNumber: phone,
         state: state,
         postalCode: pinCode,
-        country: country
-      }
+        country: country,
+      },
     });
 
     const saveOrder = await order.save();
@@ -819,6 +827,89 @@ const getCheckoutPage = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+//all products
+const productsLoad = async (req, res) => {
+  try {
+    const search = req.query.search || "";
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    // Sorting parameters from query
+    const sortBy = req.query.sortBy || "createdAt"; // Default sorting by createdAt
+    const sortOrder = req.query.sortOrder === "desc" ? -1 : 1; // Default is ascending
+
+    const sortOptions = {
+      price: { price: sortOrder }, // Sort by price
+      date: { createdAt: sortOrder }, // Sort by date
+      alphabet: { productName: sortOrder }, // Sort alphabetically
+    };
+
+    const sort = sortOptions[sortBy] || sortOptions.date; 
+
+    // Query to count total products matching the criteria (without pagination)
+    const totalProductsCount = await productModel.countDocuments({
+      $and: [
+        { isDeleted: false },
+        { isListed: true },
+        { productName: { $regex: ".*" + search + ".*", $options: "i" } },
+      ],
+    });
+
+    const products = await productModel
+      .find({
+        $and: [
+          { isDeleted: false },
+          { isListed: true },
+          { productName: { $regex: ".*" + search + ".*", $options: "i" } },
+        ],
+      })
+      .populate({
+        path: "category",
+        select: "categoryName isListed isDeleted",
+      })
+      .skip(skip)
+      .limit(limit)
+      .sort(sort)
+    const filteredProducts = products.filter(
+      (product) =>
+        product.category &&
+        product.category.isListed &&
+        !product.category.isDeleted
+    );
+
+    if (!filteredProducts.length) {
+      return res.status(400).json({ message: "No products found" });
+    }
+    const totalPages = Math.ceil(totalProductsCount / limit);
+
+    if (req.session.user) {
+      const user = await userModel.findById({ _id: req.session.user });
+      return res.render("products", {
+        products: filteredProducts,
+        userDetails: user,
+        totalPages: totalPages,
+        currentPage: page,
+        searchQuery: search,
+        sortBy,
+        sortOrder
+      });
+    }
+    return res.render("products", {
+      products: filteredProducts,
+      totalPages: totalPages,
+      currentPage: page,
+      searchQuery: search,
+      sortBy,
+      sortOrder
+    });
+  } catch (error) {
+    console.log("Error loading products: " + error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 module.exports = {
   loadHomePage,
   pageNotFound,
@@ -847,4 +938,5 @@ module.exports = {
   resetPassword,
   checkoutLoad,
   getCheckoutPage,
+  productsLoad,
 };
