@@ -1,0 +1,40 @@
+<%- include("../partials/user/header.ejs")%>
+
+<div class="container mt-3 mt-md-5">
+  <h2 class="text-charcoal hidden-sm-down">Your Orders</h2>
+  <h5 class="text-charcoal hidden-md-up">Your Orders</h5>
+  <div class="row">
+    <div class="col-12">
+      <div class="list-group mb-5">
+        <% orders.forEach(order=>{ %>
+        <div class="list-group-item p-3 bg-snow" style="position: relative">
+          <div class="row w-100 no-gutters">
+            <div class="col-6 col-md">
+              <h6 class="text-charcoal mb-0 w-100">Order Id</h6>
+              <p class="text-pebble mb-0 w-100 mb-2 mb-md-0"
+                ><%=order.orderNumber%></p
+              >
+            </div>
+            <div class="col-6 col-md">
+              <h6 class="text-charcoal mb-0 w-100">Date</h6>
+              <p class="text-pebble mb-0 w-100 mb-2 mb-md-0"><%= moment(order.orderDate).format("MMM Do, YYYY") %></p>
+            </div>
+            <div class="col-6 col-md">
+              <h6 class="text-charcoal mb-0 w-100">Total</h6>
+              <p class="text-pebble mb-0 w-100 mb-2 mb-md-0">₹<%=order.totalPrice%></p>
+            </div>
+            <div class="col-6 col-md">
+              <h6 class="text-charcoal mb-0 w-100">Shipped To</h6>
+              <p class="text-pebble mb-0 w-100 mb-2 mb-md-0"><%=order.shippingAddress.name%></p>
+            </div>
+            <div class="col-12 col-md-3">
+              <a href="/orderDetails?id=<%=order._id%>" class="btn btn-primary w-100">View Order</a>
+            </div>
+          </div>
+        </div>
+        <%})%>
+      </div>
+    </div>
+  </div>
+</div>
+<%- include("../partials/user/footer.ejs")%>

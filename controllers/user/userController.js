@@ -7,7 +7,8 @@ const addressModel = require("../../models/addressModel");
 const categoryModel = require("../../models/categoryModel");
 const orderModel = require("../../models/orderModel");
 const randomString = require("randomstring");
-
+const moment = require("moment");
+const mongoose = require("mongoose");
 const OTP_TIMEOUT = 30 * 1000;
 
 //for hashing password
@@ -337,17 +338,26 @@ const productDetailsLoad = async (req, res) => {
     const productId = req.query.id;
     const product = await productModel.findById({ _id: productId });
     const category = categoryModel.findOne({ _id: product.category });
+    const platforms = await productModel.aggregate([
+      { $match: { productName: product.productName } },
+      { $unwind: "$variant" },
+      { $group: { _id: "$variant.platforms" } },
+    ]);
+    console.log(platforms);
+
     if (req.session.user) {
       const user = await userModel.findById({ _id: req.session.user });
       return res.render("productDetails", {
         userDetails: user,
         product: product,
         category: category,
+        platforms: platforms,
       });
     }
     return res.render("productDetails", {
       product: product,
       category: category,
+      platforms,
     });
   } catch (error) {
     console.log("error loading product details page :" + error);
@@ -362,10 +372,12 @@ const addToCart = async (req, res) => {
     const quantity = parseInt(req.query.quantity);
     const platform = req.query.platform;
     const userId = req.session.user;
+    const product = await productModel.findById(productId);
     let cart = await cartModel.findOne({ userId: userId });
     if (cart) {
       const itemIndex = cart.items.findIndex(
-        (item) => item.productId.toString() === productId
+        (item) =>
+          item.productId.toString() === productId && item.platform === platform
       );
       if (itemIndex > -1) {
         cart.items[itemIndex].quantity += quantity;
@@ -395,7 +407,7 @@ const cartLoad = async (req, res) => {
   try {
     const userId = req.session.user;
     const user = await userModel.findOne({ _id: userId });
-
+    let cartIsEmpty = true;
     if (user) {
       // Fetch the cart for the user
       const cart = await cartModel.findOne({ userId: userId }).populate({
@@ -405,6 +417,7 @@ const cartLoad = async (req, res) => {
       });
 
       if (cart) {
+        cartIsEmpty = false;
         const { subtotal, tax, total, delivery } = calculateCartTotals(cart);
         // Extract product IDs and quantity for further use
         const items = cart.items.map((item) => ({
@@ -413,6 +426,7 @@ const cartLoad = async (req, res) => {
           productName: item.productId.productName,
           images: item.productId.images,
           price: item.productId.price,
+          platform: item.platform,
         }));
 
         res.render("cart", {
@@ -423,9 +437,21 @@ const cartLoad = async (req, res) => {
           tax: tax,
           total: total,
           deliveryCharge: delivery,
+          empty: cartIsEmpty,
+          message: "",
         });
       } else {
-        res.status(404).json({ message: "Cart not found" });
+        res.render("cart", {
+          cart: "",
+          items: "",
+          userDetails: "",
+          subtotal: "",
+          tax: "",
+          total: "",
+          deliveryCharge: "",
+          message: "Cart is empty",
+          empty: cartIsEmpty,
+        });
       }
     } else {
       res.status(400).json({ message: "User not found" });
@@ -438,7 +464,8 @@ const cartLoad = async (req, res) => {
 //remove from cart
 const removeFromCart = async (req, res) => {
   try {
-    const { itemId } = req.body;
+    const { itemId, platform } = req.body;
+
     const userId = req.session.user;
 
     const cart = await cartModel.findOne({ userId });
@@ -449,7 +476,8 @@ const removeFromCart = async (req, res) => {
 
     // Remove the item from the cart
     const filteredItems = cart.items.filter(
-      (item) => item.productId.toString() !== itemId
+      (item) =>
+        !(item.productId.toString() === itemId && item.platform === platform)
     );
     cart.items = filteredItems;
 
@@ -468,7 +496,7 @@ const removeFromCart = async (req, res) => {
 
 const updateCartQuantity = async (req, res) => {
   try {
-    const { itemId, newQuantity } = req.body;
+    const { itemId, newQuantity, platform } = req.body;
     const userId = req.session.user;
 
     const cart = await cartModel.findOne({ userId });
@@ -478,7 +506,8 @@ const updateCartQuantity = async (req, res) => {
 
     // Find the item in the cart and update its quantity
     const itemIndex = cart.items.findIndex(
-      (item) => item.productId.toString() === itemId
+      (item) =>
+        item.productId.toString() === itemId && item.platform === platform
     );
     if (itemIndex !== -1) {
       cart.items[itemIndex].quantity = newQuantity;
@@ -756,7 +785,19 @@ const checkoutLoad = async (req, res) => {
       totalPrice,
       country,
     } = req.body;
+    function generateUniqueOrder() {
+      let prefix = "ORD";
+      let middle = Date.now();
+      const characters =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      let suffix = "";
 
+      for (let i = 0; i < 4; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        suffix += characters[randomIndex];
+      }
+      return `${prefix}-${middle}-${suffix}`;
+    }
     const cartItems = cart.items.map((item) => {
       if (!item.productId || !item.productId._id || !item.productId.price) {
         throw new Error("Cart item missing product or price information");
@@ -768,9 +809,10 @@ const checkoutLoad = async (req, res) => {
         platform: item.platform,
       };
     });
-
+    const orderNumber = generateUniqueOrder();
     const order = new orderModel({
       user: userId,
+      orderNumber: orderNumber,
       cartItems: cartItems,
       totalPrice: totalPrice,
       shippingAddress: {
@@ -808,6 +850,7 @@ const getCheckoutPage = async (req, res) => {
       name: item.productId.productName,
       price: item.productId.price,
       quantity: item.quantity,
+      platform: item.platform,
     }));
 
     const addresses = await addressModel.find({ userId });
@@ -835,6 +878,10 @@ const productsLoad = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
     const skip = (page - 1) * limit;
+    const filter = req.query.filter || "";
+    const categories = await categoryModel.find({
+      $and: [{ isDeleted: false }, { isListed: true }],
+    });
 
     // Sorting parameters from query
     const sortBy = req.query.sortBy || "createdAt"; // Default sorting by createdAt
@@ -846,32 +893,34 @@ const productsLoad = async (req, res) => {
       alphabet: { productName: sortOrder }, // Sort alphabetically
     };
 
-    const sort = sortOptions[sortBy] || sortOptions.date; 
+    const sort = sortOptions[sortBy] || sortOptions.date;
 
-    // Query to count total products matching the criteria (without pagination)
-    const totalProductsCount = await productModel.countDocuments({
+    const query = {
       $and: [
         { isDeleted: false },
         { isListed: true },
         { productName: { $regex: ".*" + search + ".*", $options: "i" } },
       ],
-    });
+    };
+    let filteredCat;
+    // Conditionally add the category filter if it is not an empty string
+    if (filter && filter.trim() !== "") {
+      query.$and.push({ category: filter });
+      const category = await categoryModel.findOne({ _id: filter });
+      filteredCat = category ? category.categoryName : null;
+    }
 
+    // Query to count total products matching the criteria (without pagination)
+    const totalProductsCount = await productModel.countDocuments(query);
     const products = await productModel
-      .find({
-        $and: [
-          { isDeleted: false },
-          { isListed: true },
-          { productName: { $regex: ".*" + search + ".*", $options: "i" } },
-        ],
-      })
+      .find(query)
       .populate({
         path: "category",
         select: "categoryName isListed isDeleted",
       })
       .skip(skip)
       .limit(limit)
-      .sort(sort)
+      .sort(sort);
     const filteredProducts = products.filter(
       (product) =>
         product.category &&
@@ -879,9 +928,9 @@ const productsLoad = async (req, res) => {
         !product.category.isDeleted
     );
 
-    if (!filteredProducts.length) {
-      return res.status(400).json({ message: "No products found" });
-    }
+    // if (!filteredProducts.length) {
+    //   return res.status(400).json({ message: "No products found" });
+    // }
     const totalPages = Math.ceil(totalProductsCount / limit);
 
     if (req.session.user) {
@@ -893,7 +942,9 @@ const productsLoad = async (req, res) => {
         currentPage: page,
         searchQuery: search,
         sortBy,
-        sortOrder
+        sortOrder,
+        categories,
+        filteredCat,
       });
     }
     return res.render("products", {
@@ -902,7 +953,9 @@ const productsLoad = async (req, res) => {
       currentPage: page,
       searchQuery: search,
       sortBy,
-      sortOrder
+      sortOrder,
+      categories,
+      filteredCat,
     });
   } catch (error) {
     console.log("Error loading products: " + error);
@@ -910,6 +963,41 @@ const productsLoad = async (req, res) => {
   }
 };
 
+//orders
+const ordersLoad = async (req, res) => {
+  try {
+    const userid = req.session.user;
+    const user = await userModel.findOne({ _id: userid });
+    const orders = await orderModel.find({ user: userid });
+    if (orders) {
+      res.render("orderslisting", {
+        userDetails: user,
+        orders: orders,
+        empty: false,
+        moment,
+      });
+    }
+  } catch (error) {
+    console.log("Error at orders loading :" + error);
+  }
+};
+
+const orderDetails = async (req, res) => {
+  try {
+    const orderid = req.query.id;
+    const userid = req.session.user;
+    const user = await userModel.findById(userid);
+    const order = await orderModel.findOne({ _id: orderid }).populate({
+      path: "cartItems.product",
+      select: "productName",
+    });
+
+    res.render("orderDetails", { userDetails: user, order: order, moment });
+  } catch (error) {
+    console.log("error loading order details :" + error);
+    res.status(400).json({ message: "Internal Server Error" });
+  }
+};
 module.exports = {
   loadHomePage,
   pageNotFound,
@@ -939,4 +1027,6 @@ module.exports = {
   checkoutLoad,
   getCheckoutPage,
   productsLoad,
+  ordersLoad,
+  orderDetails,
 };

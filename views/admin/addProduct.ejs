@@ -151,7 +151,7 @@
                     name="platforms[3]"
                     value="Xbox"
                   /> -->
-                  <select id="platforms" name="platforms" multiple style="display: block;">
+                  <select id="platforms" name="platforms" style="display: block;">
                     <option value="PC">PC</option>
                     <option value="PS6">PS6</option>
                     <option value="Xbox">Xbox</option>
@@ -333,6 +333,7 @@ function stockValidate() {
          img.style.height = '100px';
          img.style.marginRight = '10px';
          img.style.cursor = 'pointer';
+         img.style.imageOrientation = "norepeat"
          img.onclick = () => openCropModal(index);
          imagesToCrop.appendChild(img);
      });
@@ -416,6 +417,8 @@ function stockValidate() {
 
     // Proceed with form submission via fetch
     const formData = new FormData(this);
+    console.log(FormData);
+    
     formData.delete('productImage'); // Remove the original image files
 
     try {

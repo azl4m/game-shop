@@ -71,6 +71,10 @@ user.post('/resetPassword',addminAuth.isLogout,auth.isLogout,userController.rese
 //user profile
 user.get('/userProfile',addminAuth.isLogout,auth.isLogin,userController.userProfileLoad)
 
+//orders
+user.get('/ordersListing',addminAuth.isLogout,auth.isLogin,userController.ordersLoad)
+user.get('/orderDetails',addminAuth.isLogout,auth.isLogin,userController.orderDetails)
+
 //for page not found
 user.get("/pageNotFound",userController.pageNotFound)
 user.get('/',addminAuth.isLogout,userController.loadHomePage);

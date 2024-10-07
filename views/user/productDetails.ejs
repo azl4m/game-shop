@@ -83,9 +83,9 @@
             <h4>₹<%=product.price%></h4>
             <select id="variantSelect">
                 <option>Select Variant</option>
-                <% product.variant[0].platforms.forEach(function(platform) { %>
+                <% platforms.forEach(function(platform) { %>
                 <% if (platform !== null) { %>
-                    <option id="platform" value="<%=platform%>"><%= platform %></option>
+                    <option id="platform" value="<%=platform._id%>"><%= platform._id %></option>
                 <% } %>
                 <% }); %>
             </select>

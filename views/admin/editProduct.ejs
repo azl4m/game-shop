@@ -1,18 +1,18 @@
 <%- include("../partials/admin/header.ejs")%>
 <div id="page-wrapper">
   <div class="header">
-    <h1 class="page-header">Form Inputs Page</h1>
+    <h1 class="page-header">Edit Product</h1>
     <ol class="breadcrumb">
       <li><a href="#">Home</a></li>
-      <li><a href="#">Forms</a></li>
-      <li class="active">Data</li>
+      <li><a href="#">Product Management</a></li>
+      <li class="active">Edit Product</li>
     </ol>
   </div>
   <div id="page-inner">
     <div class="row">
       <div class="col-lg-12">
         <div class="card">
-          <div class="card-action">Basic Form Elements</div>
+          <div class="card-action">Edit Product Details</div>
           <div class="card-content">
             <form class="col s12" action="/admin/editProduct" method="post" enctype="multipart/form-data">
               <div class="row">
@@ -46,13 +46,22 @@
               </div>
               <div class="row">
                 <label for="selected images">Selected images</label>
-                <% for(let i=0;i<product.images.length;i++){ %>
+                <% for(let i=0;i<images.length;i++){ %>
                   <div class="col-md-12" style="display: block;">
                     <div class="mb-4" style="display: block;">
                       <td>
                         <input type="hidden" name="" id="imageDatas" value="<%=product.images[i]%>">
-                        <img src="<%=product.images[i]%>" alt="product image<%=i%>" >
-                        <i onclick="deleteSingleImage('<%=product.images[i]%>','<%=product._id%>')" style="position: absolute; margin-left: .5rem; cursor: pointer;"></i>
+                        <img src="/uploads/<%=images[i]%>" alt="product image<%=i%>" >
+                        <div class="row">
+                          <div class="col s12">
+                            <div class="input-field inline">
+                              <button class="deleteImages"> 
+                                <a href="/admin/deleteImage?imageid=<%=product.images[i]%>&productid=<%=product._id%>">Delete Image</a>
+                              </button> 
+                            </div>
+                          </div>
+                        </div>
+
                       </td>
                     </div>
                   </div>
@@ -168,11 +177,11 @@
                     name="platforms[4]"
                     value="Steam"
                   /> -->
-                  <select id="platforms" name="platforms" multiple style="display: block;">
-                    <option value="PC" <%= product.variant[0].platforms.includes('PC') ? 'selected' : '' %>>PC</option>
-                    <option value="PS6" <%= product.variant[0].platforms.includes('PS6') ? 'selected' : '' %>>PS6</option>
-                    <option value="Steam" <%= product.variant[0].platforms.includes('Steam') ? 'selected' : '' %>>Steam</option>
-                    <option value="Xbox" <%= product.variant[0].platforms.includes('Xbox') ? 'selected' : '' %>>Xbox</option>
+                  <select id="platforms" name="platforms" style="display: block;">
+                    <option value="PC" <%= product.variant[0].platforms==='PC' ? 'selected' : '' %>>PC</option>
+                    <option value="PS6" <%= product.variant[0].platforms==='PS6' ? 'selected' : '' %>>PS6</option>
+                    <option value="Steam" <%= product.variant[0].platforms=== 'Steam' ? 'selected' : '' %>>Steam</option>
+                    <option value="Xbox" <%= product.variant[0].platforms==='Xbox' ? 'selected' : '' %>>Xbox</option>
                   </select>
                 </div>
               </div>
@@ -194,19 +203,23 @@
     <%- include("../partials/admin/footer.ejs")%>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script>
-      function deleteSingleImage(imageId,productId){
-        $.ajax({
-          url:"/admin/deleteImage",
-          method:'post',
-          data:{imageNameToServer:imageId,productIdToServer:productId},
-          success:(response=>{
-            if(response.status===true){
-              window.location.reload()
-            }
-          })
-        })
-      }
+      // function deleteSingleImage(imageId,productId){
+      //   $.ajax({
+      //     url:"/admin/deleteImage",
+      //     method:'post',
+      //     data:{imageNameToServer:imageId,productIdToServer:productId},
+      //     success:(response=>{
+      //       if(response.status===true){
+      //         window.location.reload()
+      //       }
+      //     })
+      //   })
+      // }
       const nameid = document.getElementById("productName");
+      const deletebutton = document.querySelectorAll(".deleteImages")
+      // deletebutton.addEventListener('click',(e)=>{
+      //   e.preventDefault()
+      // })
 const priceid = document.getElementById("price");
 const descriptionid = document.getElementById("description");
 const versionid = document.getElementById("version"); // For version

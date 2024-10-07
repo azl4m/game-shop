@@ -7,7 +7,7 @@ const variantSchema = new mongoose.Schema({
     required: true,
   },
   platforms: {
-    type: [String],
+    type: String,
     required: true,
     enum: ["PC", "PS6", "Steam", "Xbox"], // List of allowed platforms
   },
@@ -22,7 +22,7 @@ const productSchema = new Schema({
     type: String,
     required: true,
   },
-  description: {
+  description: { 
     type: String,
     required: true,
   },

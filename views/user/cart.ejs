@@ -1,363 +1,352 @@
 <%- include("../partials/user/header.ejs")%>
 <style>
-  @media (min-width: 1025px) {
-    .h-custom {
-      height: 100vh !important;
-    }
-  }
 
-  .card-registration .select-input.form-control[readonly]:not([disabled]) {
-    font-size: 1rem;
-    line-height: 2.15;
-    padding-left: 0.75em;
-    padding-right: 0.75em;
-  }
-
-  .card-registration .select-arrow {
-    top: 13px;
-  }
-
-
-    /* Toast notification styles */
-.toast {
-  visibility: hidden;
-  min-width: 250px;
-  margin-left: -125px;
-  color: white;
-  text-align: center;
-  border-radius: 2px;
-  padding: 16px;
-  position: fixed;
-  z-index: 1;
-  left: 50%;
-  bottom: 30px;
-  font-size: 17px;
-}
-
-/* Show the toast */
-.toast.show {
-  visibility: visible;
-  -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-  animation: fadein 0.5s, fadeout 0.5s 2.5s;
-}
-
-/* Animations */
-@-webkit-keyframes fadein {
-  from {bottom: 0; opacity: 0;} 
-  to {bottom: 30px; opacity: 1;}
-}
-
-@-webkit-keyframes fadeout {
-  from {bottom: 30px; opacity: 1;} 
-  to {bottom: 0; opacity: 0;}
-}
-
-@keyframes fadein {
-  from {bottom: 0; opacity: 0;} 
-  to {bottom: 30px; opacity: 1;}
-}
-
-@keyframes fadeout {
-  from {bottom: 30px; opacity: 1;} 
-  to {bottom: 0; opacity: 0;}
-}
-
-.zoom {
-  position: absolute;
-  border: 1px solid #000;
-  width: 100px; /* Adjust size */
-  height: 100px; /* Adjust size */
-  background-repeat: no-repeat;
-  background-size: 200%; /* Adjust to control zoom level */
-  pointer-events: none;
-  visibility: hidden;
-}
-
+   @media (min-width: 1025px) {
+   .h-custom {
+   height: 100vh;
+   }
+   }
+   .card-registration .select-input.form-control[readonly]:not([disabled]) {
+   font-size: 1rem;
+   line-height: 2.15;
+   padding-left: 0.75em;
+   padding-right: 0.75em;
+   }
+   .card-registration .select-arrow {
+   top: 13px;
+   }
+   /* Toast notification styles */
+   .toast {
+   visibility: hidden;
+   min-width: 250px;
+   margin-left: -125px;
+   color: white;
+   text-align: center;
+   border-radius: 2px;
+   padding: 16px;
+   position: fixed;
+   z-index: 1;
+   left: 50%;
+   bottom: 30px;
+   font-size: 17px;
+   }
+   /* Show the toast */
+   .toast.show {
+   visibility: visible;
+   -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+   animation: fadein 0.5s, fadeout 0.5s 2.5s;
+   }
+   /* Animations */
+   @-webkit-keyframes fadein {
+   from {bottom: 0; opacity: 0;} 
+   to {bottom: 30px; opacity: 1;}
+   }
+   @-webkit-keyframes fadeout {
+   from {bottom: 30px; opacity: 1;} 
+   to {bottom: 0; opacity: 0;}
+   }
+   @keyframes fadein {
+   from {bottom: 0; opacity: 0;} 
+   to {bottom: 30px; opacity: 1;}
+   }
+   @keyframes fadeout {
+   from {bottom: 30px; opacity: 1;} 
+   to {bottom: 0; opacity: 0;}
+   }
+   .zoom {
+   position: absolute;
+   border: 1px solid #000;
+   width: 100px; /* Adjust size */
+   height: 100px; /* Adjust size */
+   background-repeat: no-repeat;
+   background-size: 200%; /* Adjust to control zoom level */
+   pointer-events: none;
+   visibility: hidden;
+   }
 </style>
 <section class="h-100 h-custom" style="background-color: #d2c9ff">
-  <div class="container py-5 h-100">
-    <div class="row d-flex justify-content-center align-items-center h-100">
-      <div class="col-12">
-        <div
-          class="card card-registration card-registration-2"
-          style="border-radius: 15px"
-        >
-          <div class="card-body p-0">
-            <div class="row g-0">
-              <div class="col-lg-8">
-                <div class="p-5">
-                  <div
-                    class="d-flex justify-content-between align-items-center mb-5"
-                  >
-                    <h1 class="fw-bold mb-0">Shopping Cart</h1>
-                    <h6 class="mb-0 text-muted"><%=items.length %> items</h6>
+   <div class="container py-5 h-100">
+      <div class="row d-flex justify-content-center align-items-center h-100">
+         <div class="col-12">
+            <div
+               class="card card-registration card-registration-2"
+               style="border-radius: 15px"
+               >
+               <div class="card-body p-0">
+                  <div class="row g-0">
+                     <div class="col-lg-8">
+                        <div class="p-5">
+                           <div
+                              class="d-flex justify-content-between align-items-center mb-5"
+                              >
+                              <h1 class="fw-bold mb-0">Shopping Cart</h1>
+                              <h6 class="mb-0 text-muted"><%=items.length %> items</h6>
+                           </div>
+                           <hr class="my-4" />
+                           <%for(let i=0;i<items.length;i++){%>
+                           <div
+                              class="row mb-4 d-flex justify-content-between align-items-center"
+                              >
+                              <div class="col-md-2 col-lg-2 col-xl-2">
+                                 <img
+                                    src="<%=items[i].images[0]%>"
+                                    class="img-fluid rounded-3"
+                                    alt="<%=items[i].productName%>"
+                                    />
+                              </div>
+                              <div class="col-md-3 col-lg-3 col-xl-3">
+                                 <h6 class="text-muted"></h6>
+                                 <h5 class="mb-0"><%=items[i].productName%></h5>
+                                 <h6 class="mb-0"><%=items[i].platform%></h6>
+                              </div>
+                              <div class="col-md-3 col-lg-3 col-xl-2 d-flex">
+                                 <button
+                                    data-mdb-button-init
+                                    data-mdb-ripple-init
+                                    class="btn btn-link px-2"
+                                    >
+                                 <i class="fas fa-minus"></i>
+                                 </button>
+                                 <input
+                                    id="form1"
+                                    min="0"
+                                    name="quantity"
+                                    value="<%=items[i].quantity%>"
+                                    type="number"
+                                    class="form-control form-control-sm cart-quantity"
+                                    data-id="<%= items[i].productId%>" 
+                                    data-platform="<%=items[i].platform%>">
+                                    
+                                 <button
+                                    data-mdb-button-init
+                                    data-mdb-ripple-init
+                                    class="btn btn-link px-2"
+                                    >
+                                 <i class="fas fa-plus"></i>
+                                 </button>
+                              </div>
+                              <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
+                                 <h6 class="mb-0">₹ <%=items[i].price%></h6>
+                              </div>
+                              <div class="col-md-1 col-lg-1 col-xl-1 text-end">
+                                 <a href="#!" class="text-muted"
+                                    ><a href="" class="remove-item" data-id="<%= items[i].productId%>" data-platform="<%=items[i].platform%>"><i class="fas fa-times"></i></a></i
+                                    ></a>
+                              </div>
+                           </div>
+                           <%}%>
+                           <div id="toast" class="toast"></div>
+                           <hr class="my-4" />
+                           <hr class="my-4" />
+                           <div class="pt-5">
+                              <h6 class="mb-0">
+                                 <a href="#!" class="text-body"
+                                    ><i class="fas fa-long-arrow-alt-left me-2"></i>Back to
+                                 shop</a
+                                    >
+                              </h6>
+                           </div>
+                        </div>
+                     </div>
+                     <div class="col-lg-4 bg-body-tertiary">
+                        <div class="p-5">
+                           <h3 class="fw-bold mb-5 mt-2 pt-1">Summary</h3>
+                           <hr class="my-4" />
+                           <table>
+                              <tr>
+                                 <td>
+                                    <h5 class="text-uppercase">items </h5>
+                                 </td>
+                                 <td>
+                                    <h5><%=items.length %></h5>
+                                 </td>
+                              </tr>
+                              <tr>
+                                 <td>
+                                    <h5 id="subtotal">subtotal </h5>
+                                 </td>
+                                 <td>
+                                    <h5>
+                                       ₹<%=subtotal%>
+                                    </h5>
+                                 </td>
+                              </tr>
+                              <tr>
+                                 <td>
+                                    <h5 id="tax">tax </h5>
+                                 </td>
+                                 <td>
+                                    <h5>
+                                       ₹<%=tax%>
+                                    </h5>
+                                 </td>
+                              </tr>
+                           </table>
+                           <h5 class="text-uppercase mb-3">Shipping</h5>
+                           <div class="mb-4 pb-2">
+                              <select data-mdb-select-init>
+                                 <option value="1">Standard-Delivery- ₹<%=deliveryCharge%></option>
+                              </select>
+                           </div>
+                           <h5 class="text-uppercase mb-3">Give code</h5>
+                           <div class="mb-5">
+                              <div data-mdb-input-init class="form-outline">
+                                 <input
+                                    type="text"
+                                    id="form3Examplea2"
+                                    class="form-control form-control-lg"
+                                    />
+                                 <label class="form-label" for="form3Examplea2"
+                                    >Enter your code</label
+                                    >
+                              </div>
+                           </div>
+                           <hr class="my-4" />
+                           <div class="d-flex justify-content-between mb-5">
+                              <h5 class="text-uppercase">Total price</h5>
+                              <h5 id="total">₹ <%=total%></h5>
+                           </div>
+                           <button
+                              type="button"
+                              data-mdb-button-init
+                              data-mdb-ripple-init
+                              class="btn btn-dark btn-block btn-lg"
+                              data-mdb-ripple-color="dark"
+                              ><a href="/checkout" style="text-decoration: none; color: white;" id="checkoutLink">Place order</a>
+                           </button>
+                        </div>
+                     </div>
                   </div>
-                  <hr class="my-4" />
-                  <%for(let i=0;i<items.length;i++){%>
-
-                  <div
-                    class="row mb-4 d-flex justify-content-between align-items-center"
-                  >
-                    <div class="col-md-2 col-lg-2 col-xl-2">
-                      <img
-                        src="<%=items[i].images[0]%>"
-                        class="img-fluid rounded-3"
-                        alt="<%=items[i].productName%>"
-                      />
-                    </div>
-                    <div class="col-md-3 col-lg-3 col-xl-3">
-                      <h6 class="text-muted"></h6>
-                      <h6 class="mb-0"><%=items[i].productName%></h6>
-                    </div>
-                    <div class="col-md-3 col-lg-3 col-xl-2 d-flex">
-                      <button
-                        data-mdb-button-init
-                        data-mdb-ripple-init
-                        class="btn btn-link px-2"
-                        
-                      >
-                        <i class="fas fa-minus"></i>
-                      </button>
-
-                      <input
-                        id="form1"
-                        min="0"
-                        name="quantity"
-                        value="<%=items[i].quantity%>"
-                        type="number"
-                        class="form-control form-control-sm cart-quantity"
-                        data-id="<%= items[i].productId%>">
-                      
-
-                      <button
-                        data-mdb-button-init
-                        data-mdb-ripple-init
-                        class="btn btn-link px-2"
-                        
-                      >
-                        <i class="fas fa-plus"></i>
-                      </button>
-                    </div>
-                    <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
-                      <h6 class="mb-0">₹ <%=items[i].price%></h6>
-                    </div>
-                    <div class="col-md-1 col-lg-1 col-xl-1 text-end">
-                      <a href="#!" class="text-muted"
-                        ><a href="" class="remove-item" data-id="<%= items[i].productId%>"><i class="fas fa-times"></i></a></i
-                      ></a>
-                    </div>
-                  </div>
-                  <%}%>
-                  <div id="toast" class="toast"></div>
-
-                  <hr class="my-4" />
-
-                  <hr class="my-4" />
-
-                  <div class="pt-5">
-                    <h6 class="mb-0">
-                      <a href="#!" class="text-body"
-                        ><i class="fas fa-long-arrow-alt-left me-2"></i>Back to
-                        shop</a
-                      >
-                    </h6>
-                  </div>
-                </div>
-              </div>
-              <div class="col-lg-4 bg-body-tertiary">
-                <div class="p-5">
-                  <h3 class="fw-bold mb-5 mt-2 pt-1">Summary</h3>
-                  <hr class="my-4" />
-                  <table>
-                    <tr>
-                      <td>
-                        <h5 class="text-uppercase">items </h5>
-                      </td>
-                      <td>
-                        <h5><%=items.length %></h5>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                    <h5 id="subtotal">subtotal </h5>
-                      </td>
-                      <td>
-                        <h5>
-                          ₹<%=subtotal%>
-                        </h5>
-                      </td>
-                    </tr>
-                    <tr>
-                      <td>
-                    <h5 id="tax">tax </h5>
-                      </td>
-                      <td>
-                        <h5>
-                        ₹<%=tax%>
-                        </h5>
-                      </td>
-                    </tr>
-                  </table>
-                   
-                  
-
-                  
-
-                  <h5 class="text-uppercase mb-3">Shipping</h5>
-
-                  <div class="mb-4 pb-2">
-                    <select data-mdb-select-init>
-                      <option value="1">Standard-Delivery- ₹<%=deliveryCharge%></option>
-                    </select>
-                  </div>
-
-                  <h5 class="text-uppercase mb-3">Give code</h5>
-
-                  <div class="mb-5">
-                    <div data-mdb-input-init class="form-outline">
-                      <input
-                        type="text"
-                        id="form3Examplea2"
-                        class="form-control form-control-lg"
-                      />
-                      <label class="form-label" for="form3Examplea2"
-                        >Enter your code</label
-                      >
-                    </div>
-                  </div>
-
-                  <hr class="my-4" />
-
-                  <div class="d-flex justify-content-between mb-5">
-                    <h5 class="text-uppercase">Total price</h5>
-                    <h5 id="total">₹ <%=total%></h5>
-                  </div>
-
-                  <button
-                    type="button"
-                    data-mdb-button-init
-                    data-mdb-ripple-init
-                    class="btn btn-dark btn-block btn-lg"
-                    data-mdb-ripple-color="dark"
-                  ><a href="/checkout" style="text-decoration: none; color: white;" id="checkoutLink">Place order</a>
-                  </button>
-                </div>
-              </div>
+               </div>
             </div>
-          </div>
-        </div>
+         </div>
       </div>
-    </div>
-  </div>
-</section>
+   </div>
+   <div id="empty" style="display: none;" class="" ><%=empty%></div>
+   <div id="message" style="display: none;" class="" ><%=message%></div>
+  </section>
+
 <script>
-  function showToast(data,result) {
-  // toast.className.replace("show","");
-  const toast = document.getElementById("toast");
-  toast.className = "toast show";
-  toast.innerHTML = data
-  if(result){
-    toast.style.backgroundColor = "#4CAF50"
-  }
-  else{
-    toast.style.backgroundColor = "red"
-  }
-  setTimeout(() => {
-    toast.className = toast.className.replace("show", "");
-  }, 3000); // The toast will disappear after 3 seconds
-}
-document.addEventListener('DOMContentLoaded', () => {
-        const checkoutLink = document.getElementById("checkoutLink")
-        const subtotalid = document.getElementById("subtotal")
-        const taxid = document.getElementById('tax')
-        const totalid = document.getElementById('total')
+   function showToast(data,result) {
+   // toast.className.replace("show","");
+   const toast = document.getElementById("toast");
+   toast.className = "toast show";
+   toast.innerHTML = data
+   if(result){
+     toast.style.backgroundColor = "#4CAF50"
+   }
+   else{
+     toast.style.backgroundColor = "red"
+   }
+   setTimeout(() => {
+     toast.className = toast.className.replace("show", "");
+   }, 3000); // The toast will disappear after 3 seconds
+   }
+   document.addEventListener('DOMContentLoaded', () => {
+    const emptyid = document.getElementById('empty')
+    const messageid = document.getElementById('message')
 
-        const quantityInputs = document.querySelectorAll('.cart-quantity');
-        quantityInputs.forEach(input => {
-        // Handle manual input changes
-        input.addEventListener('change', async (event) => {
-            await updateQuantity(event.target);
-        });
-
-        // Handle plus button click
-        input.parentNode.querySelector('.btn-link.px-2 i.fas.fa-plus').parentNode.addEventListener('click', async (event) => {
-            const quantityInput = event.currentTarget.parentNode.querySelector('.cart-quantity');
-            quantityInput.stepUp(); // Increase quantity
-            await updateQuantity(quantityInput); // Call the same update logic
-        });
-
-        // Handle minus button click
-        input.parentNode.querySelector('.btn-link.px-2 i.fas.fa-minus').parentNode.addEventListener('click', async (event) => {
-            const quantityInput = event.currentTarget.parentNode.querySelector('.cart-quantity');
-            quantityInput.stepDown(); // Decrease quantity
-            await updateQuantity(quantityInput); // Call the same update logic
-        });
-    });
-
-        
-
-
-        
-      const removeLinks = document.querySelectorAll('.remove-item');
-    
-      removeLinks.forEach(link => {
-        link.addEventListener('click', async (event) => {
-          event.preventDefault(); // Prevent the default link behavior
-          const itemId = link.getAttribute('data-id'); // Get the item ID
-          console.log("item :"+itemId);
-          
-          // Send a request to the server to remove the item
-          try {
-            const response = await fetch(`/removeFromCart`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({ itemId })
-            });
-    
-            if (response.ok) {
-              window.location.reload(); // Reload the page after removal
-            } else {
-              console.error('Failed to remove item from cart');
-            }
-          } catch (error) {
-            console.error('Error removing item from cart:', error);
-          }
-        });
-      });
-    });
-
-
-    async function updateQuantity(inputElement) {
-    const newQuantity = inputElement.value;
-    const itemId = inputElement.getAttribute('data-id');
-
-    if (newQuantity < 1 || newQuantity > 5) {
-        showToast("Quantity Should be between 1 and 5", 0);
-        inputElement.value = Math.max(1, Math.min(5, newQuantity)); // Resets the value within the valid range
-        return;
-    }
-
-    // Send the new quantity to the server
-    try {
-        const response = await fetch(`/updateCartQuantity`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ itemId, newQuantity })
-        });
-
-        if (response.ok) {
-            // Reload the page to show updated cart or update the subtotal dynamically
-            window.location.reload();
-        } else {
-            console.error('Failed to update quantity');
-        }
-    } catch (error) {
-        console.error('Error updating quantity:', error);
-    }
-}
+    const isEmpty = emptyid.innerHTML.trim()
+    const message = messageid.innerHTML.trim()
+         if(isEmpty==="true"){
+          showToast(message,0)
+          setTimeout(() => {
+        window.location.href = '/products'; 
+      }, 2000); 
+         }
+         const checkoutLink = document.getElementById("checkoutLink")
+         const subtotalid = document.getElementById("subtotal")
+         const taxid = document.getElementById('tax')
+         const totalid = document.getElementById('total')
+   
+         const quantityInputs = document.querySelectorAll('.cart-quantity');
+         quantityInputs.forEach(input => {
+         // Handle manual input changes
+         input.addEventListener('change', async (event) => {
+             await updateQuantity(event.target);
+         });
+   
+         // Handle plus button click
+         input.parentNode.querySelector('.btn-link.px-2 i.fas.fa-plus').parentNode.addEventListener('click', async (event) => {
+             const quantityInput = event.currentTarget.parentNode.querySelector('.cart-quantity');
+             quantityInput.stepUp(); // Increase quantity
+             await updateQuantity(quantityInput); // Call the same update logic
+         });
+   
+         // Handle minus button click
+         input.parentNode.querySelector('.btn-link.px-2 i.fas.fa-minus').parentNode.addEventListener('click', async (event) => {
+             const quantityInput = event.currentTarget.parentNode.querySelector('.cart-quantity');
+             quantityInput.stepDown(); // Decrease quantity
+             await updateQuantity(quantityInput); // Call the same update logic
+         });
+     });
+   
+         
+   
+   
+         
+       const removeLinks = document.querySelectorAll('.remove-item');
+     
+       removeLinks.forEach(link => {
+         link.addEventListener('click', async (event) => {
+           event.preventDefault(); // Prevent the default link behavior
+           const itemId = link.getAttribute('data-id'); // Get the item ID
+           const platform = link.getAttribute('data-platform')
+           
+           
+           // Send a request to the server to remove the item
+           try {
+             const response = await fetch(`/removeFromCart`, {
+               method: 'POST',
+               headers: {
+                 'Content-Type': 'application/json'
+               },
+               body: JSON.stringify({ itemId,platform })
+             });
+     
+             if (response.ok) {
+               window.location.reload(); // Reload the page after removal
+             } else {
+               console.error('Failed to remove item from cart');
+             }
+           } catch (error) {
+             console.error('Error removing item from cart:', error);
+           }
+         });
+       });
+     });
+   
+   
+     async function updateQuantity(inputElement) {
+     const newQuantity = inputElement.value;
+     const itemId = inputElement.getAttribute('data-id');
+     const platform =inputElement.getAttribute('data-platform')
+   
+     if (newQuantity < 1 || newQuantity > 5) {
+         showToast("Quantity Should be between 1 and 5", 0);
+         inputElement.value = Math.max(1, Math.min(5, newQuantity)); // Resets the value within the valid range
+         return;
+     }
+   
+     // Send the new quantity to the server
+     try {
+         const response = await fetch(`/updateCartQuantity`, {
+             method: 'POST',
+             headers: {
+                 'Content-Type': 'application/json'
+             },
+             body: JSON.stringify({ itemId, newQuantity,platform })
+         });
+   
+         if (response.ok) {
+             // Reload the page to show updated cart or update the subtotal dynamically
+             window.location.reload();
+         } else {
+             console.error('Failed to update quantity');
+         }
+     } catch (error) {
+         console.error('Error updating quantity:', error);
+     }
+   }
 </script>
 <%- include("../partials/user/footer.ejs")%>

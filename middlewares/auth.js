@@ -1,7 +1,13 @@
+const userModel = require('../models/userModel')
 
 const isLogin = async(req,res,next)=>{
     try {
         if(req.session.user){
+            const user = await userModel.findOne({_id:req.session.user})
+            if(!user.isActive){
+                req.session.destroy()
+                return res.redirect('/')
+            }
         }
         else{
             return res.redirect('/')

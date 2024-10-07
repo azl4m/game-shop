@@ -16,6 +16,7 @@ admin.post('/editProduct',auth.isLogin,adminController.editProduct)
 admin.get('/unlistProduct',auth.isLogin,adminController.unlistProduct)
 admin.get('/restoreProduct',auth.isLogin,adminController.restoreProduct)
 admin.get('/deleteProduct',auth.isLogin,adminController.deleteProduct)
+admin.get('/deleteImage',auth.isLogin,adminController.deleteSingleImage)
 //user management
 admin.get('/userManagement',auth.isLogin,adminController.userManagementLoad)
 admin.get('/blockUser',auth.isLogin,adminController.blockUser)

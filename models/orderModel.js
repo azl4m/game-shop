@@ -20,9 +20,19 @@ const orderSchema = new mongoose.Schema({
       price: {
         type: Number,
         required: true
+      },
+      platform:{
+        type:String,
+        required:true,
+        enum:["PC", "PS6", "Steam", "Xbox"]
       }
     }
   ],
+  orderNumber:{
+    type:String,
+    unique:true,
+    required:true
+  },
   shippingAddress: {
     name:{type:String,required:true},
     street: { type: String, required: true },

@@ -18,6 +18,14 @@ const storage = multer.diskStorage({
   },
 });
 
+//for getting filename
+const fileNames = (images)=>{
+  let filenames = []
+  images.forEach(image=>{
+    filenames.push(path.basename(image))
+  })
+  return filenames;
+}
 // Init upload
 const upload = multer({
   storage: storage,
@@ -104,13 +112,8 @@ const addProduct = async (req, res) => {
     }
 
     try {
-      const { productName, description, price, version, stock } = req.body;
-      const platforms = [
-        req.body.platforms[0],
-        req.body.platforms[1],
-        req.body.platforms[2],
-        req.body.platforms[3],
-      ];
+      const { productName, description, price, version, stock,platforms } = req.body;
+
 
       // const admin = await userModel.findById({_id:req.session.user}
       console.log("Files received:", req.files);
@@ -188,9 +191,11 @@ const editProductLoad = async (req, res) => {
     const productId = req.query.id;
     const product = await productModel.findById({ _id: productId });
     const category = await categoryModel.find({});
+    const images = fileNames(product.images)
     res.render("editProduct", {
       product: product,
       category: category,
+      images
     });
   } catch (error) {
     console.log("error loadin edit product :" + error);
@@ -257,7 +262,32 @@ const editProduct = async (req, res) => {
   });
 };
 //deleteImage
-const deleteSingleImage = async (req, res) => {};
+const deleteSingleImage = async (req, res) => {
+  try {
+    const { imageid, productid } = req.query;
+    const product = await productModel.findOne({_id:productid})
+    if(product.images.length<=3){
+      return res.json({status:false,message:"A product should have minimum of 3 images"})
+    }
+    const imagePath = path.join(__dirname, '../public/uploads/', imageid);
+    fs.unlink(imagePath, (err) => {
+      if (err) {
+        return res.status(500).json({ status: false, message: 'Failed to delete image' });
+      }
+    });
+    product.images = product.images.filter(image => image !== imageNameToServer);
+  
+    // Save the updated product
+    await product.save();
+  
+    // Send a success response to the client
+    return res.redirect("/editProduct?id="+productid)
+  } catch (error) {
+    console.log("error deleting image :"+error);
+    res.status(400).json({message:"Internal Server Error"})
+    
+  }
+};
 
 //unlist and restore product
 const unlistProduct = async (req, res) => {
@@ -594,5 +624,6 @@ module.exports = {
   deleteCategory,
   unlistProduct,
   orderManagementLoad,
-  orderStatus
+  orderStatus,
+  deleteSingleImage
 };

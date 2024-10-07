@@ -20,10 +20,21 @@
                 <option value="alphabet" <%= sortBy === 'alphabet' ? 'selected' : '' %>>Sort Alphabetically</option>
             </select>
             <select name="sortOrder" id="sortOrder">
-                <option value="asc" <%= sortOrder === 1 ? 'selected' : '' %>>Ascending</option>
-                <option value="desc" <%= sortOrder === -1 ? 'selected' : '' %>>Descending</option>
+                <option value="asc" <%= sortOrder === 1 ? 'selected' : '' %>>Low To High</option>
+                <option value="desc" <%= sortOrder === -1 ? 'selected' : '' %>>High To Low</option>
             </select>
-            <input type="submit" value="Search and Sort">
+            
+            <select id="category" name="filter">
+                <option value="">Select Category</option>
+                <% categories.forEach(function(category) { %>
+                  <option value="<%= category._id %>" <%= filteredCat === category.categoryName ? 'selected' : '' %> >
+                    <%= category.categoryName %>
+                  </option>
+                <% }) %>
+              </select>
+              
+            
+            <input type="submit" value="Search and Sort and filter">
         </form>
                
     </div>
