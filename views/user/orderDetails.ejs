@@ -76,7 +76,9 @@
               </div>
               <div class="col-12 col-md-3 hidden-sm-down">
                 <a href="" class="btn btn-success w-100 mb-2">Buy It Again</a>
-                <a href="" class="btn btn-danger w-100">Request a Return</a>
+                <%if(!item.isReturned){%>
+                <a href="/requestReturn?orderid=<%=order._id%>&product=<%=item.product._id%>" class="btn btn-danger w-100">Request a Return</a>
+                <%}%>
               </div>
               <%})%>
             </div>

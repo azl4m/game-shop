@@ -70,10 +70,12 @@ user.post('/resetPassword',addminAuth.isLogout,auth.isLogout,userController.rese
 
 //user profile
 user.get('/userProfile',addminAuth.isLogout,auth.isLogin,userController.userProfileLoad)
-
+user.get('/editProfile',addminAuth.isLogout,auth.isLogin,userController.editPtofileLoad)
+user.post('/editProfile',addminAuth.isLogout,auth.isLogin,userController.editProfile)
 //orders
 user.get('/ordersListing',addminAuth.isLogout,auth.isLogin,userController.ordersLoad)
 user.get('/orderDetails',addminAuth.isLogout,auth.isLogin,userController.orderDetails)
+user.get('/requestrReturn',addminAuth.isLogout,auth.isLogin,userController.requestReturn)
 
 //for page not found
 user.get("/pageNotFound",userController.pageNotFound)

@@ -12,7 +12,7 @@
          <div class="col-md-12">
             <!-- Advanced Tables -->
             <div class="card">
-               <div class="card-action">Orders List</div>
+               <div class="card-action">Orders Details</div>
                <div class="card-content">
                   <div class="table-responsive">
                      <div class="row">
@@ -38,50 +38,30 @@
                         >
                         <thead>
                            <tr>
-                              <th>Name</th>
-                              <th>Email</th>
+                              <th>Product Name</th>
                               <th>Price</th>
-                              <th>Payment Method</th>
+                              <th>Quantity</th>
+                              <th>Total Price</th>
                               <th>Order Status</th>
-                              <th>Change Status</th>
-                              <th>View More Details</th>
                            </tr>
                         </thead>
                         <tbody>
                             <% if (typeof data !== 'undefined') { %>
-                                <% for (let i = 0; i < data.length; i++) { %>
+                                <% for (let i = 0; i < data.cartItems.length; i++) { %>
                                     <tr class="odd gradeX">
-                                        <td><%= data[i].user.username %></td>
-                                        <td><%= data[i].user.email %></td>
-                                        <td><%= data[i].totalPrice %></td>
-                                        <td><%= data[i].paymentMethod %></td>
-                                        <td><%= data[i].orderStatus %></td>
+                                        <td><%= data.cartItems[i].product.productName %></td>
+                                        <td><%= data.cartItems[i].price %></td>
+                                        <td><%= data.cartItems[i].quantity %></td>
+                                        <td><%= data.cartItems[i].price*data.cartItems[i].quantity %></td>
                                         <td class="">
                                             
-                                            <% if (data[i].orderStatus !== 'Pending') { %>
-                                                <button class="btn-warning">
-                                                    <a href="/admin/orderStatus?id=<%=data[i]._id%>&status=Pending" style="text-decoration: none; color: white;">Pending</a>                                                </button>
+                                            <% if (data.cartItems[i].isReturned && data.cartItems[i].returnAccepted==="PENDING") { %>
+                                               <button class="btn-success"><a style="text-decoration: none; color: white;" href="/admin/acceptReturn?orderid=<%=data._id%>&cartItem=<%=i%>">Accept Return</a></button>
+                                               <button class="btn-danger"><a style="text-decoration: none; color: white;" href="/admin/rejectReturn?orderid=<%=data._id%>&cartItem=<%=i%>">Reject Return</a></button>
                                             <% } %>
-                                            <% if (data[i].orderStatus !== 'Processing') { %>
-                                                <button class="btn-info">
-                                                    <a href="/admin/orderStatus?id=<%=data[i]._id%>&status=Processing" style="text-decoration: none; color: white;">Processing</a>                                                </button>
-                                            <% } %>
-                                            <% if (data[i].orderStatus !== 'Shipped') { %>
-                                                <button class="btn-light">
-                                                    <a href="/admin/orderStatus?id=<%=data[i]._id%>&status=Shipped" style="text-decoration: none; color: rgb(0, 0, 0);">Shipped</a>                                                </button>
-                                            <% } %>
-                                            <% if (data[i].orderStatus !== 'Delivered') { %>
-                                                <button class="btn-success">
-                                                    <a href="/admin/orderStatus?id=<%=data[i]._id%>&status=Delivered" style="text-decoration: none; color: white;">Delivered</a>                                                </button>
-                                            <% } %>
-                                            <% if (data[i].orderStatus !== 'Cancelled') { %>
-                                                <button class="btn-danger">
-                                                   <a href="/admin/orderStatus?id=<%=data[i]._id%>&status=Cancelled" style="text-decoration: none; color: white;">Cancelled</a>                                                </button>
-                                            <% } %>
+
                                         </td>
-                                        <td>
-                                          <a href="/admin/orderDetails?id=<%=data[i]._id%>">View Order Details</a>
-                                        </td>
+
                                     </tr>
                                 <% } %>
                             <% } %>

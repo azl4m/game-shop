@@ -7,6 +7,7 @@ const userRouter = require("./routes/userRouter")
 const adminRouter = require("./routes/adminRoute")
 const session = require('express-session')
 const passport = require("./config/passport");
+const razorpay = require('razorpay')
 db()
 app.use(express.json());
 app.use(express.urlencoded({extended:true}))

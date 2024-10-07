@@ -25,6 +25,15 @@ const orderSchema = new mongoose.Schema({
         type:String,
         required:true,
         enum:["PC", "PS6", "Steam", "Xbox"]
+      },
+      isReturned:{
+        type:Boolean,
+        default:false
+      },
+      returnAccepted:{
+        type:String,
+        default:"PENDING",
+        enum:["PENDING","ACCEPTED","REJECTED"]
       }
     }
   ],

@@ -1,0 +1,249 @@
+<%- include("../partials/user/header.ejs") %>
+
+<style>
+  /* Toast notification styles */
+  .toast {
+    visibility: hidden;
+    min-width: 250px;
+    margin-left: -125px;
+    color: white;
+    text-align: center;
+    border-radius: 2px;
+    padding: 16px;
+    position: fixed;
+    z-index: 1;
+    left: 50%;
+    bottom: 30px;
+    font-size: 17px;
+  }
+  /* Show the toast */
+  .toast.show {
+    visibility: visible;
+    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+  }
+  /* Animations */
+  @-webkit-keyframes fadein {
+    from {
+      bottom: 0;
+      opacity: 0;
+    }
+    to {
+      bottom: 30px;
+      opacity: 1;
+    }
+  }
+  @-webkit-keyframes fadeout {
+    from {
+      bottom: 30px;
+      opacity: 1;
+    }
+    to {
+      bottom: 0;
+      opacity: 0;
+    }
+  }
+  @keyframes fadein {
+    from {
+      bottom: 0;
+      opacity: 0;
+    }
+    to {
+      bottom: 30px;
+      opacity: 1;
+    }
+  }
+  @keyframes fadeout {
+    from {
+      bottom: 30px;
+      opacity: 1;
+    }
+    to {
+      bottom: 0;
+      opacity: 0;
+    }
+  }
+  .zoom {
+    position: absolute;
+    border: 1px solid #000;
+    width: 100px; /* Adjust size */
+    height: 100px; /* Adjust size */
+    background-repeat: no-repeat;
+    background-size: 200%; /* Adjust to control zoom level */
+    pointer-events: none;
+    visibility: hidden;
+  }
+</style>
+<div class="container" style="border: 2px black">
+  <form id="editProfileForm" action="/user/edit-profile" method="POST">
+    <div>
+      <label for="username">Username:</label>
+      <input
+        type="text"
+        id="username"
+        name="username"
+        required
+        value="<%=userDetails.username%>"
+      />
+      <span id="error1" class="error"></span>
+    </div>
+
+    <!-- <div>
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email" required />
+          <span id="error2" class="error"></span>
+        </div> -->
+
+    <div>
+      <label for="phoneNumber">Phone Number:</label>
+      <input
+        type="text"
+        id="phoneNumber"
+        name="phoneNumber"
+        value="<%=userDetails.phoneNumber%>"
+      />
+      <span id="error3" class="error"></span>
+    </div>
+
+    <div>
+      <label for="firstName">First Name:</label>
+      <input
+        type="text"
+        id="firstName"
+        name="firstName"
+        value="<%=userDetails.firstName%>"
+      />
+      <span id="error4" class="error"></span>
+    </div>
+
+    <div>
+      <label for="lastName">Last Name:</label>
+      <input
+        type="text"
+        id="lastName"
+        name="lastName"
+        value="<%=userDetails.lastName%>"
+      />
+      <span id="error5" class="error"></span>
+    </div>
+    <div id="toast" class="toast"></div>
+    <button type="submit">Save Changes</button>
+  </form>
+</div>
+
+<script>
+  function showToast(data, result) {
+    // toast.className.replace("show","");
+    const toast = document.getElementById("toast");
+    toast.className = "toast show";
+    toast.innerHTML = data;
+    if (result) {
+      toast.style.backgroundColor = "#4CAF50";
+    } else {
+      toast.style.backgroundColor = "red";
+    }
+    setTimeout(() => {
+      toast.className = toast.className.replace("show", "");
+    }, 3000); // The toast will disappear after 3 seconds
+  }
+
+  document
+    .getElementById("editProfileForm")
+    .addEventListener("submit", function (event) {
+      event.preventDefault(); // Prevent the form's default submission behavior
+
+      // Clear previous error messages
+      document.getElementById("error1").textContent = "";
+      //   document.getElementById("error2").textContent = '';
+      document.getElementById("error3").textContent = "";
+      document.getElementById("error4").textContent = "";
+      document.getElementById("error5").textContent = "";
+
+      // Collect form inputs
+      const username = document.getElementById("username").value.trim();
+      //   const email = document.getElementById("email").value.trim();
+      const phoneNumber = document.getElementById("phoneNumber").value.trim();
+      const firstName = document.getElementById("firstName").value.trim();
+      const lastName = document.getElementById("lastName").value.trim();
+
+      let isValid = true; // Flag to track if all fields are valid
+
+      // Validate Username: Only alphabets and spaces allowed
+      const usernameRegex = /^[A-Za-z\s]+$/;
+      if (!usernameRegex.test(username)) {
+        document.getElementById("error1").textContent =
+          "Username should only contain alphabets and spaces.";
+        isValid = false;
+      }
+      // Validate Email: Built-in email validation is handled by the browser due to input type="email"
+
+      // Validate Phone Number: Must be a 10-digit number
+      const phoneNumberRegex = /^[0-9]{10}$/;
+      if (phoneNumber && !phoneNumberRegex.test(phoneNumber)) {
+        document.getElementById("error3").textContent =
+          "Phone number should be a 10-digit number.";
+        isValid = false;
+      }
+
+      // Validate First Name: Only alphabets allowed and auto-capitalize
+      const nameRegex = /^[A-Za-z]+$/;
+      if (firstName && !nameRegex.test(firstName)) {
+        document.getElementById("error4").textContent =
+          "First name should only contain alphabets.";
+        isValid = false;
+      }
+
+      // Validate Last Name: Only alphabets allowed and auto-capitalize
+      if (lastName && !nameRegex.test(lastName)) {
+        document.getElementById("error5").textContent =
+          "Last name should only contain alphabets.";
+        isValid = false;
+      }
+
+      // If all fields are valid, submit the form using fetch
+      if (isValid) {
+        // Auto-capitalize first letter of firstName and lastName
+        const formattedFirstName =
+          firstName.charAt(0).toUpperCase() + firstName.slice(1).toLowerCase();
+        const formattedLastName =
+          lastName.charAt(0).toUpperCase() + lastName.slice(1).toLowerCase();
+
+        // Prepare form data object
+        const formData = {
+          username,
+
+          phoneNumber,
+          firstName: formattedFirstName,
+          lastName: formattedLastName,
+        };
+
+        // Use fetch to send the form data to the server
+        fetch("/editProfile", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData), // Send form data as JSON
+        })
+          .then((response) => {
+            if (response.ok) {
+              return response.json();
+            } else {
+              // Handle server-side errors (e.g., validation failures, etc.)
+              response.json().then((data) => {
+                alert(`Error: ${data.message || "Failed to update profile."}`);
+              });
+            }
+          })
+          .then((data) => {
+            showToast(data.message, 1);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            showToast(data.message, 0);
+          });
+      }
+    });
+</script>
+
+<%- include("../partials/user/footer.ejs") %>

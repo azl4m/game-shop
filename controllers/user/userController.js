@@ -343,7 +343,6 @@ const productDetailsLoad = async (req, res) => {
       { $unwind: "$variant" },
       { $group: { _id: "$variant.platforms" } },
     ]);
-    console.log(platforms);
 
     if (req.session.user) {
       const user = await userModel.findById({ _id: req.session.user });
@@ -664,6 +663,47 @@ const userProfileLoad = async (req, res) => {
     console.log("error loading user profile :" + error);
   }
 };
+const editPtofileLoad = async (req, res) => {
+  try {
+    const user = await userModel.findOne({ _id: req.session.user });
+    if (!user) {
+      return res.status(400).json({ error: "user not found" });
+    }
+    return res.render("editProfile", { userDetails: user });
+  } catch (error) {
+    console.log("error loading edit profile :" + error);
+  }
+};
+const editProfile = async (req, res) => {
+  try {
+    const user = await userModel.findOne({ _id: req.session.user });
+    const { username, phoneNumber, firstName, lastName } = req.body;
+    const existingPhone = await userModel.findOne({ phoneNumber: phoneNumber });
+    if (existingPhone) {
+      if (existingPhone.phoneNumber !== user.phoneNumber) {
+        return res.status(400).json({ message: "Phone Number alredy exists" });
+      }
+    }
+    const updateUser = await userModel.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          username: username,
+          firstName: firstName,
+          lastName: lastName,
+          phoneNumber: phoneNumber,
+        },
+      }
+    );
+
+    if (!updateUser) {
+      return res.status(400).json({ message: "Updating failed" });
+    }
+    return res.status(200).json({ message: "updation succesfull" });
+  } catch (error) {
+    console.log("error editing profile :" + error);
+  }
+};
 
 const sendForgotPassword = async (username, email, token) => {
   try {
@@ -788,8 +828,7 @@ const checkoutLoad = async (req, res) => {
     function generateUniqueOrder() {
       let prefix = "ORD";
       let middle = Date.now();
-      const characters =
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
       let suffix = "";
 
       for (let i = 0; i < 4; i++) {
@@ -998,6 +1037,21 @@ const orderDetails = async (req, res) => {
     res.status(400).json({ message: "Internal Server Error" });
   }
 };
+
+const requestReturn = async (req, res) => {
+  try {
+    const orderid = req.query.orderid;
+    const product = req.query.product;
+    // Update the `isReturned` field of the specific cart item in the order
+    const update = await orderModel.updateOne(
+      { _id: orderid, "cartItems.product": product }, // Match the order and the cart item by product ID
+      { $set: { "cartItems.$.isReturned": true } } // Use the positional operator to update the specific item
+    );
+    return res.redirect(`/orderDetails?id${orderid}`)
+  } catch (error) {
+    console.log("error requesting return  :" + error);
+  }
+};
 module.exports = {
   loadHomePage,
   pageNotFound,
@@ -1029,4 +1083,7 @@ module.exports = {
   productsLoad,
   ordersLoad,
   orderDetails,
+  editProfile,
+  editPtofileLoad,
+  requestReturn,
 };
