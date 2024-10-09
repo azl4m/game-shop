@@ -75,7 +75,7 @@ user.post('/editProfile',addminAuth.isLogout,auth.isLogin,userController.editPro
 //orders
 user.get('/ordersListing',addminAuth.isLogout,auth.isLogin,userController.ordersLoad)
 user.get('/orderDetails',addminAuth.isLogout,auth.isLogin,userController.orderDetails)
-user.get('/requestrReturn',addminAuth.isLogout,auth.isLogin,userController.requestReturn)
+user.get('/requestReturn',addminAuth.isLogout,auth.isLogin,userController.requestReturn)
 
 //for page not found
 user.get("/pageNotFound",userController.pageNotFound)

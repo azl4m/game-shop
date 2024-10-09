@@ -58,8 +58,7 @@ const processImages = async (files, name) => {
       file.originalname
     )}`;
     try {
-      await sharp(file.path)
-        .resize(300, 300) // Customize as needed
+      await sharp(file.path)        .resize(300, 300) // Customize as needed
         .toFile(newPath);
       processedFiles.push(
         `uploads/cropped-${name}-${i}${path.extname(file.originalname)}`

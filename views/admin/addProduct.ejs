@@ -68,20 +68,20 @@
                            multiple
                            required
                            />
-                           <div id="imagesToCrop"></div>
-                           <div id="imagePreview" class="img-preview"></div>
+                        <div id="imagesToCrop"></div>
+                        <div id="imagePreview" class="img-preview"></div>
                      </div>
                      <div id="cropperModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
-                      <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 600px;">
-                         <h4>Crop Image</h4>
-                         <div id="cropperContainer" style="max-width: 100%; max-height: 70vh;">
-                            <img id="cropperImage" src="" alt="Image to crop" style="max-width: 100%;">
-                         </div>
-                         <button id="cropButton" class="btn" style="margin-top: 10px;">Crop</button>
-                         <button id="closeModal" class="btn" style="margin-top: 10px; margin-left: 10px;">Close</button>
-                      </div>
-                   </div>
-              <div class="row">
+                        <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 600px;">
+                           <h4>Crop Image</h4>
+                           <div id="cropperContainer" style="max-width: 100%; max-height: 70vh;">
+                              <img id="cropperImage" src="" alt="Image to crop" style="max-width: 100%;">
+                           </div>
+                           <button id="cropButton" class="btn" style="margin-top: 10px;">Crop</button>
+                           <button id="closeModal" class="btn" style="margin-top: 10px; margin-left: 10px;">Close</button>
+                        </div>
+                     </div>
+                     <div class="row">
                         <div class="input-field col s6">
                            <label style="position: relative" for="category">Category</label>
                            <select style="display: block;" name="category" id="category" >
@@ -91,8 +91,11 @@
                            </select>
                         </div>
                      </div>
-                     <div class="pm-variant-group">
+                     <div class="row">
                         <h3 class="pm-variant-heading">Variants</h3>
+                        <a href="">Add new variant</a>
+                    </div> 
+                     <div class="pm-variant-group">
                         <label class="pm-label" for="pm-version">Version</label>
                         <span id="error4" class="error-message"></span>
                         <input
@@ -114,50 +117,12 @@
                               />
                         </div>
                         <label class="pm-label">Platforms</label>
-                <div class="pm-checkbox-group">
-                  <!-- <label class="pm-checkbox-label" for="pm-platformPC">
-                    PC
-                  </label> -->
-                  <!-- <input
-                    type="checkbox"
-                    id="pm-platformPC"
-                    name="platforms[0]"
-                    value="PC"
-                  />
-                  <label class="pm-checkbox-label" for="pm-platformPS5">
-                    PS6
-                  </label>
-                  <input
-                    type="checkbox"
-                    id="pm-platformPS5"
-                    name="platforms[1]"
-                    value="PS6"
-                  />
-                  <label class="pm-checkbox-label" for="pm-platformPS6">
-                    Steam
-                  </label>
-                  <input
-                    type="checkbox"
-                    id="pm-platformPS6"
-                    name="platforms[2]"
-                    value="Steam"
-                  />
-                  <label class="pm-checkbox-label" for="pm-platformXbox">
-                    Xbox
-                  </label>
-                  <input
-                    type="checkbox"
-                    id="pm-platformXbox"
-                    name="platforms[3]"
-                    value="Xbox"
-                  /> -->
-                  <select id="platforms" name="platforms" style="display: block;">
-                    <option value="PC">PC</option>
-                    <option value="PS6">PS6</option>
-                    <option value="Xbox">Xbox</option>
-                    <option value="Steam">Steam</option>
-                  </select>
-                </div>
+                        <select id="platforms" name="platforms" style="display: block;">
+                           <option value="PC">PC</option>
+                           <option value="PS6">PS6</option>
+                           <option value="Xbox">Xbox</option>
+                           <option value="Steam">Steam</option>
+                        </select>
                      </div>
                </div>
                <div class="row">
@@ -174,283 +139,284 @@
       </div>
    </div>
    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.12/dist/cropper.min.js"></script>
    <script>
-// Unique IDs for each field
-const nameid = document.getElementById("productName");
-const priceid = document.getElementById("price");
-const descriptionid = document.getElementById("description");
-const versionid = document.getElementById("version"); // For version
-const stockid = document.getElementById("stock"); // For stock
-const error1 = document.getElementById("error1");
-const error2 = document.getElementById("error2");
-const error3 = document.getElementById("error3");
-const error4 = document.getElementById("error4");
-const error5 = document.getElementById("error5");
-const prodForm = document.getElementById("prodForm");
-
-// Validate Product Name
-function nameValidate() {
-    const nameVal = nameid.value;
-    const namePattern = /^(?!\d+$)[a-zA-Z0-9\s]+$/;
-    if (nameVal.trim() === "") {
-        error1.style.display = "block";
-        error1.innerHTML = "Please Enter a Valid Product Name";
-        return false;
-    } else if (!namePattern.test(nameVal)) {
-        error1.style.display = "block";
-        error1.innerHTML = "Name can only contain Numbers and Alphabets";
-        return false;
-    } else {
-        error1.style.display = "none";
-        return true;
-    }
-}
-
-// Validate Price
-function priceValidate() {
-    const priceVal = priceid.value;
-    const pricePattern = /^\d+$/;
-    if (priceVal.trim() === "") {
-        error2.style.display = "block";
-        error2.innerHTML = "Please enter a valid price";
-        return false;
-    } else if (priceVal <= 0) {
-        error2.style.display = "block";
-        error2.innerHTML = "Please enter a non-negative price";
-        return false;
-    } else if (!pricePattern.test(priceVal)) {
-        error2.style.display = "block";
-        error2.innerHTML = "Price can only include numbers";
-        return false;
-    } else {
-        error2.style.display = "none";
-        return true;
-    }
-}
-
-// Validate Description
-function descriptionValidate() {
-    const descriptionVal = descriptionid.value;
-    const wordCount = descriptionVal.trim().split(/\s+/).length; // Split by whitespace and count the words
-    
-    if (descriptionVal.trim() === "") {
-        error3.style.display = "block";
-        error3.innerHTML = "Enter a valid description";
-        return false;
-    } else if (wordCount < 30) {  // Check if the word count is less than 60
-        error3.style.display = "block";
-        error3.innerHTML = "Description should contain at least 30 words";
-        return false;
-    } else {
-        error3.style.display = "none";
-        error3.innerHTML = "";
-        return true;
-    }
-}
-
-// Validate Version
-function versionValidate() {
-    const versionVal = versionid.value;
-    const versionPattern = /^\d+(\.\d+)?$/;
-    if (versionVal.trim() === "") {
-        error4.style.display = "block";
-        error4.innerHTML = "Please enter a valid version";
-        return false;
-    } else if (!versionPattern.test(versionVal)) {
-        error4.style.display = "block";
-        error4.innerHTML = "Version can only include numbers and a dot";
-        return false;
-    } else {
-        error4.style.display = "none";
-        return true;
-    }
-}
-
-// Validate Stock
-function stockValidate() {
-    const stockVal = stockid.value;
-    const stockPattern = /^\d+$/;
-    if (stockVal.trim() === "") {
-        error5.style.display = "block";
-        error5.innerHTML = "Please enter a valid stock amount";
-        return false;
-    } else if (!stockPattern.test(stockVal)) {
-        error5.style.display = "block";
-        error5.innerHTML = "Stock can only include numbers";
-        return false;
-    } else {
-        error5.style.display = "none";
-        return true;
-    }
-}
-
- // Helper function to convert base64 to Blob
- function base64ToBlob(base64, mime) {
-     mime = mime || '';
-     var sliceSize = 1024;
-     var byteChars = window.atob(base64);
-     var byteArrays = [];
-
-     for (var offset = 0, len = byteChars.length; offset < len; offset += sliceSize) {
-         var slice = byteChars.slice(offset, offset + sliceSize);
-         var byteNumbers = new Array(slice.length);
-         for (var i = 0; i < slice.length; i++) {
-             byteNumbers[i] = slice.charCodeAt(i);
-         }
-         var byteArray = new Uint8Array(byteNumbers);
-         byteArrays.push(byteArray);
-     }
-
-     return new Blob(byteArrays, {
-         type: mime
-     });
- }
-
- const imageInput = document.getElementById('pm-images');
- const imagesToCrop = document.getElementById('imagesToCrop');
- const imagePreview = document.getElementById('imagePreview');
- const cropperModal = document.getElementById('cropperModal');
- const cropperImage = document.getElementById('cropperImage');
- const cropButton = document.getElementById('cropButton');
- const closeModal = document.getElementById('closeModal');
- let cropper;
- let croppedImages = [];
- let currentImageIndex = 0;
- let selectedFiles = [];
-
- imageInput.addEventListener('change', function(event) {
-     selectedFiles = Array.from(event.target.files);
-     imagesToCrop.innerHTML = '';
-     imagePreview.innerHTML = '';
-     croppedImages = [];
-     currentImageIndex = 0;
-
-     selectedFiles.forEach((file, index) => {
-         const img = document.createElement('img');
-         img.src = URL.createObjectURL(file);
-         img.style.width = '100px';
-         img.style.height = '100px';
-         img.style.marginRight = '10px';
-         img.style.cursor = 'pointer';
-         img.style.imageOrientation = "norepeat"
-         img.onclick = () => openCropModal(index);
-         imagesToCrop.appendChild(img);
-     });
-
-     if (selectedFiles.length > 0) {
-         openCropModal(0);
-     }
- });
-
- function openCropModal(index) {
-     currentImageIndex = index;
-     const file = selectedFiles[index];
-     const reader = new FileReader();
-
-     reader.onload = function(e) {
-         cropperImage.src = e.target.result;
-         cropperModal.style.display = 'block';
-
-         if (cropper) {
-             cropper.destroy();
-         }
-
-         cropper = new Cropper(cropperImage, {
-             aspectRatio: 1,
-             viewMode: 1,
-         });
-     }
-
-     reader.readAsDataURL(file);
- }
-
- cropButton.addEventListener('click', function() {
-     const croppedCanvas = cropper.getCroppedCanvas();
-     const croppedImageUrl = croppedCanvas.toDataURL('image/jpeg');
-
-     croppedImages[currentImageIndex] = croppedImageUrl;
-
-     const img = document.createElement('img');
-     img.src = croppedImageUrl;
-     img.style.width = '100px';
-     img.style.height = '100px';
-     img.style.marginRight = '10px';
-     imagePreview.appendChild(img);
-
-     cropperModal.style.display = 'none';
-     cropper.destroy();
-
-     // Move to next image if available
-     if (currentImageIndex < selectedFiles.length - 1) {
-         openCropModal(currentImageIndex + 1);
-     }
- });
-
- closeModal.addEventListener('click', function() {
-     cropperModal.style.display = 'none';
-     if (cropper) {
-         cropper.destroy();
-     }
- });
-
- prodForm.addEventListener("submit", function(e) {
-  e.preventDefault();
-    // Perform field validation
-    const isNameValid = nameValidate();
-    const isPriceValid = priceValidate();
-    const isDescriptionValid = descriptionValidate();
-    const isVersionValid = versionValidate();
-    const isStockValid = stockValidate();
-
-    // Stop form submission if any validation fails
-    if (!isNameValid || !isPriceValid || !isDescriptionValid || !isVersionValid || !isStockValid) {
-       
-        return; // Stop further execution if validation fails
-    }
-
-    // Cropped image validation
-    if (croppedImages.length < 3) {
-        alert('Please crop at least 3 images before submitting.');
-        return;
-    }
-
-    // Proceed with form submission via fetch
-    const formData = new FormData(this);
-    console.log(FormData);
-    
-    formData.delete('productImage'); // Remove the original image files
-
-    try {
-        // Append the cropped images to the FormData
-        for (let i = 0; i < croppedImages.length; i++) {
-            const base64Data = croppedImages[i].split(',')[1];
-            const blob = base64ToBlob(base64Data, 'image/jpeg');
-            formData.append('productImage', blob, `image${i + 1}.jpg`);
-        }
-
-        fetch('/admin/addProduct', {
-            method: 'POST',
-            body: formData
-        }).then(response => {
-            if (response.ok) {
-                window.location.href = '/admin/productManagement';
-            } else {
-                response.text().then(errorText => {
-                    console.error('Product creation failed:', errorText);
-                    alert(`Product creation failed: ${errorText}`);
-                });
-            }
-        }).catch(error => {
-            console.error('Error:', error);
-            alert(`An error occurred: ${error.message}`);
-        });
-
-    } catch (error) {
-        console.error('Error:', error);
-        alert(`An error occurred: ${error.message}`);
-    }
-});
+      // Unique IDs for each field
+      const nameid = document.getElementById("productName");
+      const priceid = document.getElementById("price");
+      const descriptionid = document.getElementById("description");
+      const versionid = document.getElementById("version"); // For version
+      const stockid = document.getElementById("stock"); // For stock
+      const error1 = document.getElementById("error1");
+      const error2 = document.getElementById("error2");
+      const error3 = document.getElementById("error3");
+      const error4 = document.getElementById("error4");
+      const error5 = document.getElementById("error5");
+      const prodForm = document.getElementById("prodForm");
+      
+      // Validate Product Name
+      function nameValidate() {
+          const nameVal = nameid.value;
+          const namePattern = /^(?!\d+$)[a-zA-Z0-9\s]+$/;
+          if (nameVal.trim() === "") {
+              error1.style.display = "block";
+              error1.innerHTML = "Please Enter a Valid Product Name";
+              return false;
+          } else if (!namePattern.test(nameVal)) {
+              error1.style.display = "block";
+              error1.innerHTML = "Name can only contain Numbers and Alphabets";
+              return false;
+          } else {
+              error1.style.display = "none";
+              return true;
+          }
+      }
+      
+      // Validate Price
+      function priceValidate() {
+          const priceVal = priceid.value;
+          const pricePattern = /^\d+$/;
+          if (priceVal.trim() === "") {
+              error2.style.display = "block";
+              error2.innerHTML = "Please enter a valid price";
+              return false;
+          } else if (priceVal <= 0) {
+              error2.style.display = "block";
+              error2.innerHTML = "Please enter a non-negative price";
+              return false;
+          } else if (!pricePattern.test(priceVal)) {
+              error2.style.display = "block";
+              error2.innerHTML = "Price can only include numbers";
+              return false;
+          } else {
+              error2.style.display = "none";
+              return true;
+          }
+      }
+      
+      // Validate Description
+      function descriptionValidate() {
+          const descriptionVal = descriptionid.value;
+          const wordCount = descriptionVal.trim().split(/\s+/).length; // Split by whitespace and count the words
+          
+          if (descriptionVal.trim() === "") {
+              error3.style.display = "block";
+              error3.innerHTML = "Enter a valid description";
+              return false;
+          } else if (wordCount < 30) {  // Check if the word count is less than 60
+              error3.style.display = "block";
+              error3.innerHTML = "Description should contain at least 30 words";
+              return false;
+          } else {
+              error3.style.display = "none";
+              error3.innerHTML = "";
+              return true;
+          }
+      }
+      
+      // Validate Version
+      function versionValidate() {
+          const versionVal = versionid.value;
+          const versionPattern = /^\d+(\.\d+)?$/;
+          if (versionVal.trim() === "") {
+              error4.style.display = "block";
+              error4.innerHTML = "Please enter a valid version";
+              return false;
+          } else if (!versionPattern.test(versionVal)) {
+              error4.style.display = "block";
+              error4.innerHTML = "Version can only include numbers and a dot";
+              return false;
+          } else {
+              error4.style.display = "none";
+              return true;
+          }
+      }
+      
+      // Validate Stock
+      function stockValidate() {
+          const stockVal = stockid.value;
+          const stockPattern = /^\d+$/;
+          if (stockVal.trim() === "") {
+              error5.style.display = "block";
+              error5.innerHTML = "Please enter a valid stock amount";
+              return false;
+          } else if (!stockPattern.test(stockVal)) {
+              error5.style.display = "block";
+              error5.innerHTML = "Stock can only include numbers";
+              return false;
+          } else {
+              error5.style.display = "none";
+              return true;
+          }
+      }
+      
+       // Helper function to convert base64 to Blob
+       function base64ToBlob(base64, mime) {
+           mime = mime || '';
+           var sliceSize = 1024;
+           var byteChars = window.atob(base64);
+           var byteArrays = [];
+      
+           for (var offset = 0, len = byteChars.length; offset < len; offset += sliceSize) {
+               var slice = byteChars.slice(offset, offset + sliceSize);
+               var byteNumbers = new Array(slice.length);
+               for (var i = 0; i < slice.length; i++) {
+                   byteNumbers[i] = slice.charCodeAt(i);
+               }
+               var byteArray = new Uint8Array(byteNumbers);
+               byteArrays.push(byteArray);
+           }
+      
+           return new Blob(byteArrays, {
+               type: mime
+           });
+       }
+      
+       const imageInput = document.getElementById('pm-images');
+       const imagesToCrop = document.getElementById('imagesToCrop');
+       const imagePreview = document.getElementById('imagePreview');
+       const cropperModal = document.getElementById('cropperModal');
+       const cropperImage = document.getElementById('cropperImage');
+       const cropButton = document.getElementById('cropButton');
+       const closeModal = document.getElementById('closeModal');
+       let cropper;
+       let croppedImages = [];
+       let currentImageIndex = 0;
+       let selectedFiles = [];
+      
+       imageInput.addEventListener('change', function(event) {
+           selectedFiles = Array.from(event.target.files);
+           imagesToCrop.innerHTML = '';
+           imagePreview.innerHTML = '';
+           croppedImages = [];
+           currentImageIndex = 0;
+      
+           selectedFiles.forEach((file, index) => {
+               const img = document.createElement('img');
+               img.src = URL.createObjectURL(file);
+               img.style.width = '100px';
+               img.style.height = '100px';
+               img.style.marginRight = '10px';
+               img.style.cursor = 'pointer';
+               img.style.imageOrientation = "norepeat"
+               img.onclick = () => openCropModal(index);
+               imagesToCrop.appendChild(img);
+           });
+      
+           if (selectedFiles.length > 0) {
+               openCropModal(0);
+           }
+       });
+      
+       function openCropModal(index) {
+           currentImageIndex = index;
+           const file = selectedFiles[index];
+           const reader = new FileReader();
+      
+           reader.onload = function(e) {
+               cropperImage.src = e.target.result;
+               cropperModal.style.display = 'block';
+      
+               if (cropper) {
+                   cropper.destroy();
+               }
+      
+               cropper = new Cropper(cropperImage, {
+                   aspectRatio: 1,
+                   viewMode: 1,
+               });
+           }
+      
+           reader.readAsDataURL(file);
+       }
+      
+       cropButton.addEventListener('click', function() {
+           const croppedCanvas = cropper.getCroppedCanvas();
+           const croppedImageUrl = croppedCanvas.toDataURL('image/jpeg');
+      
+           croppedImages[currentImageIndex] = croppedImageUrl;
+      
+           const img = document.createElement('img');
+           img.src = croppedImageUrl;
+           img.style.width = '100px';
+           img.style.height = '100px';
+           img.style.marginRight = '10px';
+           imagePreview.appendChild(img);
+      
+           cropperModal.style.display = 'none';
+           cropper.destroy();
+      
+           // Move to next image if available
+           if (currentImageIndex < selectedFiles.length - 1) {
+               openCropModal(currentImageIndex + 1);
+           }
+       });
+      
+       closeModal.addEventListener('click', function() {
+           cropperModal.style.display = 'none';
+           if (cropper) {
+               cropper.destroy();
+           }
+       });
+      
+       prodForm.addEventListener("submit", function(e) {
+        e.preventDefault();
+          // Perform field validation
+          const isNameValid = nameValidate();
+          const isPriceValid = priceValidate();
+          const isDescriptionValid = descriptionValidate();
+          const isVersionValid = versionValidate();
+          const isStockValid = stockValidate();
+      
+          // Stop form submission if any validation fails
+          if (!isNameValid || !isPriceValid || !isDescriptionValid || !isVersionValid || !isStockValid) {
+             
+              return; // Stop further execution if validation fails
+          }
+      
+          // Cropped image validation
+          if (croppedImages.length < 3) {
+              alert('Please crop at least 3 images before submitting.');
+              return;
+          }
+      
+          // Proceed with form submission via fetch
+          const formData = new FormData(this);
+          console.log(FormData);
+          
+          formData.delete('productImage'); // Remove the original image files
+      
+          try {
+              // Append the cropped images to the FormData
+              for (let i = 0; i < croppedImages.length; i++) {
+                  const base64Data = croppedImages[i].split(',')[1];
+                  const blob = base64ToBlob(base64Data, 'image/jpeg');
+                  formData.append('productImage', blob, `image${i + 1}.jpg`);
+              }
+      
+              fetch('/admin/addProduct', {
+                  method: 'POST',
+                  body: formData
+              }).then(response => {
+                  if (response.ok) {
+                      window.location.href = '/admin/productManagement';
+                  } else {
+                      response.text().then(errorText => {
+                          console.error('Product creation failed:', errorText);
+                          alert(`Product creation failed: ${errorText}`);
+                      });
+                  }
+              }).catch(error => {
+                  console.error('Error:', error);
+                  alert(`An error occurred: ${error.message}`);
+              });
+      
+          } catch (error) {
+              console.error('Error:', error);
+              alert(`An error occurred: ${error.message}`);
+          }
+      });
+         
    </script>
    <%- include("../partials/admin/footer.ejs")%>
 </div>

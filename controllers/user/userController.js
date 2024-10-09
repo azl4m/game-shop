@@ -1047,7 +1047,7 @@ const requestReturn = async (req, res) => {
       { _id: orderid, "cartItems.product": product }, // Match the order and the cart item by product ID
       { $set: { "cartItems.$.isReturned": true } } // Use the positional operator to update the specific item
     );
-    return res.redirect(`/orderDetails?id${orderid}`)
+    return res.redirect(`/orderDetails?id=${orderid}`)
   } catch (error) {
     console.log("error requesting return  :" + error);
   }
