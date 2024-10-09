@@ -19,13 +19,13 @@ const storage = multer.diskStorage({
 });
 
 //for getting filename
-const fileNames = (images)=>{
-  let filenames = []
-  images.forEach(image=>{
-    filenames.push(path.basename(image))
-  })
+const fileNames = (images) => {
+  let filenames = [];
+  images.forEach((image) => {
+    filenames.push(path.basename(image));
+  });
   return filenames;
-}
+};
 // Init upload
 const upload = multer({
   storage: storage,
@@ -58,12 +58,13 @@ const processImages = async (files, name) => {
       file.originalname
     )}`;
     try {
-      await sharp(file.path)        .resize(300, 300) // Customize as needed
+      await sharp(file.path)
+        .resize(300, 300) // Customize as needed
         .toFile(newPath);
       processedFiles.push(
         `uploads/cropped-${name}-${i}${path.extname(file.originalname)}`
       );
-      fs.unlinkSync(file.path);
+      // fs.unlinkSync(file.path);
     } catch (error) {
       console.error("Error processing image:", error);
     }
@@ -106,16 +107,11 @@ const addProduct = async (req, res) => {
   upload(req, res, async function (err) {
     if (err) {
       console.log("error :" + err);
-
       return res.status(400).send({ message: err.message });
     }
-
     try {
-      const { productName, description, price, version, stock,platforms } = req.body;
-
-
-      // const admin = await userModel.findById({_id:req.session.user}
-      console.log("Files received:", req.files);
+      const { productName, description, price, variant } = req.body;
+      const parsedVariants = JSON.parse(variant); // Make sure it's parsed correctly
       const images = await processImages(req.files, req.body.productName);
       const categoryId = await categoryModel.findOne({
         categoryName: req.body.category,
@@ -126,18 +122,19 @@ const addProduct = async (req, res) => {
         price: price,
         images: images,
         category: categoryId._id,
-        variant: [{ version, platforms, stock }],
+        variant: parsedVariants,
         // createdBy:admin.username
       });
       const save = await newProduct.save();
       if (save) {
-        return res.redirect("/admin");
+        return res.status(200).json({ message: 'Product added successfully', redirectUrl: '/admin' });
+        // return res.redirect("/admin");
       }
-      res.status(400).json({ message: "Product creation failed" });
+      return res.status(400).json({ message: "Product creation failed" });
     } catch (error) {
       console.log("error at add product :" + error);
 
-      res.status(500).json({ message: error.message });
+      return res.status(500).json({ message: error.message });
     }
   });
 };
@@ -190,11 +187,11 @@ const editProductLoad = async (req, res) => {
     const productId = req.query.id;
     const product = await productModel.findById({ _id: productId });
     const category = await categoryModel.find({});
-    const images = fileNames(product.images)
+    const images = fileNames(product.images);
     res.render("editProduct", {
       product: product,
       category: category,
-      images
+      images,
     });
   } catch (error) {
     console.log("error loadin edit product :" + error);
@@ -264,27 +261,33 @@ const editProduct = async (req, res) => {
 const deleteSingleImage = async (req, res) => {
   try {
     const { imageid, productid } = req.query;
-    const product = await productModel.findOne({_id:productid})
-    if(product.images.length<=3){
-      return res.json({status:false,message:"A product should have minimum of 3 images"})
+    const product = await productModel.findOne({ _id: productid });
+    if (product.images.length <= 3) {
+      return res.json({
+        status: false,
+        message: "A product should have minimum of 3 images",
+      });
     }
-    const imagePath = path.join(__dirname, '../public/uploads/', imageid);
+    const imagePath = path.join(__dirname, "../public/uploads/", imageid);
     fs.unlink(imagePath, (err) => {
       if (err) {
-        return res.status(500).json({ status: false, message: 'Failed to delete image' });
+        return res
+          .status(500)
+          .json({ status: false, message: "Failed to delete image" });
       }
     });
-    product.images = product.images.filter(image => image !== imageNameToServer);
-  
+    product.images = product.images.filter(
+      (image) => image !== imageNameToServer
+    );
+
     // Save the updated product
     await product.save();
-  
+
     // Send a success response to the client
-    return res.redirect("/editProduct?id="+productid)
+    return res.redirect("/editProduct?id=" + productid);
   } catch (error) {
-    console.log("error deleting image :"+error);
-    res.status(400).json({message:"Internal Server Error"})
-    
+    console.log("error deleting image :" + error);
+    res.status(400).json({ message: "Internal Server Error" });
   }
 };
 
@@ -589,29 +592,30 @@ const orderManagementLoad = async (req, res) => {
     return res.status(500).json({ message: "internal server error" });
   }
 };
-const orderDetails = async(req,res)=>{
+const orderDetails = async (req, res) => {
   const search = req.query.search || ""; // Get search query
-  const orderid = req.query.id
-  const order = await orderModel.findOne({_id:orderid})
-  .populate({
-    path:"cartItems.product",
-    select:"productName"
-  })
-  
-  res.render('orderDetailsAdmin',{data:order,searchQuery:search})
-}
+  const orderid = req.query.id;
+  const order = await orderModel.findOne({ _id: orderid }).populate({
+    path: "cartItems.product",
+    select: "productName",
+  });
 
-const orderStatus = async (req,res) => {
+  res.render("orderDetailsAdmin", { data: order, searchQuery: search });
+};
+
+const orderStatus = async (req, res) => {
   try {
-    const orderid = req.query.id
-    const orderStatus = req.query.status
-    await orderModel.updateOne({_id:orderid},{$set:{orderStatus:orderStatus}})
-    return res.redirect("/admin/orderManagement")
+    const orderid = req.query.id;
+    const orderStatus = req.query.status;
+    await orderModel.updateOne(
+      { _id: orderid },
+      { $set: { orderStatus: orderStatus } }
+    );
+    return res.redirect("/admin/orderManagement");
   } catch (error) {
-    console.log("error changing delivery status :"+error);
-    
+    console.log("error changing delivery status :" + error);
   }
-}
+};
 
 const acceptReturn = async (req, res) => {
   try {
@@ -628,17 +632,21 @@ const acceptReturn = async (req, res) => {
       res.status(404).json({ message: "Order not found." });
     } else if (update.modifiedCount === 0) {
       // This case is when the order was found, but no change was made (e.g., status was already "ACCEPTED")
-      res.status(200).json({ message: "No changes made, status was already 'ACCEPTED'." });
+      res
+        .status(200)
+        .json({ message: "No changes made, status was already 'ACCEPTED'." });
     } else {
       res.status(200).json({ message: "Return accepted for the cart item." });
     }
   } catch (error) {
     console.log("Error at accept return: " + error);
-    res.status(500).json({ message: "An error occurred while processing the return." });
+    res
+      .status(500)
+      .json({ message: "An error occurred while processing the return." });
   }
 };
 
-const rejectReturn = async(req,res)=>{
+const rejectReturn = async (req, res) => {
   try {
     const orderId = req.query.orderid; // ID of the order
     const cartItemIndex = parseInt(req.query.cartItem); // Index of the cart item in the array
@@ -653,15 +661,19 @@ const rejectReturn = async(req,res)=>{
       res.status(404).json({ message: "Order not found." });
     } else if (update.modifiedCount === 0) {
       // This case is when the order was found, but no change was made (e.g., status was already "ACCEPTED")
-      res.status(200).json({ message: "No changes made, status was already 'REJECTED'." });
+      res
+        .status(200)
+        .json({ message: "No changes made, status was already 'REJECTED'." });
     } else {
       res.status(200).json({ message: "Return rejected for the cart item." });
     }
   } catch (error) {
     console.log("Error at accept return: " + error);
-    res.status(500).json({ message: "An error occurred while processing the return." });
+    res
+      .status(500)
+      .json({ message: "An error occurred while processing the return." });
   }
-}
+};
 module.exports = {
   pageNotFound,
   addProduct,
@@ -689,5 +701,5 @@ module.exports = {
   deleteSingleImage,
   orderDetails,
   rejectReturn,
-  acceptReturn
+  acceptReturn,
 };

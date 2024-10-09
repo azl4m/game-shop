@@ -343,7 +343,6 @@ const productDetailsLoad = async (req, res) => {
       { $unwind: "$variant" },
       { $group: { _id: "$variant.platforms" } },
     ]);
-
     if (req.session.user) {
       const user = await userModel.findById({ _id: req.session.user });
       return res.render("productDetails", {
@@ -359,7 +358,7 @@ const productDetailsLoad = async (req, res) => {
       platforms,
     });
   } catch (error) {
-    console.log("error loading product details page :" + error);
+    console.log("error loading product details page " + error);
     res.status(500).send("Server error");
   }
 };

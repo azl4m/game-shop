@@ -93,37 +93,42 @@
                      </div>
                      <div class="row">
                         <h3 class="pm-variant-heading">Variants</h3>
-                        <a href="">Add new variant</a>
+                    </div>
+                    <div class="row">
+                        <button class="btn-primary" id="addVariantBtn" type="button">Add New Variant</button>
+
+                    </div>
+                    <div id="variantContainer">
+                        <div class="pm-variant-group">
+                            <label class="pm-label" for="pm-version">Version</label>
+                            <span id="error4" class="error-message"></span>
+                            <input
+                               class="pm-input"
+                               type="text"
+                               id="version"
+                               name="version"
+                               required
+                               />
+                            <div class="pm-form-group">
+                               <label class="pm-form-label" for="stock">Stock</label>
+                               <span id="error5" class="error-message"></span>
+                               <input
+                                  class="pm-form-input"
+                                  type="number"
+                                  id="stock"
+                                  name="stock"
+                                  required
+                                  />
+                            </div>
+                            <label class="pm-label">Platforms</label>
+                            <select id="platforms" name="platforms" style="display: block;">
+                               <option value="PC">PC</option>
+                               <option value="PS6">PS6</option>
+                               <option value="Xbox">Xbox</option>
+                               <option value="Steam">Steam</option>
+                            </select>
+                         </div>
                     </div> 
-                     <div class="pm-variant-group">
-                        <label class="pm-label" for="pm-version">Version</label>
-                        <span id="error4" class="error-message"></span>
-                        <input
-                           class="pm-input"
-                           type="text"
-                           id="version"
-                           name="version"
-                           required
-                           />
-                        <div class="pm-form-group">
-                           <label class="pm-form-label" for="stock">Stock</label>
-                           <span id="error5" class="error-message"></span>
-                           <input
-                              class="pm-form-input"
-                              type="number"
-                              id="stock"
-                              name="stock"
-                              required
-                              />
-                        </div>
-                        <label class="pm-label">Platforms</label>
-                        <select id="platforms" name="platforms" style="display: block;">
-                           <option value="PC">PC</option>
-                           <option value="PS6">PS6</option>
-                           <option value="Xbox">Xbox</option>
-                           <option value="Steam">Steam</option>
-                        </select>
-                     </div>
                </div>
                <div class="row">
                <div class="col s12">
@@ -379,13 +384,30 @@
               alert('Please crop at least 3 images before submitting.');
               return;
           }
-      
+           // Prepare the variant data
+    const variantData = [];
+    const variantGroups = document.querySelectorAll(".pm-variant-group");
+    
+
+        variantGroups.forEach(variant => {
+        const version = variant.querySelector('input[name="version"]').value;
+        const platform = variant.querySelector('select[name="platforms"]').value;
+        const stock = variant.querySelector('input[name="stock"]').value;
+
+        variantData.push({ version, platform, stock });
+    });
+    const formData = new FormData(this);
+     console.log(variantData);
           // Proceed with form submission via fetch
-          const formData = new FormData(this);
-          console.log(FormData);
           
+
           formData.delete('productImage'); // Remove the original image files
-      
+
+          // Add variant data to FormData
+    formData.append('variant', JSON.stringify(variantData)); // Append variant as a JSON string
+    for (const [key, value] of formData.entries()) {
+    console.log(`${key}: ${value}`);
+}
           try {
               // Append the cropped images to the FormData
               for (let i = 0; i < croppedImages.length; i++) {
@@ -395,28 +417,101 @@
               }
       
               fetch('/admin/addProduct', {
-                  method: 'POST',
-                  body: formData
-              }).then(response => {
-                  if (response.ok) {
-                      window.location.href = '/admin/productManagement';
-                  } else {
-                      response.text().then(errorText => {
-                          console.error('Product creation failed:', errorText);
-                          alert(`Product creation failed: ${errorText}`);
-                      });
-                  }
-              }).catch(error => {
-                  console.error('Error:', error);
-                  alert(`An error occurred: ${error.message}`);
-              });
-      
+    method: 'POST',
+    body: formData
+}).then(response => {
+    if (!response.ok) {
+        return response.text().then(errorText => {
+            throw new Error(`Product creation failed: ${errorText}`);
+        });
+    }
+    return response.json(); // Ensure response is parsed as JSON
+}).then(data => {
+    if(data.redirectUrl){
+        window.location.href = data.redirectUrl
+    }
+}).catch(error => {
+    console.error('Error:', error);
+    alert(`An error occurred: ${error.message}`);
+});
+
           } catch (error) {
               console.error('Error:', error);
               alert(`An error occurred: ${error.message}`);
           }
       });
-         
+
+      // Function to update platform options in the dropdowns
+function updatePlatformOptions() {
+    const selectedPlatforms = [];
+
+    // Gather selected platforms from all variant groups
+    const variantGroups = document.querySelectorAll(".pm-variant-group");
+    variantGroups.forEach(group => {
+        const platformSelect = group.querySelector("select[name='platforms']");
+        selectedPlatforms.push(platformSelect.value); // Get the selected value
+    });
+
+    // Update the platform dropdowns in all variant groups
+    variantGroups.forEach(group => {
+        const platformSelect = group.querySelector("select[name='platforms']");
+        const options = platformSelect.querySelectorAll("option");
+
+        options.forEach(option => {
+            if (selectedPlatforms.includes(option.value) && option.value !== platformSelect.value) {
+                option.disabled = true; // Disable already selected platforms
+            } else {
+                option.disabled = false; // Enable unselected platforms
+            }
+        });
+    });
+}
+
+// Function to handle platform selection change
+function handlePlatformChange(event) {
+    // Update platform options whenever a selection changes
+    updatePlatformOptions();
+}
+const addvariantid = document.getElementById("addVariantBtn")
+// Event listener for adding a new variant
+addvariantid.addEventListener("click", function () {
+    // Get the variant container div
+    const variantContainer = document.getElementById("variantContainer");
+
+    // Select the first variant group to use as a template
+    const variantGroup = document.querySelector(".pm-variant-group");
+
+    // Clone the variant group
+    const newVariantGroup = variantGroup.cloneNode(true);
+
+    // Clear input values in the cloned variant group
+    const inputs = newVariantGroup.querySelectorAll("input");
+    inputs.forEach(input => input.value = ""); // Clear inputs
+
+    // Reset the selected platform
+    const platformSelect = newVariantGroup.querySelector("select[name='platforms']");
+    platformSelect.value = ""; // Clear the platform selection
+
+    // Append the new variant group to the container
+    variantContainer.appendChild(newVariantGroup);
+
+    // Add change event listener to the new platform select
+    platformSelect.addEventListener("change", handlePlatformChange);
+
+    // Update platform options after adding the new variant
+    updatePlatformOptions();
+});
+
+// Update platform options for existing variant groups
+const existingPlatformSelects = document.querySelectorAll("select[name='platforms']");
+existingPlatformSelects.forEach(select => {
+    select.addEventListener("change", handlePlatformChange);
+});
+
+// Initial call to update platform options
+updatePlatformOptions();
+
+
    </script>
    <%- include("../partials/admin/footer.ejs")%>
 </div>
