@@ -91,10 +91,11 @@
             </select>
             <input type="number" value="1" id="quantity">
             <a href="#" id="addToCartBtn" class="template-btn">Add To Cart</a>
-        
             <h3>Product Details <i class="template-fa template-fa-indent"></i></h3>
             <br>
             <p><%=product.description%></p>
+            <p style="color: red;" id="stockDisplay"></p>
+            <p hidden id="stock"></p>
         </div>
     </div>
 </div>
@@ -159,10 +160,20 @@ document.addEventListener('DOMContentLoaded', function () {
     const quantityInput = document.getElementById('quantity');
     const addToCartBtn = document.getElementById('addToCartBtn');
     const variantSelect = document.getElementById('variantSelect'); // Select element for platform
-    const productId = '<%= product._id %>'; 
+    const stockDisplay = document.getElementById('stockDisplay'); 
+    const stock = document.getElementById("stock")
+    const productId = '<%= product._id %>';
+    console.log(stock.innerHTML);
+    
+    if(parseInt(stock.innerHTML)===0){
+      addToCartBtn.disabled = true
+    } 
 
     function updateAddToCartLink() {
         const quantity = quantityInput.value;
+        if(quantity>parseInt(stock.innerHTML)){
+          quantityInput.value=parseInt(stock.innerHTML)
+        }
         if(quantity<=0){
           quantityInput.value = 1
         }
@@ -178,6 +189,35 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Fetch stock when platform is selected
+    async function fetchStockForPlatform(platform) {
+      const url = `/getPlatformStock?productId=${productId}&platform=${platform}`;
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        if (response.ok) {
+          stockDisplay.textContent = `Stock Available: ${data.stock}`; // Display stock details
+          stock.innerHTML=data.stock
+        } else {
+          stockDisplay.textContent = "Stock not available for selected platform";
+        }
+      } catch (error) {
+        console.error('Error fetching stock:', error);
+        stockDisplay.textContent = "Error fetching stock";
+      }
+    }
+
+        // Update link and fetch stock on platform change
+        variantSelect.addEventListener('change', function() {
+      const platform = variantSelect.value;
+      if (platform !== "Select Variant") {
+        fetchStockForPlatform(platform); // Fetch stock when a platform is selected
+      } else {
+        stockDisplay.textContent = ""; // Clear stock display when no platform is selected
+      }
+      updateAddToCartLink();
+    });
+    
     // Update link on quantity or platform change
     quantityInput.addEventListener('input', updateAddToCartLink);
     variantSelect.addEventListener('change', updateAddToCartLink);
@@ -190,6 +230,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const addToCartButton = document.getElementById('addToCartBtn');
 
     addToCartButton.addEventListener('click', async (event) => {
+      console.log("HELLO FROM ADDD TO CART");
+      
       event.preventDefault(); // Prevent default page reload
       const platform = document.getElementById('variantSelect').value;
 

@@ -41,7 +41,7 @@ user.get("/logout",userController.logout)
 
 //for product details page
 user.get('/productDetails',userController.productDetailsLoad)
-
+user.get("/getPlatformStock", userController.getPlatformStock);
 //products
 user.get('/products',userController.productsLoad)
 

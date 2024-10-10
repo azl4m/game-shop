@@ -341,15 +341,23 @@ const productDetailsLoad = async (req, res) => {
     const platforms = await productModel.aggregate([
       { $match: { productName: product.productName } },
       { $unwind: "$variant" },
-      { $group: { _id: "$variant.platforms" } },
+      { $group: { _id: "$variant.platform" } },
+      
     ]);
+    console.log(platforms);
+    let parsedPlatdforms = []
+    platforms.forEach(platform=>{
+      parsedPlatdforms.push(platform._id)
+    })
+    // console.log(parsedPlatdforms);
+    
     if (req.session.user) {
       const user = await userModel.findById({ _id: req.session.user });
       return res.render("productDetails", {
         userDetails: user,
         product: product,
         category: category,
-        platforms: platforms,
+        platforms,
       });
     }
     return res.render("productDetails", {
@@ -363,43 +371,103 @@ const productDetailsLoad = async (req, res) => {
   }
 };
 
-//add to cart
+// API to get stock for a specific platform
+const getPlatformStock = async (req, res) => {
+  try {
+    const { productId, platform } = req.query; // Receive productId and platform from query
+    const product = await productModel.findById(productId);
+    // Find the variant that matches the selected platform
+    const variant = product.variant.find(v => v.platform === platform);
+    if (variant) {
+      res.json({ stock: variant.stock });
+    } else {
+      res.status(404).json({ message: "Platform not found" });
+    }
+  } catch (error) {
+    console.log("Error fetching platform stock: " + error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+// Add to cart
 const addToCart = async (req, res) => {
   try {
     const productId = req.query.id;
     const quantity = parseInt(req.query.quantity);
     const platform = req.query.platform;
     const userId = req.session.user;
+
+    // Find the product and selected platform variant
     const product = await productModel.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Find the specific variant for the selected platform
+    const selectedVariant = product.variant.find(
+      (variant) => variant.platform === platform
+    );
+
+    if (!selectedVariant) {
+      return res.status(400).json({ message: "Selected platform not available" });
+    }
+
+    // Check if the requested quantity is available in stock
+    if (selectedVariant.stock < quantity) {
+      return res.status(400).json({ message: "Not enough stock available" });
+    }
+
     let cart = await cartModel.findOne({ userId: userId });
+
     if (cart) {
       const itemIndex = cart.items.findIndex(
         (item) =>
           item.productId.toString() === productId && item.platform === platform
       );
+
       if (itemIndex > -1) {
+        // If the item already exists in the cart, increase the quantity
+        const currentQuantity = cart.items[itemIndex].quantity;
+
+        if (selectedVariant.stock < currentQuantity + quantity) {
+          return res.status(400).json({
+            message: `Only ${selectedVariant.stock} units available in stock`,
+          });
+        }
+
         cart.items[itemIndex].quantity += quantity;
       } else {
+        // If the item is not in the cart, add it to the cart
         cart.items.push({ productId, quantity, platform });
       }
+
       cart.updatedAt = Date.now();
       await cart.save();
     } else {
+      // If cart does not exist, create a new one
       cart = new cartModel({
         userId,
         items: [{ productId, quantity, platform }],
       });
       await cart.save();
     }
+
+    // Deduct the quantity from the stock of the selected platform
+    selectedVariant.stock -= quantity;
+    await product.save();
+
     res.status(200).json({
       message: "Product added to cart",
       redirectUrl: `/productDetails?id=${productId}`,
-    }); // Send success response with the redirect URL
+    });
   } catch (error) {
     console.log("error at add to cart :" + error);
     return res.status(500).json({ message: error.message });
   }
 };
+
 //get cart
 const cartLoad = async (req, res) => {
   try {
@@ -459,32 +527,59 @@ const cartLoad = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-//remove from cart
+// Remove from cart
 const removeFromCart = async (req, res) => {
   try {
     const { itemId, platform } = req.body;
-
     const userId = req.session.user;
-
+    // Find the user's cart
     const cart = await cartModel.findOne({ userId });
-
     if (!cart) {
       return res.status(404).json({ message: "Cart is empty" });
     }
 
+    // Find the item in the cart to get the quantity to update stock
+    const itemToRemove = cart.items.find(
+      (item) =>
+        item.productId.toString() === itemId && item.platform === platform
+    );
+    if (!itemToRemove) {
+      return res.status(404).json({ message: "Item not found in cart" });
+    }
+
+    const product = await productModel.findById(itemToRemove.productId);
+
+    // Find the variant for the selected platform to increase the stock
+    const selectedVariant = product.variant.find(
+      (variant) => variant.platform === platform
+    );
+
+    if (!selectedVariant) {
+      return res.status(400).json({
+        message: "Platform not found for this product",
+      });
+    }
+
+    // Increase stock by the quantity of the item being removed
+    selectedVariant.stock += itemToRemove.quantity;
+
+    // Update the product with the increased stock
+    await product.save();
+
     // Remove the item from the cart
-    const filteredItems = cart.items.filter(
+    cart.items = cart.items.filter(
       (item) =>
         !(item.productId.toString() === itemId && item.platform === platform)
     );
-    cart.items = filteredItems;
 
-    // Save the updated cart
-    await cart.save();
+    // If the cart is empty after removing the item, delete the cart
     if (!cart.items.length) {
       await cartModel.deleteOne({ userId: userId });
       return res.redirect("/");
     }
+
+    // Save the updated cart
+    await cart.save();
     res.redirect("/cart");
   } catch (error) {
     console.log("Error removing item from cart:", error);
@@ -492,31 +587,69 @@ const removeFromCart = async (req, res) => {
   }
 };
 
+
 const updateCartQuantity = async (req, res) => {
   try {
     const { itemId, newQuantity, platform } = req.body;
     const userId = req.session.user;
 
+    // Find the user's cart
     const cart = await cartModel.findOne({ userId });
     if (!cart) {
       return res.status(404).json({ message: "Cart not found" });
     }
 
-    // Find the item in the cart and update its quantity
+    // Find the item in the cart
     const itemIndex = cart.items.findIndex(
       (item) =>
         item.productId.toString() === itemId && item.platform === platform
     );
-    if (itemIndex !== -1) {
-      cart.items[itemIndex].quantity = newQuantity;
+    if (itemIndex === -1) {
+      return res.status(404).json({ message: "Item not found in cart" });
     }
+
+    const product = await productModel.findById(itemId);
+
+    // Find the variant for the selected platform
+    const selectedVariant = product.variant.find(
+      (variant) => variant.platform === platform
+    );
+
+    if (!selectedVariant) {
+      return res.status(400).json({
+        message: "Platform not found for this product",
+      });
+    }
+
+    // Calculate the difference between old quantity and new quantity
+    const oldQuantity = cart.items[itemIndex].quantity;
+    const quantityDifference = newQuantity - oldQuantity;
+
+    // Check if the new quantity exceeds the available stock
+    if (quantityDifference > 0 && quantityDifference > selectedVariant.stock) {
+      return res.status(400).json({
+        message: `Requested quantity exceeds available stock`,
+      });
+    }
+
+    // Update the stock based on the quantity difference
+    selectedVariant.stock -= quantityDifference; // Decrease stock dynamically
+
+    // Save the updated product with the new stock
+    await product.save();
+
+    // Update the cart item quantity
+    cart.items[itemIndex].quantity = newQuantity;
     await cart.save();
-    res.status(200).json({ message: "Cart updated successfully" });
+
+    res.status(200).json({ message: "Cart updated and stock adjusted successfully" });
   } catch (error) {
-    console.error("Error updating cart quantity:", error);
+    console.error("Error updating cart quantity and stock:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+
 const addressManagementLoad = async (req, res) => {
   try {
     const userId = req.session.user;
@@ -1085,4 +1218,5 @@ module.exports = {
   editProfile,
   editPtofileLoad,
   requestReturn,
+  getPlatformStock
 };
