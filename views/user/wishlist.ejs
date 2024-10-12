@@ -1,0 +1,212 @@
+<%- include("../partials/user/header.ejs")%>
+<style>
+  /* Add your styles here */
+     /* Toast notification styles */
+.toast {
+  visibility: hidden;
+  min-width: 250px;
+  margin-left: -125px;
+  color: white;
+  text-align: center;
+  border-radius: 2px;
+  padding: 16px;
+  position: fixed;
+  z-index: 1;
+  left: 50%;
+  bottom: 30px;
+  font-size: 17px;
+}
+
+/* Show the toast */
+.toast.show {
+  visibility: visible;
+  -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+  animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+/* Animations */
+@-webkit-keyframes fadein {
+  from {bottom: 0; opacity: 0;} 
+  to {bottom: 30px; opacity: 1;}
+}
+
+@-webkit-keyframes fadeout {
+  from {bottom: 30px; opacity: 1;} 
+  to {bottom: 0; opacity: 0;}
+}
+
+@keyframes fadein {
+  from {bottom: 0; opacity: 0;} 
+  to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes fadeout {
+  from {bottom: 30px; opacity: 1;} 
+  to {bottom: 0; opacity: 0;}
+}
+
+.zoom {
+  position: absolute;
+  border: 1px solid #000;
+  width: 100px; /* Adjust size */
+  height: 100px; /* Adjust size */
+  background-repeat: no-repeat;
+  background-size: 200%; /* Adjust to control zoom level */
+  pointer-events: none;
+  visibility: hidden;
+}
+
+</style>
+<section class="h-100 h-custom" style="background-color: #d2c9ff">
+  <div class="container py-5 h-100">
+    <div class="row d-flex justify-content-center align-items-center h-100">
+      <div class="col-12">
+        <div
+          class="card card-registration card-registration-2"
+          style="border-radius: 15px"
+        >
+          <div class="card-body p-0">
+            <div class="row g-0">
+              <div class="p-5">
+                <div
+                  class="d-flex justify-content-between align-items-center mb-5"
+                >
+                  <h1 class="fw-bold mb-0">Wishlist</h1>
+                  <h6 class="mb-0 text-muted"><%=items.length %> items</h6>
+                </div>
+                <hr class="my-4" />
+                <% for(let i=0; i < items.length; i++) { %>
+                <div
+                  class="row mb-4 d-flex justify-content-between align-items-center"
+                >
+                  <div class="col-md-2 col-lg-2 col-xl-2">
+                    <img
+                      style="cursor: pointer"
+                      src="<%=items[i].images[0]%>"
+                      class="img-fluid rounded-3 productimage"
+                      alt="<%=items[i].productName%>"
+                      data-id="<%= items[i].productId%>"
+                    />
+                  </div>
+                  <div class="col-md-3 col-lg-3 col-xl-3">
+                    <h5 class="mb-0"><%=items[i].productName%></h5>
+                  </div>
+                  <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
+                    <h6 class="mb-0">₹ <%=items[i].price%></h6>
+                  </div>
+                  <div class="col-md-1 col-lg-1 col-xl-1 text-end">
+                    <a
+                      href="#!"
+                      class="remove-item text-muted"
+                      data-id="<%= items[i].productId %>"
+                    >
+                      <i class="fas fa-times"></i>
+                    </a>
+                  </div>
+                  <div class="col-md-1 col-lg-1 col-xl-1 text-end">
+                    <a
+                      href="/productDetails?id=<%= items[i].productId%>"
+                      class="text-muted"
+                    >
+                      <i class="fa-solid fa-cart-shopping"></i>
+                    </a>
+                  </div>
+                </div>
+                <% } %>
+                <div id="toast" class="toast"></div>
+                <hr class="my-4" />
+                <div class="pt-5">
+                  <h6 class="mb-0">
+                    <a href="/products" class="text-body"
+                      ><i class="fas fa-long-arrow-alt-left me-2"></i>Back to
+                      shop</a
+                    >
+                  </h6>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<% if (isEmpty) { %>
+    <script>
+      // Wait for the page to load
+      document.addEventListener('DOMContentLoaded', function () {
+        // Show the toast notification
+       showToast("Wishlist is empty",0)
+  
+        // Redirect to the products page after a short delay
+        setTimeout(() => {
+          window.location.href = '/products';
+        }, 2000); // 2-second delay for toast
+      });
+    </script>
+  <% } %>
+
+<script>
+  const images = document.querySelectorAll(".productimage");
+
+  images.forEach((image) => {
+    image.addEventListener("click", (event) => {
+      const productId = image.getAttribute("data-id");
+      if (productId) {
+        // Redirect to the product details page using the productId
+        window.location.href = `/product/${productId}`;
+      }
+    });
+  });
+
+  const removeButtons = document.querySelectorAll(".remove-item");
+
+removeButtons.forEach(button => {
+  button.addEventListener('click', async (event) => {
+    event.preventDefault();
+
+    const productId = button.getAttribute('data-id');
+
+    try {
+      const response = await fetch(`/wishlistRemove?id=${productId}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        if (data.isEmpty) {
+            showToast(data.message,0)
+            setTimeout(() => {
+                // If the wishlist is empty, redirect to the product page
+          window.location.href = '/products';      
+            }, 2000);
+          
+        } else {
+          // Otherwise, reload the page to update the wishlist
+          window.location.reload();
+        }
+      } else {
+        console.error('Failed to remove the item from wishlist :');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  });
+});
+
+
+  // Function to show toast notifications
+  function showToast(message, success) {
+    const toast = document.getElementById("toast");
+    toast.className = "toast show";
+    toast.innerHTML = message;
+    toast.style.backgroundColor = success ? "#4CAF50" : "red";
+    setTimeout(() => {
+      toast.className = toast.className.replace("show", "");
+    }, 3000);
+  }
+</script>
+
+<%- include("../partials/user/footer.ejs")%>

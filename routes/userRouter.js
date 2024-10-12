@@ -77,6 +77,15 @@ user.get('/ordersListing',addminAuth.isLogout,auth.isLogin,userController.orders
 user.get('/orderDetails',addminAuth.isLogout,auth.isLogin,userController.orderDetails)
 user.get('/requestReturn',addminAuth.isLogout,auth.isLogin,userController.requestReturn)
 
+
+//wishlist
+user.get('/addToWishList',userController.addToWishList)
+user.get('/wishlist',addminAuth.isLogout,auth.isLogin,userController.wishlistLoad)
+user.delete('/wishlistRemove',addminAuth.isLogout,auth.isLogin,userController.wishlistRemove)
+
+//wallet
+user.get("/wallet",addminAuth.isLogout,auth.isLogin,userController.loadWalletPage)
+user.post("/addToWallet",addminAuth.isLogout,auth.isLogin,userController.addToWallet)
 //for page not found
 user.get("/pageNotFound",userController.pageNotFound)
 user.get('/',addminAuth.isLogout,userController.loadHomePage);

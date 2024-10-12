@@ -90,7 +90,8 @@
                 <% }); %>
             </select>
             <input type="number" value="1" id="quantity">
-            <a href="#" id="addToCartBtn" class="template-btn">Add To Cart</a>
+            <a href="#" id="addToCartBtn" class="template-btn" style="text-decoration: none;">Add To Cart</a>
+            <a href="#" id="addToWishListBtn" class="template-btn" style="text-decoration: none;">Add To Wishlist</a>
             <h3>Product Details <i class="template-fa template-fa-indent"></i></h3>
             <br>
             <p><%=product.description%></p>
@@ -183,9 +184,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const platform = variantSelect.value; // Get selected platform from dropdown
         if (platform !== "Select Variant") {
             const baseUrl = '/addToCart';
+            const baseUrl1 = "/addToWishlist"
             addToCartBtn.setAttribute('data-href', `${baseUrl}?id=${productId}&quantity=${quantity}&platform=${platform}`);
         } else {
-            addToCartBtn.setAttribute('data-href', '#'); // Disable link if platform is invalid
+            addToCartBtn.setAttribute('data-href', '#'); // Disable link if platform is invalid      
         }
     }
 
@@ -230,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const addToCartButton = document.getElementById('addToCartBtn');
 
     addToCartButton.addEventListener('click', async (event) => {
-      console.log("HELLO FROM ADDD TO CART");
+      event.preventDefault()
       
       event.preventDefault(); // Prevent default page reload
       const platform = document.getElementById('variantSelect').value;
@@ -327,6 +329,38 @@ document.addEventListener('DOMContentLoaded', function () {
     // Initialize the zoom effect
     initZoom();
 });
+
+document.addEventListener('DOMContentLoaded',function(){
+      const addToWishListBtn = document.getElementById("addToWishListBtn")
+      const productId = '<%= product._id %>';
+      addToWishListBtn.setAttribute('data-href',`/addToWishList?id=${productId}`)
+      addToWishListBtn.addEventListener('click',async(event)=>{
+        event.preventDefault()
+        console.log("hello");
+        const url = addToWishListBtn.getAttribute('data-href'); // Fetch URL stored in data-href
+      
+      try {
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          showToast(data.message||"Product added succesfully !",1) // Show toast notification
+          setTimeout(() => {
+            window.location.href = data.redirectUrl; // Redirect after a delay
+          }, 2000); // 2-second delay before redirecting
+        }
+        else{
+          const data = await response.json();
+          showToast(data.message||"Error adding product",0)
+          setTimeout(()=>{
+            window.location.href = data.redirectUrl
+          },2000)
+        }
+      } catch (error) {
+        console.error('Error adding to wishlist:', error);
+      }
+      })
+      
+    })
 
 
 
