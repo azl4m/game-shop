@@ -1,0 +1,190 @@
+<%- include("../partials/admin/header.ejs")%>
+
+<style>
+      .error-message {
+    color: red;
+    font-size: 0.9em;
+    display: block; /* Ensure it's displayed as a block element */
+    margin-top: 5px;
+  }
+</style>
+<div id="page-wrapper">
+  <div class="header">
+    <h1 class="page-header">Form Inputs Page</h1>
+    <ol class="breadcrumb">
+      <li><a href="#">Home</a></li>
+      <li><a href="#">Forms</a></li>
+      <li class="active">Add New Coupon</li>
+    </ol>
+  </div>
+  <div id="page-inner">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-action">Coupon Detials</div>
+          <div class="card-content">
+            <form
+              class="col s12"
+              action="/admin/addCoupon"
+              method="post"
+              id="catForm"
+            >
+              <div class="row">
+                <div class="input-field col s6">
+                  <input
+                    id="couponCode"
+                    type="text"
+                    class="validate"
+                    name="couponCode"
+                  />
+                  <span id="error1" class="error-message"></span>
+                  <label for="couponCode">Coupon Code</label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="input-field col s6">
+                  <div class="row">
+                    <div class="input-field col s6">
+                      <label for="discountType">Discount Type:</label>
+                    </div>
+                  </div>
+
+                  <select
+                    id="discountType"
+                    name="discountType"
+                    required
+                    class="browser-default"
+                  >
+                    <option value="fixed">Fixed Amount</option>
+                    <option value="percentage">Percentage</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row">
+                <div class="input-field col s6">
+                  <input
+                    type="number"
+                    id="discountValue"
+                    name="discountValue"
+                    required
+                  />
+                  <span id="error2" class="error-message"></span>
+                  <label for="discountValue">Discount Value:</label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="input-field col s6">
+                  <label for="minCartValue">Minimum Cart Value:</label>
+                  <input
+                    type="number"
+                    id="minCartValue"
+                    name="minCartValue"
+                    required
+                  />
+                  <span id="error3" class="error-message"></span>
+                </div>
+              </div>
+              <div class="row">
+                <div class="input-field col s6">
+                  <div class="row">
+                    <div class="input-field col s6">
+                      <label for="expiresAt">Expiration Date:</label>
+                    </div>
+                  </div>
+                  <input
+                    type="date"
+                    id="expiresAt"
+                    name="expiresAt"
+                    required
+                    placeholder="Expiration Date"
+                  />
+                  <span class="error-message"></span>
+                </div>
+              </div>
+              <div class="row">
+                <div class="input-field col s6">
+                    <div class="row">
+                        <div class="input-field col s6">
+                            <label for="isActive">Is Active:</label>
+                        </div>
+                      </div>
+                  
+                  <select id="isActive" name="isActive" required class="browser-default">
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                  </select>
+                  <span class="error-message"></span>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col s12">
+                  <div class="input-field inline">
+                    <input type="submit" />
+                  </div>
+                </div>
+              </div>
+            </form>
+            <div class="clearBoth"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <%- include("../partials/admin/footer.ejs")%>
+  </div>
+</div>
+<script>
+    document.getElementById("catForm").addEventListener("submit", function (event) {
+      // Prevent form submission if validation fails
+      let isValid = true;
+  
+      // Clear previous errors
+      document.getElementById("error1").innerText = "";
+      document.getElementById("error2").innerText = "";
+      document.getElementById("error3").innerText = "";
+  
+      // Coupon Code Validation
+      let couponCode = document.getElementById("couponCode").value;
+      if (couponCode.trim() === "") {
+        document.getElementById("error1").innerText = "Coupon Code is required";
+        isValid = false;
+      }
+  
+      // Discount Value Validation
+      let discountValue = document.getElementById("discountValue").value;
+      if (discountValue <= 0 || isNaN(discountValue)) {
+        document.getElementById("error2").innerText = "Discount value must be greater than 0.";
+        isValid = false;
+      }
+  
+      // Minimum Cart Value Validation
+      let minCartValue = document.getElementById("minCartValue").value;
+      if (minCartValue <= 0 || isNaN(minCartValue)) {
+        document.getElementById("error3").innerText = "Minimum cart value must be greater than 0.";
+        isValid = false;
+      }
+  
+      // Expiration Date Validation
+      let expiresAt = document.getElementById("expiresAt").value;
+      let currentDate = new Date().toISOString().split("T")[0];
+      if (expiresAt === "" || expiresAt <= currentDate) {
+        document.getElementById("expiresAt").nextElementSibling.innerText = "Expiration date must be in the future.";
+        isValid = false;
+      } else {
+        document.getElementById("expiresAt").nextElementSibling.innerText = "";
+      }
+  
+      // Is Active Validation
+      let isActive = document.getElementById("isActive").value;
+      if (!isActive) {
+        document.getElementById("isActive").nextElementSibling.innerText = "Please select if the coupon is active.";
+        isValid = false;
+      }
+  
+      // If form is not valid, prevent submission
+      if (!isValid) {
+        event.preventDefault();
+      }
+    });
+  </script>
+  

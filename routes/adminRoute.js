@@ -37,4 +37,14 @@ admin.get('/orderStatus',auth.isLogin,adminController.orderStatus)
 admin.get('/orderDetails',auth.isLogin,adminController.orderDetails)
 admin.get('/acceptReturn',auth.isLogin,adminController.acceptReturn)
 admin.get('/rejectReturn',auth.isLogin,adminController.rejectReturn)
+
+//coupons amangement
+admin.get('/addCoupon',auth.isLogin,adminController.addCouponLoad)
+admin.post("/addCoupon",auth.isLogin,adminController.addCoupon)
+admin.get("/couponManagement",auth.isLogin,adminController.couponManagement)
+admin.get("/activateCoupon",auth.isLogin,adminController.activateCoupon)
+admin.get("/deactivateCoupon",auth.isLogin,adminController.deactivateCoupon)
+admin.get('/deleteCoupon',auth.isLogin,adminController.deleteCoupon)
+admin.get('/editCoupon',auth.isLogin,adminController.getCouponForEdit)
+admin.post('/updateCoupon',auth.isLogin,adminController.updateCoupon)
 module.exports = admin

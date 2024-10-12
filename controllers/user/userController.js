@@ -346,8 +346,7 @@ const productDetailsLoad = async (req, res) => {
       { $group: { _id: "$variant.platform" } },
       
     ]);
-    console.log(platforms);
-    let parsedPlatdforms = []
+      let parsedPlatdforms = []
     platforms.forEach(platform=>{
       parsedPlatdforms.push(platform._id)
     })
@@ -659,6 +658,7 @@ const addressManagementLoad = async (req, res) => {
     const defaultAddress = await addressModel.find({
       $and: [{ userId: userId }, { isDefault: true }],
     });
+    const check = req.query.check||false
     if (!defaultAddress.length) {
       await addressModel.updateOne(
         { userId: userId },
@@ -669,6 +669,7 @@ const addressManagementLoad = async (req, res) => {
     res.render("addressManagement", {
       userDetails: user,
       addresses: addresses,
+      check
     });
   } catch (error) {
     console.log("error in address management load :" + error);
@@ -677,7 +678,7 @@ const addressManagementLoad = async (req, res) => {
 
 const addAddress = async (req, res) => {
   try {
-    const { userId, street, city, state, postalCode, country, phoneNumber } =
+    const { userId, street, city, state, postalCode, country, phoneNumber,check } =
       req.body;
     let { isDefault } = req.body;
     isDefault = isDefault === "on" ? true : false;
@@ -699,7 +700,9 @@ const addAddress = async (req, res) => {
     await userModel.findByIdAndUpdate(userId, {
       $push: { addresses: newAddress._id },
     });
-
+    if(check){
+      return res.redirect("/checkout")
+    }
     res.redirect("/addressManagement");
   } catch (error) {
     console.log("error adding address :" + error);
@@ -939,26 +942,23 @@ const checkoutLoad = async (req, res) => {
     const user = await userModel.findOne({ _id: userId });
     const cart = await cartModel.findOne({ userId }).populate({
       path: "items.productId",
-      select: "price name",
+      select: "price name",   
     });
+    
+    const addressid = req.body.address;
+    console.log("Address ID:", addressid); // Debugging log
+    const address = await addressModel.findOne({ _id: addressid });
 
+    if (!address) {
+      return res.status(400).json({ message: "Address not found" });
+    }
+    
     if (!cart) {
       return res.status(400).json({ message: "No cart found" });
     }
 
-    console.log(JSON.stringify(cart, null, 2));
+    const { email, fname, totalPrice } = req.body;
 
-    const {
-      street,
-      city,
-      phone,
-      state,
-      pinCode,
-      email,
-      fullname,
-      totalPrice,
-      country,
-    } = req.body;
     function generateUniqueOrder() {
       let prefix = "ORD";
       let middle = Date.now();
@@ -971,6 +971,7 @@ const checkoutLoad = async (req, res) => {
       }
       return `${prefix}-${middle}-${suffix}`;
     }
+
     const cartItems = cart.items.map((item) => {
       if (!item.productId || !item.productId._id || !item.productId.price) {
         throw new Error("Cart item missing product or price information");
@@ -982,6 +983,7 @@ const checkoutLoad = async (req, res) => {
         platform: item.platform,
       };
     });
+
     const orderNumber = generateUniqueOrder();
     const order = new orderModel({
       user: userId,
@@ -989,25 +991,26 @@ const checkoutLoad = async (req, res) => {
       cartItems: cartItems,
       totalPrice: totalPrice,
       shippingAddress: {
-        name: fullname,
-        street: street,
-        city: city,
-        phoneNumber: phone,
-        state: state,
-        postalCode: pinCode,
-        country: country,
+        name: fname,
+        street: address.street,
+        city: address.city,
+        phoneNumber: address.phoneNumber,
+        state: address.state,
+        postalCode: address.postalCode,
+        country: address.country,
       },
     });
 
     const saveOrder = await order.save();
     await cartModel.findOneAndDelete({ userId });
 
-    res.status(200).json({ message: "checkout successful" });
+    res.status(200).json({ message: "Checkout successful" });
   } catch (error) {
-    console.log("error at cart load :" + error);
+    console.log("Error at checkout load: " + error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
 
 const getCheckoutPage = async (req, res) => {
   try {
@@ -1029,7 +1032,7 @@ const getCheckoutPage = async (req, res) => {
     const addresses = await addressModel.find({ userId });
     const defaultAddress = await addressModel.findOne({ isDefault: true });
     const { subtotal, tax, total, delivery } = calculateCartTotals(cart);
-    res.render("checkout", {
+    res.render("checkout1", {
       addresses: addresses,
       userDetails: user,
       defaultAddress: defaultAddress,
@@ -1364,7 +1367,7 @@ const loadWalletPage = async (req, res) => {
   }
 };
 
-// wallet add
+// wallet ad
 const addToWallet = async (req, res) => {
   try {
     const userId = req.session.user;
