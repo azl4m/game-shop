@@ -1,40 +1,81 @@
 <%- include("../partials/user/header.ejs")%>
+<style>
+.container {
+  max-width: 1200px; /* Limit the width of the container */
+}
 
+h2 {
+  font-size: 2.5rem; /* Adjusted font size for better visibility */
+  font-weight: bold;
+  color: #333; /* Darker color for better contrast */
+  margin-bottom: 1.5rem;
+}
+
+.card {
+  border-radius: 15px; /* Rounded corners for cards */
+  border: none; /* Remove default card border */
+  transition: transform 0.3s, box-shadow 0.3s; /* Smooth transition for hover effects */
+}
+
+.card:hover {
+  transform: translateY(-5px); /* Slight lift effect on hover */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Enhanced shadow on hover */
+}
+
+.card-title {
+  font-size: 1.25rem; /* Font size for order title */
+  color: #333; /* Dark text for card title */
+}
+
+.text-primary {
+  color: #007bff; /* Primary color for order ID */
+}
+
+.text-success {
+  color: #28a745; /* Success color for total price */
+}
+
+.btn-primary {
+  background-color: #007bff; /* Primary button color */
+  border-color: #007bff; /* Primary button border color */
+  border-radius: 25px; /* Rounded button corners */
+  transition: background-color 0.3s, border-color 0.3s; /* Transition for hover */
+}
+
+.btn-primary:hover {
+  background-color: #0056b3; /* Darker shade on hover */
+  border-color: #0056b3; /* Darker border shade */
+}
+
+
+</style>
 <div class="container mt-3 mt-md-5">
-  <h2 class="text-charcoal hidden-sm-down">Your Orders</h2>
-  <h5 class="text-charcoal hidden-md-up">Your Orders</h5>
+  <h2 class="text-charcoal">Your Orders</h2>
   <div class="row">
     <div class="col-12">
-      <div class="list-group mb-5">
-        <% orders.forEach(order=>{ %>
-        <div class="list-group-item p-3 bg-snow" style="position: relative">
-          <div class="row w-100 no-gutters">
-            <div class="col-6 col-md">
-              <h6 class="text-charcoal mb-0 w-100">Order Id</h6>
-              <p class="text-pebble mb-0 w-100 mb-2 mb-md-0"
-                ><%=order.orderNumber%></p
-              >
-            </div>
-            <div class="col-6 col-md">
-              <h6 class="text-charcoal mb-0 w-100">Date</h6>
-              <p class="text-pebble mb-0 w-100 mb-2 mb-md-0"><%= moment(order.orderDate).format("MMM Do, YYYY") %></p>
-            </div>
-            <div class="col-6 col-md">
-              <h6 class="text-charcoal mb-0 w-100">Total</h6>
-              <p class="text-pebble mb-0 w-100 mb-2 mb-md-0">₹<%=order.totalPrice%></p>
-            </div>
-            <div class="col-6 col-md">
-              <h6 class="text-charcoal mb-0 w-100">Shipped To</h6>
-              <p class="text-pebble mb-0 w-100 mb-2 mb-md-0"><%=order.shippingAddress.name%></p>
-            </div>
-            <div class="col-12 col-md-3">
-              <a href="/orderDetails?id=<%=order._id%>" class="btn btn-primary w-100">View Order</a>
+      <div class="row">
+        <% orders.forEach(order => { %>
+        <div class="col-12 col-md-6 mb-4">
+          <div class="card shadow-sm border-light">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title text-dark mb-0">Order Id: <span class="text-primary"><%= order.orderNumber %></span></h5>
+                <p class="text-muted mb-0"><%= moment(order.orderDate).format("MMM Do, YYYY") %></p>
+              </div>
+              <h6 class="text-dark">Total: <span class="text-success">₹<%= order.totalPrice %></span></h6>
+              <h6 class="text-dark mt-3">Shipped To:</h6>
+              <p class="text-muted mb-0"><%= order.shippingAddress.name %></p>
+              <div class="mt-4">
+                <a href="/orderDetails?id=<%= order._id %>" class="btn btn-primary">View Order</a>
+              </div>
             </div>
           </div>
         </div>
-        <%})%>
+        <% }) %>
       </div>
     </div>
   </div>
 </div>
+
+
 <%- include("../partials/user/footer.ejs")%>

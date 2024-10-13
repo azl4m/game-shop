@@ -56,29 +56,51 @@
                                         <td><%= data[i].totalPrice %></td>
                                         <td><%= data[i].paymentMethod %></td>
                                         <td><%= data[i].orderStatus %></td>
-                                        <td class="">
-                                            
-                                            <% if (data[i].orderStatus !== 'Pending') { %>
-                                                <button class="btn-warning">
-                                                    <a href="/admin/orderStatus?id=<%=data[i]._id%>&status=Pending" style="text-decoration: none; color: white;">Pending</a>                                                </button>
-                                            <% } %>
-                                            <% if (data[i].orderStatus !== 'Processing') { %>
-                                                <button class="btn-info">
-                                                    <a href="/admin/orderStatus?id=<%=data[i]._id%>&status=Processing" style="text-decoration: none; color: white;">Processing</a>                                                </button>
-                                            <% } %>
-                                            <% if (data[i].orderStatus !== 'Shipped') { %>
-                                                <button class="btn-light">
-                                                    <a href="/admin/orderStatus?id=<%=data[i]._id%>&status=Shipped" style="text-decoration: none; color: rgb(0, 0, 0);">Shipped</a>                                                </button>
-                                            <% } %>
-                                            <% if (data[i].orderStatus !== 'Delivered') { %>
-                                                <button class="btn-success">
-                                                    <a href="/admin/orderStatus?id=<%=data[i]._id%>&status=Delivered" style="text-decoration: none; color: white;">Delivered</a>                                                </button>
-                                            <% } %>
-                                            <% if (data[i].orderStatus !== 'Cancelled') { %>
-                                                <button class="btn-danger">
-                                                   <a href="/admin/orderStatus?id=<%=data[i]._id%>&status=Cancelled" style="text-decoration: none; color: white;">Cancelled</a>                                                </button>
-                                            <% } %>
+                                        <td>
+                                          <form action="/admin/orderStatus" method="GET">
+                                            <select class="form-select" name="status" onchange="this.form.submit()" style="width: auto; display: inline-block;">
+                                              <option disabled selected>Change Status</option>
+                                        
+                                              <% if (data[i].orderStatus === 'Pending') { %>
+                                                <!-- All options except Pending are available -->
+                                                <option value="Processing">Processing</option>
+                                                <option value="Shipped">Shipped</option>
+                                                <option value="outForDelivery">Out For Delivery</option>
+                                                <option value="Delivered">Delivered</option>
+                                                <option value="Cancelled">Cancelled</option>
+                                        
+                                              <% } else if (data[i].orderStatus === 'Processing') { %>
+                                                <!-- Pending is not available, rest are available -->
+                                                <option value="Shipped">Shipped</option>
+                                                <option value="outForDelivery">Out For Delivery</option>
+                                                <option value="Delivered">Delivered</option>
+                                                <option value="Cancelled">Cancelled</option>
+                                        
+                                              <% } else if (data[i].orderStatus === 'Shipped') { %>
+                                                <!-- Pending and Processing are not available -->
+                                                <option value="outForDelivery">Out For Delivery</option>
+                                                <option value="Delivered">Delivered</option>
+                                                <option value="Cancelled">Cancelled</option>
+                                        
+                                              <% } else if (data[i].orderStatus === 'outForDelivery') { %>
+                                                <!-- Pending, Processing, and Shipped are not available -->
+                                                <option value="Delivered">Delivered</option>
+                                                <option value="Cancelled">Cancelled</option>
+                                        
+                                              <% } else if (data[i].orderStatus === 'Delivered' || data[i].orderStatus === 'Cancelled') { %>
+                                                <!-- No options available once Delivered or Cancelled -->
+                                                <option disabled>No Further Actions</option>
+                                        
+                                              <% } else if (data[i].orderStatus === 'Returned') { %>
+                                                <option disabled>Order is Returned</option>
+                                              <% } %>
+                                        
+                                            </select>
+                                            <input type="hidden" name="id" value="<%= data[i]._id %>">
+                                          </form>
                                         </td>
+                                        
+                                        
                                         <td>
                                           <a href="/admin/orderDetails?id=<%=data[i]._id%>">View Order Details</a>
                                         </td>

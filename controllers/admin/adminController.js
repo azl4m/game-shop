@@ -7,6 +7,7 @@ const couponModel = require("../../models/couponModel")
 const multer = require("multer");
 const sharp = require("sharp");
 const fs = require("fs");
+const paymentStatusTime = require("../../helpers/paymentTimeStamp")
 
 //for handling photo upload
 
@@ -211,7 +212,6 @@ const editProduct = async (req, res) => {
 
     try {
       const productId = req.body.productId;
-      console.log(productId);
 
       const product = await productModel.findById(productId);
 
@@ -612,6 +612,8 @@ const orderStatus = async (req, res) => {
       { _id: orderid },
       { $set: { orderStatus: orderStatus } }
     );
+    await paymentStatusTime.statusTime(orderStatus,orderid)
+
     return res.redirect("/admin/orderManagement");
   } catch (error) {
     console.log("error changing delivery status :" + error);
@@ -623,21 +625,52 @@ const acceptReturn = async (req, res) => {
     const orderId = req.query.orderid; // ID of the order
     const cartItemIndex = parseInt(req.query.cartItem); // Index of the cart item in the array
 
-    // Update the specific cart item using the index in the cartItems array
+    // Find the order to access the product ID, quantity, and platform of the returned item
+    const order = await orderModel.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found." });
+    }
+
+    const returnedItem = order.cartItems[cartItemIndex];
+    const productId = returnedItem.product;
+    const returnQuantity = returnedItem.quantity;
+    const platform = returnedItem.platform;
+    const refundAmount = returnedItem.price * returnQuantity;
+    
+    // Step 1: Update the return status to 'ACCEPTED'
     const update = await orderModel.updateOne(
       { _id: orderId },
       { $set: { [`cartItems.${cartItemIndex}.returnAccepted`]: "ACCEPTED" } } // Dynamically setting the field using the index
     );
 
+    // Step 2: Update the timestamp for the return status
+    await paymentStatusTime.returnStatusTime("ACCEPTED", orderId, cartItemIndex);
+
+    // Step 3: Increase the stock for the returned product and platform
+    const productUpdate = await productModel.findOneAndUpdate(
+      { _id: productId, "variant.platform": platform },
+      { $inc: { "variant.$.stock": returnQuantity } }, // Increment the stock for the specific platform
+      { new: true } // Return the updated document
+    );
+
+    // Step 4: Add the refund amount to the user's wallet
+    const userUpdate = await userModel.findByIdAndUpdate(
+      order.user,
+      { $inc: { wallet: refundAmount } } // Increment the user's wallet balance by the refund amount
+    );
+
+    // Step 5: Respond to the client based on the update results
     if (update.matchedCount === 0) {
       res.status(404).json({ message: "Order not found." });
     } else if (update.modifiedCount === 0) {
-      // This case is when the order was found, but no change was made (e.g., status was already "ACCEPTED")
+      // Case where no change was made (e.g., status was already "ACCEPTED")
       res
         .status(200)
         .json({ message: "No changes made, status was already 'ACCEPTED'." });
     } else {
-      res.status(200).json({ message: "Return accepted for the cart item." });
+      res.status(200).json({
+        message: "Return accepted for the cart item. Stock updated for the platform, and wallet credited.",
+      });
     }
   } catch (error) {
     console.log("Error at accept return: " + error);
@@ -646,6 +679,8 @@ const acceptReturn = async (req, res) => {
       .json({ message: "An error occurred while processing the return." });
   }
 };
+
+
 
 const rejectReturn = async (req, res) => {
   try {
@@ -818,11 +853,7 @@ const updateCoupon = async (req, res) => {
   try {
     const { id, couponCode, discountType, discountValue, minCartValue, expiresAt, isActive } = req.body;
     
-    // Log the incoming data for debugging
-    console.log('Updating coupon with ID:', id);
-    console.log('Data:', { couponCode, discountType, discountValue, minCartValue, expiresAt, isActive });
 
-    // Ensure `id` is valid before proceeding
     if (!id) {
       return res.status(400).json({ message: 'Coupon ID is required.' });
     }
