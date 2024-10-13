@@ -53,7 +53,8 @@ const orderSchema = new mongoose.Schema({
   },
   paymentMethod: {
     type: String,
-    default: 'Cash on Delivery',
+    enum:['COD','Razorpay'],
+    default: 'COD',
     required: true
   },
   totalPrice: {
@@ -68,7 +69,20 @@ const orderSchema = new mongoose.Schema({
   orderDate: {
     type: Date,
     default: Date.now
-  }
+  },
+  paymentStatus: {
+    type: String,
+    enum: ['Success', 'Failed', 'Pending'],
+    default: 'Pending'
+  },
+  paymentId: {
+    type: String,
+    required: false // Optional, only needed for Razorpay
+  },
+  paymentDate: {
+    type: Date,
+    required: false // Optional, only needed for Razorpay
+  },
 });
 
 module.exports = mongoose.model('Order', orderSchema);

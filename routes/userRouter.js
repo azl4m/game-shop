@@ -21,6 +21,7 @@ const userController=require("../controllers/user/userController")
 const passport = require('passport')
 const auth = require('../middlewares/auth')
 const addminAuth = require('../middlewares/adminAuth')
+const admin = require('./adminRoute')
 
 
 //for signup
@@ -76,7 +77,9 @@ user.post('/editProfile',addminAuth.isLogout,auth.isLogin,userController.editPro
 user.get('/ordersListing',addminAuth.isLogout,auth.isLogin,userController.ordersLoad)
 user.get('/orderDetails',addminAuth.isLogout,auth.isLogin,userController.orderDetails)
 user.get('/requestReturn',addminAuth.isLogout,auth.isLogin,userController.requestReturn)
-
+user.get('/orderSuccess',addminAuth.isLogout,auth.isLogin,userController.orderSuccessLoad)
+//razorpay
+user.post("/verifyPayment",addminAuth.isLogout,auth.isLogin,userController.razorpayPaymentVerification)
 
 //wishlist
 user.get('/addToWishList',userController.addToWishList)

@@ -8,6 +8,7 @@ const adminRouter = require("./routes/adminRoute")
 const session = require('express-session')
 const passport = require("./config/passport");
 const razorpay = require('razorpay')
+const cors = require('cors')
 db()
 app.use(express.json());
 app.use(express.urlencoded({extended:true}))
@@ -21,6 +22,7 @@ app.use(session({
         maxAge:72*60*60*1000
     }
 }))
+app.use(cors())
 const PORT = process.env.PORT||3003
 
 

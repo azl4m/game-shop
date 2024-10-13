@@ -1,0 +1,105 @@
+<%- include("../partials/user/header.ejs")%>
+<style>
+    * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
+}
+
+body {
+  background-color: #f8f8f8;
+}
+
+.success-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f4f4f4;
+}
+
+.success-box {
+  background-color: white;
+  padding: 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.success-icon {
+  margin-bottom: 20px;
+}
+
+.check-icon {
+  width: 60px;
+  height: 60px;
+  stroke: #4CAF50;
+}
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+p {
+  font-size: 16px;
+  color: #555;
+  margin-bottom: 12px;
+}
+
+.delivery-message {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.buttons {
+  margin-top: 30px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 4px;
+  text-decoration: none;
+  color: white;
+  margin: 5px;
+}
+
+.view-orders {
+  background-color: #4CAF50;
+}
+
+.continue-shopping {
+  background-color: #007BFF;
+}
+
+.btn:hover {
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+</style>
+<div class="success-container">
+    <div class="success-box">
+      <div class="success-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" class="check-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+      </div>
+      <h1>Thank You for Your Order!</h1>
+      <p>Your order has been successfully placed.</p>
+      <!-- <p>Order Number: <strong>#ORD-1234-ABCD</strong></p>
+      <p class="delivery-message">Estimated delivery date: <strong>Oct 20, 2024</strong></p> -->
+
+      <div class="buttons">
+        <a href="/ordersListing" class="btn view-orders">View My Orders</a>
+        <a href="/products" class="btn continue-shopping">Continue Shopping</a>
+      </div>
+    </div>
+  </div>
+
+
+<%- include("../partials/user/footer.ejs")%>

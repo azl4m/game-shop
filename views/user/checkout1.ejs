@@ -254,51 +254,51 @@ label {
   </div>
   
   <div id="toast" class="toast"></div>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
 <script>
 // for toast
-function showToast(data,result) {
-  // toast.className.replace("show","");
-  const toast = document.getElementById("toast");
-  toast.className = "toast show";
-  toast.innerHTML = data
-  if(result){
-    toast.style.backgroundColor = "#4CAF50"
-  }
-  else{
-    toast.style.backgroundColor = "red"
-  }
-  setTimeout(() => {
-    toast.className = toast.className.replace("show", "");
-  }, 3000); // The toast will disappear after 3 seconds
+function showToast(data, result) {
+    // toast.className.replace("show","");
+    const toast = document.getElementById("toast");
+    toast.className = "toast show";
+    toast.innerHTML = data
+    if (result) {
+        toast.style.backgroundColor = "#4CAF50"
+    } else {
+        toast.style.backgroundColor = "red"
+    }
+    setTimeout(() => {
+        toast.className = toast.className.replace("show", "");
+    }, 3000); // The toast will disappear after 3 seconds
 }
 
 document.getElementById('payment-mode').addEventListener('change', function() {
-  const paymentDetails = document.getElementById('paymentDetails');
-  if (this.value === 'razorpay') {
-    paymentDetails.style.display = 'block';
-  } else {
-    paymentDetails.style.display = 'none';
-  }
+    const paymentDetails = document.getElementById('paymentDetails');
+    if (this.value === 'razorpay') {
+        paymentDetails.style.display = 'block';
+    } else {
+        paymentDetails.style.display = 'none';
+    }
 });
 
 // Function to display error messages
 function displayError(elementId, message) {
-  const errorElement = document.getElementById(elementId);
-  errorElement.innerText = message;
-  errorElement.style.color = 'red';
+    const errorElement = document.getElementById(elementId);
+    errorElement.innerText = message;
+    errorElement.style.color = 'red';
 }
 
 // Function to clear previous errors
 function clearErrors() {
-  const errorFields = document.querySelectorAll('.error');
-  errorFields.forEach(function (errorField) {
-    errorField.innerText = ''; // Clear error text
-  });
+    const errorFields = document.querySelectorAll('.error');
+    errorFields.forEach(function(errorField) {
+        errorField.innerText = ''; // Clear error text
+    });
 }
 
-  document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function() {
     const addressSelect = document.getElementById("address");
-
 
 
 
@@ -307,97 +307,152 @@ function clearErrors() {
     const emailField = document.getElementById("email");
     const nameField = document.getElementById("fname");
     const priceField = document.getElementById('totalPrice')
-    const addressField = document.getElementById("address")
+    // const addressField = document.getElementById("address")
     const paymentMode = document.getElementById('payment-mode')
 
 
-    addressSelect.addEventListener("change", function () {
-      // Get selected option's dataset values
-      const selectedOption = addressSelect.options[addressSelect.selectedIndex];
+    addressSelect.addEventListener("change", function() {
+        // Get selected option's dataset values
+        const selectedOption = addressSelect.options[addressSelect.selectedIndex];
 
-      const street = selectedOption.getAttribute("data-street");
-      const city = selectedOption.getAttribute("data-city");
-      const state = selectedOption.getAttribute("data-state");
-      const postalCode = selectedOption.getAttribute("data-postalcode");
-      const phone = selectedOption.getAttribute("data-phone");
-      const country = selectedOption.getAttribute("data-country");
+        const street = selectedOption.getAttribute("data-street");
+        const city = selectedOption.getAttribute("data-city");
+        const state = selectedOption.getAttribute("data-state");
+        const postalCode = selectedOption.getAttribute("data-postalcode");
+        const phone = selectedOption.getAttribute("data-phone");
+        const country = selectedOption.getAttribute("data-country");
     });
 
     const submitLink = document.getElementById("submitLink");
 
     submitLink.addEventListener("click", async (event) => {
-      event.preventDefault();
-
-      
-    //for validation
-    
-    const error1 = document.getElementById('error1')
-    const error2 = document.getElementById('error2')
-
-     
-      const emailVal = emailField.value;
-      const nameVal = nameField.value;
-      const priceVal = priceField.innerHTML
-      const addressVal = addressField.value
-      const paymentVal = paymentMode.value
-      const nameRegex = /^[A-Za-z\s]+$/;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phoneRegex = /^\d{10}$/;
+        event.preventDefault();
 
 
-      
-  let isValid = true;
+        //for validation
+
+        const error1 = document.getElementById('error1')
+        const error2 = document.getElementById('error2')
 
 
-  // Validate Full Name
-  if (!nameRegex.test(nameVal)) {
-    displayError('error1', 'Full Name should only contain letters and spaces.');
-    isValid = false;
-  }
+        const emailVal = emailField.value;
+        const nameVal = nameField.value;
+        const priceVal = priceField.innerHTML
+        // const addressVal = addressField.value
+        const paymentVal = paymentMode.value
+        const nameRegex = /^[A-Za-z\s]+$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const phoneRegex = /^\d{10}$/;
 
-  // Validate Email
-  if (!emailRegex.test(emailVal)) {
-    displayError('error2', 'Please enter a valid email.');
-    isValid = false;
-  }
-  if(paymentVal===""){
-    showToast("Please Select A Payment Mode",0)
-    isValid = false
-  }
-  // Validate Street Address
 
-  if (!isValid) {
-    return; // If validation fails, stop further processing (i.e., prevent fetch)
-  }
-  if(paymentVal==="cod"){
-    try {
-        const response = await fetch(`/checkout`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            address:addressVal,
-            email: emailVal,
-            fname: nameVal,
-            totalPrice:priceVal,
-          }),
-        });
-        if(response.ok){
-            showToast("Order Placed",1)
-            setTimeout(() => {
-                window.location.href="/ordersListing"
-            }, 2000);
+
+        let isValid = true;
+
+
+        // Validate Full Name
+        if (!nameRegex.test(nameVal)) {
+            displayError('error1', 'Full Name should only contain letters and spaces.');
+            isValid = false;
         }
-      } catch (error) {
-        alert(error.message)
-        console.error(error.message)
-        
-      }
-  }
-      
+
+        // Validate Email
+        if (!emailRegex.test(emailVal)) {
+            displayError('error2', 'Please enter a valid email.');
+            isValid = false;
+        }
+        if (paymentVal === "") {
+            showToast("Please Select A Payment Mode", 0)
+            isValid = false
+        }
+        // Validate Street Address
+
+        if (!isValid) {
+            return; // If validation fails, stop further processing (i.e., prevent fetch)
+        }
+        const addressField = document.getElementById("address")
+        const addressid = addressField.value
+        try {
+            const response = await fetch(`/checkout`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    paymentMode: paymentVal,
+                    totalPrice:parseInt(priceVal),
+                    address:addressid,
+                    fname: nameVal,  // Sending fname (full name)
+                }),
+            });
+            const data = await response.json()
+            if (paymentVal === "cod" && response.ok) {
+                showToast("Order Placed", 1)
+                setTimeout(() => {
+                    window.location.href = "/orderSuccess"
+                }, 2000);
+            } else if (paymentVal === "razorpay" && data.razorpayOrderId) {
+                const options = {
+                    key: data.razorpayKeyId,
+                    amount: data.amount,
+                    currency: 'INR',
+                    name: "The Game Shop",
+                    description: "Test Transaction",
+                    order_id: data.razorpayOrderId,
+                    handler: async function(response) {
+                        try {
+                            const verifyResponse = await fetch("/verifyPayment", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify({
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_signature: response.razorpay_signature,
+                                    orderId: data.orderId, // Your backend order ID
+                                })
+                            })
+                            const verifyData = await verifyResponse.json()
+                            console.log(verifyData);
+                            
+                            if (verifyData.success) {
+                                showToast("Payment Successfull, Order Placed", 1)
+                                setTimeout(() => {
+                                    window.location.href = "/orderSuccess"
+                                }, 2000);
+                            } else {
+                                alert("Payment Verification failed, Please try again")
+                            }
+                        } catch (error) {
+                            console.error("Error verifying payment:", error.message);
+                            alert("Error verifying payment. Please try again.");
+                        }
+                    },
+                    prefill: {
+                        name: data.name,
+                        email: data.email
+                    },
+                    theme: {
+                        color: "#3399cc",
+                    },
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.open()
+            } else {
+                // Handle any other errors
+                alert(data.message || "Something went wrong");
+            }
+        } catch (error) {
+            alert(error.message)
+            console.error(error.message)
+
+        }
+
+
     });
-  });
-</script>
+});
+</script>     
+       
 
 <%- include("../partials/user/footer.ejs")%>
