@@ -110,6 +110,23 @@ const orderSchema = new mongoose.Schema({
     type: Date,
     required: false, // Optional, only needed for Razorpay
   },
+  isCancelled:{
+    type:Boolean,
+    default:false
+  },
+  cancelAccepted:{
+    type:Boolean,
+    default:false
+  },
+  couponUsed:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: false
+  },
+  discount:{
+    type:Number,
+    default:0,
+  }
 });
 
 module.exports = mongoose.model("Order", orderSchema);

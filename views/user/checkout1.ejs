@@ -224,6 +224,26 @@ label {
             </p>
             <%})%>
             <hr />
+            <div>
+                <label for="coupon">Apply Coupon:</label>
+                <form id="applyCouponForm" action="/applyCoupon" method="POST">
+                  <select id="coupon" name="couponId">
+                    <option value="">Select a coupon</option>
+                    <% eligibleCoupons.forEach(function(coupon) { %>
+                      <option value="<%= coupon._id %>">
+                        <%= coupon.code %> - 
+                        <% if (coupon.discountType === 'fixed') { %>
+                          ₹<%= coupon.discountValue %>
+                        <% } else { %>
+                          <%= coupon.discountValue %>%
+                        <% } %>
+                      </option>
+                    <% }) %>
+                  </select>
+                  <button type="submit">Apply</button>
+                </form>
+              </div>
+              
             <table>
                 <tr>
                     <td>Delivery</td>
@@ -235,12 +255,26 @@ label {
                     </td>
                     <td><span class="price" style="color: black"><b id="tax"><%=tax%></b></span></td>
                 </tr>
-                <tr></tr>
+                             
+                <% if (typeof appliedCoupon!=="undefined") { %>
+                    <tr>
+                        <td>Coupon Applied: <%= appliedCoupon.code %> 
+                            (<% if (appliedCoupon.discountType === 'fixed') { %>
+                              -₹<%= appliedCoupon.discountValue %>
+                            <% } else { %>
+                              <%= appliedCoupon.discountValue %>% Off
+                            <% } %>)
+                            </td>
+                    </tr>
+                    
+                  <% } %>
+                <tr>
                     <td>
                         <p>Total</p>
                     </td>
                     <td><span class="price" style="color: black"><b id="totalPrice"><%=total%></b></span></td>
                 </tr>
+   
             </table>
           </div>
         </div>

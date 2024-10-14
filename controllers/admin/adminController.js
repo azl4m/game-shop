@@ -710,7 +710,34 @@ const rejectReturn = async (req, res) => {
       .json({ message: "An error occurred while processing the return." });
   }
 };
+const acceptCancel = async(req,res)=>{
+  try {
+    const orderid = req.query.id
+    const update = await orderModel.updateOne({_id:orderid},{
+      $set:{cancelAccepted:true,orderStatus:"Cancelled"}
+    })
+    await paymentStatusTime.statusTime("Cancelled",orderid)
+    const order = await orderModel.findById(orderid)
+    if(order.paymentMethod==="Razorpay" && order.paymentStatus==="Success"){
+      const refundAmount = order.totalPrice
+      await userModel.findByIdAndUpdate(order.user,{ $inc: { wallet: refundAmount }})
+    }
+    // Restock the items in the order by platform
+    for (const cartItem of order.cartItems) {
+      const { product, platform, quantity } = cartItem;
 
+      // Update the stock of the product's variant for the given platform
+      await productModel.updateOne(
+        { _id: product, "variant.platform": platform },
+        { $inc: { "variant.$.stock": quantity } }
+      );
+    }
+    res.redirect("/admin/orderManagement")
+  } catch (error) {
+    console.log("error at accept cancel :"+error.message);
+    
+  }
+}
 //coupon
 const addCouponLoad = async(req,res)=>{
   try {
@@ -919,5 +946,6 @@ module.exports = {
   deactivateCoupon,
   deleteCoupon,
   getCouponForEdit,
-  updateCoupon
+  updateCoupon,
+  acceptCancel
 };

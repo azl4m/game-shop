@@ -55,7 +55,7 @@ user.post('/updateCartQuantity',addminAuth.isLogout,auth.isLogin,userController.
 //checkout
 user.get("/checkout",addminAuth.isLogout,auth.isLogin,userController.getCheckoutPage)
 user.post('/checkout',addminAuth.isLogout,auth.isLogin,userController.checkoutLoad)
-
+user.post('/applyCoupon',addminAuth.isLogout,auth.isLogin,userController.applyCoupon)
 //address management
 user.get('/addressManagement',addminAuth.isLogout,auth.isLogin,userController.addressManagementLoad)
 user.post('/addAddress',addminAuth.isLogout,auth.isLogin,userController.addAddress)
@@ -78,6 +78,7 @@ user.get('/ordersListing',addminAuth.isLogout,auth.isLogin,userController.orders
 user.get('/orderDetails',addminAuth.isLogout,auth.isLogin,userController.orderDetails)
 user.get('/requestReturn',addminAuth.isLogout,auth.isLogin,userController.requestReturn)
 user.get('/orderSuccess',addminAuth.isLogout,auth.isLogin,userController.orderSuccessLoad)
+user.get('/cancelOrder',addminAuth.isLogout,auth.isLogin,userController.requestCancel)
 //razorpay
 user.post("/verifyPayment",addminAuth.isLogout,auth.isLogin,userController.razorpayPaymentVerification)
 

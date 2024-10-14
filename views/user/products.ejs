@@ -5,7 +5,14 @@
     flex-wrap: wrap;
     gap: 20px; /* Adjust the space between products */
 }
-
+.active a {
+  color: red; /* Change this to whatever color you prefer */
+  font-weight: bold; /* Optional: Make it bold for more emphasis */
+}
+.page-btn span a {
+  color: black; /* Default color for non-active pages */
+  text-decoration: none; /* Remove underlines */
+}
 </style>
 <!-- All Products -->
 
@@ -57,25 +64,29 @@
         <% }) %>
     </div>
  
-    <!-- <div class="template-row">
-        <div class="template-col-4">
-            <img src="images/product-9.jpg">
-            <h4>Red Printed T-Shirt</h4>
-            <div class="rating">
-                <i class="template-fa template-fa-star"></i>
-                <i class="template-fa template-fa-star"></i>
-                <i class="template-fa template-fa-star"></i>
-                <i class="template-fa template-fa-star"></i>
-                <i class="template-fa template-fa-star-o"></i>
-            </div>
-            <p>$50.00</p>
-        </div>
-    </div> -->
-    <div class="page-btn">
-        <%for(let  i=1;i<=totalPages.length;i++){%>
-        <span><%=i%></span>
-        <%}%>
-    </div>
+    <div class="page-btn" style="display: inline-block;">
+        <% for(let i = 1; i <= totalPages; i++) { %>
+          <span data-href="?page=<%= i %>&search=<%= searchQuery %>&sortBy=<%= sortBy %>&sortOrder=<%= sortOrder %>&filter=<%= category._id %>" 
+          class="<%= (i === currentPage) ? 'active' : '' %>">
+            <a style="text-decoration: none;" href="?page=<%= i %>&search=<%=searchQuery%>&sortBy=<%=sortBy%>&sortOrder=<%=sortOrder%>&filter=<%=category._id%>">
+              <%= i %>
+            </a>
+          </span>
+        <% } %>
+      </div>
 </div>
-
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Select all the spans inside the page-btn div
+      const pageBtns = document.querySelectorAll('.page-btn span');
+  
+      pageBtns.forEach(span => {
+        span.addEventListener('click', function() {
+          // Redirect to the href stored in data-href
+          window.location.href = this.getAttribute('data-href');
+        });
+      });
+    });
+  </script>
+  
 <%- include("../partials/user/footer.ejs")%>

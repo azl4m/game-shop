@@ -104,6 +104,13 @@
                                         <td>
                                           <a href="/admin/orderDetails?id=<%=data[i]._id%>">View Order Details</a>
                                         </td>
+                                        <td>
+                                          <%if(data[i].isCancelled){%>
+                                             <%if(!data[i].cancelAccepted){%>
+                                                <a href="/admin/acceptCancel?id=<%=data[i]._id%>">Accept Cancellation</a>
+                                                <%}%>
+                                             <%}%>
+                                        </td>
                                     </tr>
                                 <% } %>
                             <% } %>
