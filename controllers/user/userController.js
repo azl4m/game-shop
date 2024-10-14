@@ -7,7 +7,7 @@ const addressModel = require("../../models/addressModel");
 const categoryModel = require("../../models/categoryModel");
 const orderModel = require("../../models/orderModel");
 const wishlistModel = require("../../models/wishlistModel");
-const couponModel = require("../../models/couponModel")
+const couponModel = require("../../models/couponModel");
 const randomString = require("randomstring");
 const moment = require("moment");
 const mongoose = require("mongoose");
@@ -972,7 +972,9 @@ const checkoutLoad = async (req, res) => {
     }
 
     const { fname, paymentMode, totalPrice } = req.body;
-
+    let{reducedAmount,couponCode} = req.body
+    const reducedAmountFinal = reducedAmount || 0
+    const couponCodeFinal = couponCode || null;
     function generateUniqueOrder() {
       let prefix = "ORD";
       let middle = Date.now();
@@ -997,69 +999,11 @@ const checkoutLoad = async (req, res) => {
         platform: item.platform,
       };
     });
-
-    const applyCoupon = async (req, res) => {
-  try {
-    const userId = req.session.user;
-    const couponId = req.body.couponId; // Get coupon ID from the form
-    const cart = await cartModel.findOne({ userId }).populate("items.productId");
-
-    if (!cart) {
-      return res.status(400).json({ message: "No items in cart" });
-    }
-
-    // Fetch the selected coupon
-    const coupon = await couponModel.findById(couponId);
-
-    // Validate coupon (if it's expired, inactive, or doesn't meet cart value)
-    if (!coupon || !coupon.isActive || coupon.expiresAt < new Date() || cart.subtotal < coupon.minCartValue) {
-      return res.status(400).json({ message: "Invalid or ineligible coupon." });
-    }
-
-    // Calculate the new total based on the coupon type
-    let { subtotal, tax, delivery, total } = calculateCartTotals(cart);
-
-    if (coupon.discountType === 'fixed') {
-      total -= coupon.discountValue; // Subtract fixed discount
-    } else if (coupon.discountType === 'percentage') {
-      total -= (total * coupon.discountValue) / 100; // Apply percentage discount
-    }
-
-    // Ensure total doesn't go below zero
-    if (total < 0) total = 0;
-
-    // Render the checkout page again with the new total
-    res.render("checkout1", {
-      addresses: await addressModel.find({ userId }),
-      userDetails: await userModel.findOne({ _id: userId }),
-      defaultAddress: await addressModel.findOne({ userId, isDefault: true }),
-      products: cart.items.map((item) => ({
-        name: item.productId.productName,
-        price: item.productId.price,
-        quantity: item.quantity,
-        platform: item.platform,
-      })),
-      delivery,
-      tax,
-      total,
-      eligibleCoupons: await couponModel.find({
-        isActive: true,
-        expiresAt: { $gte: new Date() },
-        minCartValue: { $lte: subtotal },
-      }),
-      appliedCoupon: coupon, // Pass the applied coupon for display purposes
-    });
-  } catch (error) {
-    console.error("Error applying coupon:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
     const orderNumber = generateUniqueOrder();
     if (paymentMode === "cod") {
       const order = new orderModel({
         user: userId,
-        orderStatus:"Processing",
+        orderStatus: "Processing",
         orderNumber: orderNumber,
         cartItems: cartItems,
         totalPrice: totalPrice,
@@ -1073,6 +1017,8 @@ const checkoutLoad = async (req, res) => {
           postalCode: address.postalCode,
           country: address.country,
         },
+        couponUsed:couponCodeFinal,
+        discount:reducedAmountFinal
       });
 
       const saveOrder = await order.save();
@@ -1083,7 +1029,7 @@ const checkoutLoad = async (req, res) => {
       );
       await cartModel.findOneAndDelete({ userId });
 
-      res.status(200).json({ message: "Checkout successful" });
+      return res.status(200).json({ message: "Checkout successful" });
     }
     if (paymentMode === "razorpay") {
       const razorpayOrder = await razorpayInstance.orders.create({
@@ -1110,6 +1056,8 @@ const checkoutLoad = async (req, res) => {
         },
         orderStatus: "Pending", // Update status after successful payment
         paymentId: razorpayOrder.id,
+        couponUsed:couponCodeFinal,
+        discount:reducedAmountFinal
       });
       const saveOrder = await order.save();
       await paymentTimeStamp.statusTime(saveOrder.orderStatus, saveOrder._id);
@@ -1131,7 +1079,7 @@ const checkoutLoad = async (req, res) => {
     console.log("error at checkout load");
 
     console.log(error.message);
-    res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
@@ -1139,7 +1087,9 @@ const applyCoupon = async (req, res) => {
   try {
     const userId = req.session.user;
     const couponId = req.body.couponId; // Get coupon ID from the form
-    const cart = await cartModel.findOne({ userId }).populate("items.productId");
+    const cart = await cartModel
+      .findOne({ userId })
+      .populate("items.productId");
 
     if (!cart) {
       return res.status(400).json({ message: "No items in cart" });
@@ -1149,19 +1099,24 @@ const applyCoupon = async (req, res) => {
     const coupon = await couponModel.findById(couponId);
 
     // Validate coupon (if it's expired, inactive, or doesn't meet cart value)
-    if (!coupon || !coupon.isActive || coupon.expiresAt < new Date() || cart.subtotal < coupon.minCartValue) {
+    if (
+      !coupon ||
+      !coupon.isActive ||
+      coupon.expiresAt < new Date() ||
+      cart.subtotal < coupon.minCartValue
+    ) {
       return res.status(400).json({ message: "Invalid or ineligible coupon." });
     }
 
     // Calculate the new total based on the coupon type
     let { subtotal, tax, delivery, total } = calculateCartTotals(cart);
 
-    if (coupon.discountType === 'fixed') {
+    if (coupon.discountType === "fixed") {
       total -= coupon.discountValue; // Subtract fixed discount
-    } else if (coupon.discountType === 'percentage') {
+    } else if (coupon.discountType === "percentage") {
       total -= (total * coupon.discountValue) / 100; // Apply percentage discount
     }
-
+    const reducedAmount = subtotal - total;
     // Ensure total doesn't go below zero
     if (total < 0) total = 0;
 
@@ -1179,11 +1134,13 @@ const applyCoupon = async (req, res) => {
       delivery,
       tax,
       total,
+      subtotal,
       eligibleCoupons: await couponModel.find({
         isActive: true,
         expiresAt: { $gte: new Date() },
         minCartValue: { $lte: subtotal },
       }),
+      reducedAmount,
       appliedCoupon: coupon, // Pass the applied coupon for display purposes
     });
   } catch (error) {
@@ -1191,9 +1148,6 @@ const applyCoupon = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
-
-
 
 //razorpay payment verify place order
 const razorpayPaymentVerification = async (req, res) => {
@@ -1214,7 +1168,6 @@ const razorpayPaymentVerification = async (req, res) => {
     console.log(razorpay_signature);
 
     if (generatedSignature === razorpay_signature) {
-
       // Payment is successful, update the order
       const order = await orderModel.findById(orderId);
 
@@ -1224,8 +1177,8 @@ const razorpayPaymentVerification = async (req, res) => {
 
       // Update order with successful payment details
       order.paymentStatus = "Success";
-      order.orderStatus = "Processing"
-      await paymentTimeStamp.statusTime(order.orderStatus,order._id)
+      order.orderStatus = "Processing";
+      await paymentTimeStamp.statusTime(order.orderStatus, order._id);
       await paymentTimeStamp.paymentStatusTime(order.paymentStatus, order._id);
       order.paymentId = razorpay_payment_id; // Use the payment ID from Razorpay
       order.paymentDate = Date.now();
@@ -1249,8 +1202,7 @@ const razorpayPaymentVerification = async (req, res) => {
         .json({ message: "Invalid signature, payment verification failed" });
     }
   } catch (error) {
-    console.log("error at payment verify"+error.message);
-    
+    console.log("error at payment verify" + error.message);
   }
 };
 
@@ -1291,7 +1243,8 @@ const getCheckoutPage = async (req, res) => {
       delivery: delivery,
       tax: tax,
       total: total,
-      eligibleCoupons:eligibleCoupons
+      eligibleCoupons: eligibleCoupons,
+      subtotal
     });
   } catch (error) {
     console.log("Error fetching checkout page:", error);
@@ -1331,7 +1284,7 @@ const productsLoad = async (req, res) => {
       ],
     };
     let filteredCat;
-    let category
+    let category;
     // Conditionally add the category filter if it is not an empty string
     if (filter && filter.trim() !== "") {
       query.$and.push({ category: filter });
@@ -1374,7 +1327,7 @@ const productsLoad = async (req, res) => {
         sortOrder,
         categories,
         filteredCat,
-        category
+        category,
       });
     }
     return res.render("products", {
@@ -1386,7 +1339,7 @@ const productsLoad = async (req, res) => {
       sortOrder,
       categories,
       filteredCat,
-      category
+      category,
     });
   } catch (error) {
     console.log("Error loading products: " + error);
@@ -1445,16 +1398,17 @@ const requestReturn = async (req, res) => {
   }
 };
 //cancel
-const requestCancel = async(req,res)=>{
+const requestCancel = async (req, res) => {
   try {
-    const orderid = req.query.id
-    const order = await orderModel.findByIdAndUpdate(orderid,{$set:{isCancelled:true}})
-    return res.redirect("/orderDetails?id="+orderid)
+    const orderid = req.query.id;
+    const order = await orderModel.findByIdAndUpdate(orderid, {
+      $set: { isCancelled: true },
+    });
+    return res.redirect("/orderDetails?id=" + orderid);
   } catch (error) {
-    console.log("error at requestcancel :"+error.message);
-    
+    console.log("error at requestcancel :" + error.message);
   }
-}
+};
 //wishlist
 const addToWishList = async (req, res) => {
   try {
@@ -1726,5 +1680,5 @@ module.exports = {
   razorpayPaymentVerification,
   orderSuccessLoad,
   requestCancel,
-  applyCoupon
+  applyCoupon,
 };

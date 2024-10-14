@@ -3,11 +3,11 @@ const productModel = require("../../models/productModel");
 const userModel = require("../../models/userModel");
 const categoryModel = require("../../models/categoryModel");
 const orderModel = require("../../models/orderModel");
-const couponModel = require("../../models/couponModel")
+const couponModel = require("../../models/couponModel");
 const multer = require("multer");
 const sharp = require("sharp");
 const fs = require("fs");
-const paymentStatusTime = require("../../helpers/paymentTimeStamp")
+const paymentStatusTime = require("../../helpers/paymentTimeStamp");
 
 //for handling photo upload
 
@@ -129,7 +129,12 @@ const addProduct = async (req, res) => {
       });
       const save = await newProduct.save();
       if (save) {
-        return res.status(200).json({ message: 'Product added successfully', redirectUrl: '/admin' });
+        return res
+          .status(200)
+          .json({
+            message: "Product added successfully",
+            redirectUrl: "/admin",
+          });
         // return res.redirect("/admin");
       }
       return res.status(400).json({ message: "Product creation failed" });
@@ -612,7 +617,7 @@ const orderStatus = async (req, res) => {
       { _id: orderid },
       { $set: { orderStatus: orderStatus } }
     );
-    await paymentStatusTime.statusTime(orderStatus,orderid)
+    await paymentStatusTime.statusTime(orderStatus, orderid);
 
     return res.redirect("/admin/orderManagement");
   } catch (error) {
@@ -636,7 +641,7 @@ const acceptReturn = async (req, res) => {
     const returnQuantity = returnedItem.quantity;
     const platform = returnedItem.platform;
     const refundAmount = returnedItem.price * returnQuantity;
-    
+
     // Step 1: Update the return status to 'ACCEPTED'
     const update = await orderModel.updateOne(
       { _id: orderId },
@@ -644,7 +649,11 @@ const acceptReturn = async (req, res) => {
     );
 
     // Step 2: Update the timestamp for the return status
-    await paymentStatusTime.returnStatusTime("ACCEPTED", orderId, cartItemIndex);
+    await paymentStatusTime.returnStatusTime(
+      "ACCEPTED",
+      orderId,
+      cartItemIndex
+    );
 
     // Step 3: Increase the stock for the returned product and platform
     const productUpdate = await productModel.findOneAndUpdate(
@@ -669,7 +678,8 @@ const acceptReturn = async (req, res) => {
         .json({ message: "No changes made, status was already 'ACCEPTED'." });
     } else {
       res.status(200).json({
-        message: "Return accepted for the cart item. Stock updated for the platform, and wallet credited.",
+        message:
+          "Return accepted for the cart item. Stock updated for the platform, and wallet credited.",
       });
     }
   } catch (error) {
@@ -679,8 +689,6 @@ const acceptReturn = async (req, res) => {
       .json({ message: "An error occurred while processing the return." });
   }
 };
-
-
 
 const rejectReturn = async (req, res) => {
   try {
@@ -710,17 +718,25 @@ const rejectReturn = async (req, res) => {
       .json({ message: "An error occurred while processing the return." });
   }
 };
-const acceptCancel = async(req,res)=>{
+const acceptCancel = async (req, res) => {
   try {
-    const orderid = req.query.id
-    const update = await orderModel.updateOne({_id:orderid},{
-      $set:{cancelAccepted:true,orderStatus:"Cancelled"}
-    })
-    await paymentStatusTime.statusTime("Cancelled",orderid)
-    const order = await orderModel.findById(orderid)
-    if(order.paymentMethod==="Razorpay" && order.paymentStatus==="Success"){
-      const refundAmount = order.totalPrice
-      await userModel.findByIdAndUpdate(order.user,{ $inc: { wallet: refundAmount }})
+    const orderid = req.query.id;
+    const update = await orderModel.updateOne(
+      { _id: orderid },
+      {
+        $set: { cancelAccepted: true, orderStatus: "Cancelled" },
+      }
+    );
+    await paymentStatusTime.statusTime("Cancelled", orderid);
+    const order = await orderModel.findById(orderid);
+    if (
+      order.paymentMethod === "Razorpay" &&
+      order.paymentStatus === "Success"
+    ) {
+      const refundAmount = order.totalPrice;
+      await userModel.findByIdAndUpdate(order.user, {
+        $inc: { wallet: refundAmount },
+      });
     }
     // Restock the items in the order by platform
     for (const cartItem of order.cartItems) {
@@ -732,102 +748,122 @@ const acceptCancel = async(req,res)=>{
         { $inc: { "variant.$.stock": quantity } }
       );
     }
-    res.redirect("/admin/orderManagement")
+    res.redirect("/admin/orderManagement");
   } catch (error) {
-    console.log("error at accept cancel :"+error.message);
-    
+    console.log("error at accept cancel :" + error.message);
   }
-}
+};
 //coupon
-const addCouponLoad = async(req,res)=>{
+const addCouponLoad = async (req, res) => {
   try {
-    return res.render('addCoupon')
+    return res.render("addCoupon");
   } catch (error) {
-    console.log("error at add coupon load :"+error);
-    return res.status(500).json({message:"Internal Server Error"})
+    console.log("error at add coupon load :" + error);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-}
+};
 
 // Add new coupon
 const addCoupon = async (req, res) => {
   try {
     // Validation
-    const { couponCode, discountType, discountValue, minCartValue, expiresAt, isActive } = req.body;
+    const {
+      couponCode,
+      discountType,
+      discountValue,
+      minCartValue,
+      expiresAt,
+      isActive,
+    } = req.body;
 
     // Check if all required fields are provided
-    if (!couponCode || !discountType || !discountValue || !minCartValue || !expiresAt) {
-      return res.status(400).json({ message: 'All fields are required.' });
+    if (
+      !couponCode ||
+      !discountType ||
+      !discountValue ||
+      !minCartValue ||
+      !expiresAt
+    ) {
+      return res.status(400).json({ message: "All fields are required." });
     }
 
     // Check if the coupon code already exists
-    const existingCoupon = await couponModel.findOne({code:couponCode});
+    const existingCoupon = await couponModel.findOne({ code: couponCode });
     if (existingCoupon) {
-      return res.status(400).json({ message: 'Coupon code already exists.' });
+      return res.status(400).json({ message: "Coupon code already exists." });
     }
 
     // Validate discount type
-    if (!['fixed', 'percentage'].includes(discountType)) {
-      return res.status(400).json({ message: 'Invalid discount type.' });
+    if (!["fixed", "percentage"].includes(discountType)) {
+      return res.status(400).json({ message: "Invalid discount type." });
     }
 
     // Validate discount value
     if (discountValue <= 0) {
-      return res.status(400).json({ message: 'Discount value must be greater than 0.' });
+      return res
+        .status(400)
+        .json({ message: "Discount value must be greater than 0." });
     }
 
     // Validate minimum cart value
     if (minCartValue <= 0) {
-      return res.status(400).json({ message: 'Minimum cart value must be greater than 0.' });
+      return res
+        .status(400)
+        .json({ message: "Minimum cart value must be greater than 0." });
     }
 
     // Validate expiration date
     const expirationDate = new Date(expiresAt);
     const currentDate = new Date();
     if (expirationDate <= currentDate) {
-      return res.status(400).json({ message: 'Expiration date must be in the future.' });
+      return res
+        .status(400)
+        .json({ message: "Expiration date must be in the future." });
     }
 
     // Create a new coupon
     const newCoupon = new couponModel({
-      code:couponCode,
+      code: couponCode,
       discountType,
       discountValue,
       minCartValue,
       expiresAt: expirationDate,
-      isActive
+      isActive,
     });
 
     // Save the coupon to the database
     await newCoupon.save();
 
-   return res.redirect("/admin/couponManagement")
+    return res.redirect("/admin/couponManagement");
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Server error.' });
+    return res.status(500).json({ message: "Server error." });
   }
 };
 
 // Fetch coupons with pagination and search functionality
 const couponManagement = async (req, res) => {
   try {
-    const { search = '', page = 1 } = req.query;
+    const { search = "", page = 1 } = req.query;
     const limit = 10;
     const skip = (page - 1) * limit;
 
-    const query = search ? { couponCode: { $regex: search, $options: 'i' } } : {};
+    const query = search
+      ? { couponCode: { $regex: search, $options: "i" } }
+      : {};
 
     const totalCoupons = await couponModel.countDocuments(query);
     const totalPages = Math.ceil(totalCoupons / limit);
     const coupons = await couponModel.find(query).skip(skip).limit(limit);
 
-    res.render('couponManagement', {
+    res.render("couponManagement", {
       data: coupons,
       totalPages,
       currentPage: parseInt(page),
       searchQuery: search,
     });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching coupons.' });
+    res.status(500).json({ message: "Error fetching coupons." });
   }
 };
 
@@ -836,9 +872,9 @@ const activateCoupon = async (req, res) => {
   try {
     const { id } = req.query;
     await couponModel.findByIdAndUpdate(id, { isActive: true });
-    res.redirect('/admin/coupons');
+    res.redirect("/admin/coupons");
   } catch (error) {
-    res.status(500).json({ message: 'Error activating coupon.' });
+    res.status(500).json({ message: "Error activating coupon." });
   }
 };
 
@@ -847,9 +883,9 @@ const deactivateCoupon = async (req, res) => {
   try {
     const { id } = req.query;
     await couponModel.findByIdAndUpdate(id, { isActive: false });
-    res.redirect('/admin/coupons');
+    res.redirect("/admin/coupons");
   } catch (error) {
-    res.status(500).json({ message: 'Error deactivating coupon.' });
+    res.status(500).json({ message: "Error deactivating coupon." });
   }
 };
 
@@ -858,9 +894,9 @@ const deleteCoupon = async (req, res) => {
   try {
     const { id } = req.query;
     await couponModel.findByIdAndDelete(id);
-    res.redirect('/admin/coupons');
+    res.redirect("/admin/coupons");
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting coupon.' });
+    res.status(500).json({ message: "Error deleting coupon." });
   }
 };
 
@@ -869,20 +905,27 @@ const getCouponForEdit = async (req, res) => {
   try {
     const { id } = req.query;
     const coupon = await couponModel.findById(id);
-    res.render('editCoupon', { coupon });
+    res.render("editCoupon", { coupon });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching coupon details.' });
+    res.status(500).json({ message: "Error fetching coupon details." });
   }
 };
 
 // Update a coupon
 const updateCoupon = async (req, res) => {
   try {
-    const { id, couponCode, discountType, discountValue, minCartValue, expiresAt, isActive } = req.body;
-    
+    const {
+      id,
+      couponCode,
+      discountType,
+      discountValue,
+      minCartValue,
+      expiresAt,
+      isActive,
+    } = req.body;
 
     if (!id) {
-      return res.status(400).json({ message: 'Coupon ID is required.' });
+      return res.status(400).json({ message: "Coupon ID is required." });
     }
 
     const updatedCoupon = await couponModel.findByIdAndUpdate(
@@ -893,21 +936,83 @@ const updateCoupon = async (req, res) => {
         discountValue,
         minCartValue,
         expiresAt,
-        isActive: isActive === 'true',
+        isActive: isActive === "true",
       },
       { new: true } // Return the updated document
     );
 
     // Check if the coupon was found and updated
     if (!updatedCoupon) {
-      return res.status(404).json({ message: 'Coupon not found.' });
+      return res.status(404).json({ message: "Coupon not found." });
     }
 
-    res.redirect('/admin/couponManagement');
+    res.redirect("/admin/couponManagement");
   } catch (error) {
     // Log the error for debugging
-    console.error('Error updating coupon:', error);
-    res.status(500).json({ message: 'Error updating coupon.' });
+    console.error("Error updating coupon:", error);
+    res.status(500).json({ message: "Error updating coupon." });
+  }
+};
+
+//sales report
+const getSalesReport = async (req, res) => {
+  try {
+    const { startDate, endDate, range } = req.query; // Range: 'daily', 'weekly', 'monthly', 'custom'
+
+    let filter = {};
+
+    // Determine the date range filter based on the request
+    if (range === "custom" && startDate && endDate) {
+      filter.createdAt = {
+        $gte: new Date(new Date(startDate).setHours(0, 0, 0)),
+        $lte: new Date(new Date(endDate).setHours(23, 59, 59)),
+      };
+    } else if (range === "daily") {
+      const today = new Date();
+      filter.createdAt = {
+        $gte: new Date(today.setHours(0, 0, 0)),
+        $lte: new Date(today.setHours(23, 59, 59)),
+      };
+    } else if (range === "weekly") {
+      const today = new Date();
+      const startOfWeek = today.setDate(today.getDate() - today.getDay());
+      const endOfWeek = today.setDate(today.getDate() + (6 - today.getDay()));
+      filter.createdAt = {
+        $gte: new Date(startOfWeek),
+        $lte: new Date(endOfWeek),
+      };
+    } else if (range === "monthly") {
+      const today = new Date();
+      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      filter.createdAt = {
+        $gte: new Date(startOfMonth),
+        $lte: new Date(endOfMonth),
+      };
+    }
+
+    // Fetch orders based on the filter
+    const orders = await orderModel.find(filter);
+
+    // Calculate overall stats
+    let totalSales = 0;
+    let totalDiscount = 0;
+    let totalOrders = orders.length;
+
+    orders.forEach((order) => {
+      totalSales += order.totalAmount; // Assuming totalAmount contains the final price
+      totalDiscount += order.discount; // Assuming discount field exists in order
+    });
+
+    res.status(200).json({
+      totalOrders,
+      totalSales,
+      totalDiscount,
+      orders, // For detailed information
+    });
+  } catch (error) {
+    console.error("Error fetching sales report:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -947,5 +1052,5 @@ module.exports = {
   deleteCoupon,
   getCouponForEdit,
   updateCoupon,
-  acceptCancel
+  acceptCancel,
 };

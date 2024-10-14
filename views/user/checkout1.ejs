@@ -246,6 +246,14 @@ label {
               
             <table>
                 <tr>
+                    <td>
+                        Subtotal
+                    </td>
+                    <td>
+                        <%=subtotal%>
+                    </td>
+                </tr>
+                <tr>
                     <td>Delivery</td>
                     <td><span class="price" style="color: black" id="delivery"><%=delivery%></span></td>
                 </tr>
@@ -258,12 +266,24 @@ label {
                              
                 <% if (typeof appliedCoupon!=="undefined") { %>
                     <tr>
-                        <td>Coupon Applied: <%= appliedCoupon.code %> 
+                        <td>Coupon Applied: <%= appliedCoupon.code %> </td>
+                        <span hidden id="couponCode"><%=appliedCoupon._id%></span>
+                        <td>
                             (<% if (appliedCoupon.discountType === 'fixed') { %>
                               -₹<%= appliedCoupon.discountValue %>
                             <% } else { %>
                               <%= appliedCoupon.discountValue %>% Off
                             <% } %>)
+                            </td>
+                    </tr>
+                    
+                  <% } %>
+                  <% if (typeof reducedAmount!=="undefined") { %>
+                    <tr>
+                        <td>Amount Saved: </td>
+                        <td>
+                            <span id="reducedAmount"><%=reducedAmount*-1%></span>
+                           
                             </td>
                     </tr>
                     
@@ -279,6 +299,7 @@ label {
           </div>
         </div>
           <label>
+        
             <input type="checkbox" checked="checked" name="sameadr"> Shipping address same as billing
           </label>
           <button type="submit" class="btn" id="submitLink">Proceed to order</button>
@@ -341,6 +362,8 @@ document.addEventListener("DOMContentLoaded", function() {
     const emailField = document.getElementById("email");
     const nameField = document.getElementById("fname");
     const priceField = document.getElementById('totalPrice')
+    const reducedAmountField = document.getElementById("reducedAmount")
+    const couponidField = document.getElementById("couponCode")
     // const addressField = document.getElementById("address")
     const paymentMode = document.getElementById('payment-mode')
 
@@ -372,6 +395,8 @@ document.addEventListener("DOMContentLoaded", function() {
         const emailVal = emailField.value;
         const nameVal = nameField.value;
         const priceVal = priceField.innerHTML
+        const reducedPriceVal = reducedAmountField?.innerHTML
+        const couponCode = couponidField?.innerHTML
         // const addressVal = addressField.value
         const paymentVal = paymentMode.value
         const nameRegex = /^[A-Za-z\s]+$/;
@@ -413,9 +438,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 },
                 body: JSON.stringify({
                     paymentMode: paymentVal,
+                    reducedAmount:parseInt(reducedPriceVal),
                     totalPrice:parseInt(priceVal),
                     address:addressid,
                     fname: nameVal,  // Sending fname (full name)
+                    couponCode:couponCode
                 }),
             });
             const data = await response.json()
