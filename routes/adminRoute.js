@@ -47,4 +47,7 @@ admin.get("/deactivateCoupon",auth.isLogin,adminController.deactivateCoupon)
 admin.get('/deleteCoupon',auth.isLogin,adminController.deleteCoupon)
 admin.get('/editCoupon',auth.isLogin,adminController.getCouponForEdit)
 admin.post('/updateCoupon',auth.isLogin,adminController.updateCoupon)
+//salesReport
+admin.get('/salesReport',auth.isLogin,adminController.salesReport)
+admin.get('/getSalesReport',auth.isLogin,adminController.getSalesReport)
 module.exports = admin

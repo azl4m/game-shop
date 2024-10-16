@@ -12,6 +12,12 @@ const wishlistSchema = new mongoose.Schema({
           ref: 'Product',
           required: true,
         },
+        platform:{
+          type:String,
+          enum: ["PC", "PS6", "Steam", "Xbox"],
+          required:true
+        }
+        ,
         addedAt: {
           type: Date,
           default: Date.now,

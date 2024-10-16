@@ -22,7 +22,13 @@ const passport = require('passport')
 const auth = require('../middlewares/auth')
 const addminAuth = require('../middlewares/adminAuth')
 const admin = require('./adminRoute')
-
+const productController = require('../controllers/user/productController')
+const cartController = require('../controllers/user/cartController')
+const checkoutController = require('../controllers/user/checkoutController')
+const addressController = require('../controllers/user/addressController')
+const orderController = require('../controllers/user/orderController')
+const wishlistController = require('../controllers/user/wishlistController')
+const profileController = require('../controllers/user/profileController')
 
 //for signup
 user.get("/signup",addminAuth.isLogout,auth.isLogout,userController.signupLoad)
@@ -41,28 +47,29 @@ user.post("/login",userController.loginUser)
 user.get("/logout",userController.logout)
 
 //for product details page
-user.get('/productDetails',userController.productDetailsLoad)
-user.get("/getPlatformStock", userController.getPlatformStock);
+user.get('/productDetails',productController.productDetailsLoad)
+user.get("/getPlatformStock",productController.getPlatformStock);
 //products
-user.get('/products',userController.productsLoad)
+user.get('/products',productController.productsLoad)
 
 //for cart
-user.get("/addToCart",addminAuth.isLogout,auth.isLogin,userController.addToCart)
-user.get("/cart",addminAuth.isLogout,auth.isLogin,userController.cartLoad)
-user.post('/removeFromCart',addminAuth.isLogout,auth.isLogin,userController.removeFromCart)
-user.post('/updateCartQuantity',addminAuth.isLogout,auth.isLogin,userController.updateCartQuantity)
+user.get("/addToCart",addminAuth.isLogout,auth.isLogin,cartController.addToCart)
+user.get("/cart",addminAuth.isLogout,auth.isLogin,cartController.cartLoad)
+user.post('/removeFromCart',addminAuth.isLogout,auth.isLogin,cartController.removeFromCart)
+user.post('/updateCartQuantity',addminAuth.isLogout,auth.isLogin,cartController.updateCartQuantity)
 
 //checkout
-user.get("/checkout",addminAuth.isLogout,auth.isLogin,userController.getCheckoutPage)
-user.post('/checkout',addminAuth.isLogout,auth.isLogin,userController.checkoutLoad)
-user.post('/applyCoupon',addminAuth.isLogout,auth.isLogin,userController.applyCoupon)
+user.get("/checkout",addminAuth.isLogout,auth.isLogin,checkoutController.getCheckoutPage)
+user.post('/checkout',addminAuth.isLogout,auth.isLogin,checkoutController.checkoutLoad)
+user.post('/applyCoupon',addminAuth.isLogout,auth.isLogin,checkoutController.applyCoupon)
+user.post('/removeCoupon',addminAuth.isLogout,auth.isLogin,checkoutController.removeCoupon)
 //address management
-user.get('/addressManagement',addminAuth.isLogout,auth.isLogin,userController.addressManagementLoad)
-user.post('/addAddress',addminAuth.isLogout,auth.isLogin,userController.addAddress)
-user.get('/setDefaultAddress',addminAuth.isLogout,auth.isLogin,userController.setDefaultAdress)
-user.get('/editAddress',addminAuth.isLogout,auth.isLogin,userController.editAddressLoad)
-user.post('/editAddress',addminAuth.isLogout,auth.isLogin,userController.editAddress)
-user.get('/deleteAddress',addminAuth.isLogout,auth.isLogin,userController.deleteAddress)
+user.get('/addressManagement',addminAuth.isLogout,auth.isLogin,addressController.addressManagementLoad)
+user.post('/addAddress',addminAuth.isLogout,auth.isLogin,addressController.addAddress)
+user.get('/setDefaultAddress',addminAuth.isLogout,auth.isLogin,addressController.setDefaultAdress)
+user.get('/editAddress',addminAuth.isLogout,auth.isLogin,addressController.editAddressLoad)
+user.post('/editAddress',addminAuth.isLogout,auth.isLogin,addressController.editAddress)
+user.get('/deleteAddress',addminAuth.isLogout,auth.isLogin,addressController.deleteAddress)
 
 //forgot password
 user.post("/forgotPassword",addminAuth.isLogout,auth.isLogout,userController.forgotPassword)
@@ -70,22 +77,22 @@ user.get("/resetPassword",addminAuth.isLogout,auth.isLogout,userController.reset
 user.post('/resetPassword',addminAuth.isLogout,auth.isLogout,userController.resetPassword)
 
 //user profile
-user.get('/userProfile',addminAuth.isLogout,auth.isLogin,userController.userProfileLoad)
-user.get('/editProfile',addminAuth.isLogout,auth.isLogin,userController.editPtofileLoad)
-user.post('/editProfile',addminAuth.isLogout,auth.isLogin,userController.editProfile)
+user.get('/userProfile',addminAuth.isLogout,auth.isLogin,profileController.userProfileLoad)
+user.get('/editProfile',addminAuth.isLogout,auth.isLogin,profileController.editProfileLoad)
+user.post('/editProfile',addminAuth.isLogout,auth.isLogin,profileController.editProfile)
 //orders
-user.get('/ordersListing',addminAuth.isLogout,auth.isLogin,userController.ordersLoad)
-user.get('/orderDetails',addminAuth.isLogout,auth.isLogin,userController.orderDetails)
-user.get('/requestReturn',addminAuth.isLogout,auth.isLogin,userController.requestReturn)
-user.get('/orderSuccess',addminAuth.isLogout,auth.isLogin,userController.orderSuccessLoad)
-user.get('/cancelOrder',addminAuth.isLogout,auth.isLogin,userController.requestCancel)
+user.get('/ordersListing',addminAuth.isLogout,auth.isLogin,orderController.ordersLoad)
+user.get('/orderDetails',addminAuth.isLogout,auth.isLogin,orderController.orderDetails)
+user.get('/requestReturn',addminAuth.isLogout,auth.isLogin,orderController.requestReturn)
+user.get('/orderSuccess',addminAuth.isLogout,auth.isLogin,orderController.orderSuccessLoad)
+user.get('/cancelOrder',addminAuth.isLogout,auth.isLogin,orderController.requestCancel)
 //razorpay
 user.post("/verifyPayment",addminAuth.isLogout,auth.isLogin,userController.razorpayPaymentVerification)
 
 //wishlist
-user.get('/addToWishList',userController.addToWishList)
-user.get('/wishlist',addminAuth.isLogout,auth.isLogin,userController.wishlistLoad)
-user.delete('/wishlistRemove',addminAuth.isLogout,auth.isLogin,userController.wishlistRemove)
+user.get('/addToWishList',addminAuth.isLogout,auth.isLogin,wishlistController.addToWishList)
+user.get('/wishlist',addminAuth.isLogout,auth.isLogin,wishlistController.wishlistLoad)
+user.delete('/wishlistRemove',addminAuth.isLogout,auth.isLogin,wishlistController.wishlistRemove)
 
 //wallet
 user.get("/wallet",addminAuth.isLogout,auth.isLogin,userController.loadWalletPage)

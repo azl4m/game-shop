@@ -155,18 +155,23 @@ button:hover {
 
     <!-- Display current wallet balance -->
     <div class="wallet-balance">
-      <p>Current Balance: ₹ <span id="walletBalance"><%= walletBalance %></span></p>
+      <p>Current Balance: ₹ <span id="walletBalance"><%= userDetails.wallet.balance %></span></p>
     </div>
 
-    <!-- Form to add money to the wallet -->
-    <!-- <form id="addMoneyForm">
-      <label for="amount">Add Money:</label>
-      <input type="number" name="amount" id="amount" placeholder="Enter amount" required>
-      <button type="submit">Add Money</button>
-    </form> -->
-
-    <!-- Display a message after adding money -->
-    <div id="walletMessage"></div>
+    <h2>Recent Transactions</h2>
+    <ul>
+      <% if (userDetails.wallet.transactions && userDetails.wallet.transactions.length > 0) { %>
+        <% userDetails.wallet.transactions.forEach(transaction => { %>
+          <li>
+            <strong><%= transaction.type === 'credit' ? 'Credited' : 'Debited' %>: ₹<%= transaction.amount %></strong><br/>
+            <small><%= transaction.description %></small><br/>
+            <small>Date: <%= new Date(transaction.date).toLocaleDateString() %></small>
+          </li>
+        <% }) %>
+      <% } else { %>
+        <li>No recent transactions</li>
+      <% } %>
+    </ul>
 
     <!-- Optionally, show user's wallet transactions here if needed -->
   </div>

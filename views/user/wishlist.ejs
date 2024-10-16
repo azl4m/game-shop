@@ -89,8 +89,9 @@
                     />
                   </div>
                   <div class="col-md-3 col-lg-3 col-xl-3">
-                    <h5 class="mb-0"><%=items[i].productName%></h5>
+                    <h5 class="mb-0"><%=items[i].productName%> <%=items[i].platform%></h5>
                   </div>
+            
                   <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
                     <h6 class="mb-0">₹ <%=items[i].price%></h6>
                   </div>
@@ -98,15 +99,15 @@
                     <a
                       href="#!"
                       class="remove-item text-muted"
-                      data-id="<%= items[i].productId %>"
+                      data-id="<%= items[i].productId %>" data-platform="<%=items[i].platform%>"
                     >
                       <i class="fas fa-times"></i>
                     </a>
                   </div>
                   <div class="col-md-1 col-lg-1 col-xl-1 text-end">
-                    <a
-                      href="/productDetails?id=<%= items[i].productId%>"
-                      class="text-muted"
+                    <a id="addToCartLink" data-id="<%=items[i].productId%>" data-platform="<%=items[i].platform%>"
+                      href="#"
+                      class="text-muted addtocartlink"
                     >
                       <i class="fa-solid fa-cart-shopping"></i>
                     </a>
@@ -155,7 +156,7 @@
       const productId = image.getAttribute("data-id");
       if (productId) {
         // Redirect to the product details page using the productId
-        window.location.href = `/product/${productId}`;
+        window.location.href = `/productDetails?id=${productId}`;
       }
     });
   });
@@ -167,9 +168,10 @@ removeButtons.forEach(button => {
     event.preventDefault();
 
     const productId = button.getAttribute('data-id');
+    const platform = button.getAttribute('data-platform')
 
     try {
-      const response = await fetch(`/wishlistRemove?id=${productId}`, {
+      const response = await fetch(`/wishlistRemove?id=${productId}&platform=${platform}`, {
         method: 'DELETE'
       });
 
@@ -196,6 +198,41 @@ removeButtons.forEach(button => {
   });
 });
 
+const addToCartLinks = document.querySelectorAll('.addtocartlink')
+addToCartLinks.forEach(addToCartLink=>{
+  addToCartLink.addEventListener('click',async(event)=>{
+  event.preventDefault()
+  const productid = addToCartLink.getAttribute('data-id')
+  const platform = addToCartLink.getAttribute('data-platform')
+  try {
+    console.log("hello");
+    
+    const response = await fetch(`/addToCart?id=${productid}&quantity=${1}&platform=${platform}`,{
+    method:"GET"
+  })
+  if(response.ok){
+    const response2 = await fetch(`/wishlistRemove?id=${productid}&platform=${platform}`,{
+      method:"DELETE"
+    })
+    if(response2.ok){
+      const data = await response.json()
+    showToast(data.message,1)
+    setTimeout(() => {
+      window.location.reload()
+    }, 2000);
+    }
+  }
+  else{
+    const data = await response.json()
+    showToast(data.message,0)
+  }  
+  } catch (error) {
+    console.error(error.message)
+  }
+  
+})
+
+})
 
   // Function to show toast notifications
   function showToast(message, success) {

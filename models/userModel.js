@@ -77,7 +77,17 @@ const userSchema = new Schema({
     type: String,
     default: "",
   },
-  wallet: { type: Number, default: 0 }, // New wallet field
+  wallet: {
+    balance: { type: Number, default: 0 }, // Current balance
+    transactions: [
+      {
+        amount: Number,
+        type: { type: String, enum: ['credit', 'debit'] },
+        date: { type: Date, default: Date.now },
+        description: String,
+      }
+    ]
+  }
 });
 
 const User = mongoose.model("User", userSchema);

@@ -8,7 +8,7 @@ const multer = require("multer");
 const sharp = require("sharp");
 const fs = require("fs");
 const paymentStatusTime = require("../../helpers/paymentTimeStamp");
-
+const walletTransactions = require("../../helpers/walletTransactions");
 //for handling photo upload
 
 // Set storage engine
@@ -129,12 +129,10 @@ const addProduct = async (req, res) => {
       });
       const save = await newProduct.save();
       if (save) {
-        return res
-          .status(200)
-          .json({
-            message: "Product added successfully",
-            redirectUrl: "/admin",
-          });
+        return res.status(200).json({
+          message: "Product added successfully",
+          redirectUrl: "/admin",
+        });
         // return res.redirect("/admin");
       }
       return res.status(400).json({ message: "Product creation failed" });
@@ -662,12 +660,29 @@ const acceptReturn = async (req, res) => {
       { new: true } // Return the updated document
     );
 
+    const product = await productModel.findById(productId);
     // Step 4: Add the refund amount to the user's wallet
-    const userUpdate = await userModel.findByIdAndUpdate(
-      order.user,
-      { $inc: { wallet: refundAmount } } // Increment the user's wallet balance by the refund amount
-    );
+    // const userUpdate = await userModel.findByIdAndUpdate(order.user, {
+    //   $inc: { "wallet.balance": refundAmount }, // Increment the user's wallet balance by the refund amount
 
+    //   $push: {
+    //     $each: [
+    //       {
+    //         amount: refundAmount,
+    //         type: "credit",
+    //         description: `Refund for return of ${product.productName}`,
+    //         date: new Date(),
+    //       },
+    //     ],
+    //     $slice: -10,
+    //   },
+    // });
+    await walletTransactions.addWalletTransaction(
+      order.user,
+      refundAmount,
+      "credit",
+      `Refund for return of ${product.productName}`
+    );
     // Step 5: Respond to the client based on the update results
     if (update.matchedCount === 0) {
       res.status(404).json({ message: "Order not found." });
@@ -677,10 +692,7 @@ const acceptReturn = async (req, res) => {
         .status(200)
         .json({ message: "No changes made, status was already 'ACCEPTED'." });
     } else {
-      res.status(200).json({
-        message:
-          "Return accepted for the cart item. Stock updated for the platform, and wallet credited.",
-      });
+      res.redirect("/admin/orderManagement");
     }
   } catch (error) {
     console.log("Error at accept return: " + error);
@@ -734,9 +746,12 @@ const acceptCancel = async (req, res) => {
       order.paymentStatus === "Success"
     ) {
       const refundAmount = order.totalPrice;
-      await userModel.findByIdAndUpdate(order.user, {
-        $inc: { wallet: refundAmount },
-      });
+      await walletTransactions.addWalletTransaction(
+        order.user,
+        refundAmount,
+        "credit",
+        `Refund for return of ${product.productName}`
+      );
     }
     // Restock the items in the order by platform
     for (const cartItem of order.cartItems) {
@@ -955,21 +970,33 @@ const updateCoupon = async (req, res) => {
 };
 
 //sales report
+
+const salesReport = async (req, res) => {
+  try {
+    const orderCount = await orderModel.find().countDocuments();
+    return res.render("salesReport", { orderCount });
+  } catch (error) {
+    console.log("error loading sales report page" + error.message);
+  }
+};
+
 const getSalesReport = async (req, res) => {
   try {
+    console.log("hello1");
+
     const { startDate, endDate, range } = req.query; // Range: 'daily', 'weekly', 'monthly', 'custom'
 
     let filter = {};
 
     // Determine the date range filter based on the request
     if (range === "custom" && startDate && endDate) {
-      filter.createdAt = {
+      filter.orderDate = {
         $gte: new Date(new Date(startDate).setHours(0, 0, 0)),
         $lte: new Date(new Date(endDate).setHours(23, 59, 59)),
       };
     } else if (range === "daily") {
       const today = new Date();
-      filter.createdAt = {
+      filter.orderDate = {
         $gte: new Date(today.setHours(0, 0, 0)),
         $lte: new Date(today.setHours(23, 59, 59)),
       };
@@ -977,7 +1004,7 @@ const getSalesReport = async (req, res) => {
       const today = new Date();
       const startOfWeek = today.setDate(today.getDate() - today.getDay());
       const endOfWeek = today.setDate(today.getDate() + (6 - today.getDay()));
-      filter.createdAt = {
+      filter.orderDate = {
         $gte: new Date(startOfWeek),
         $lte: new Date(endOfWeek),
       };
@@ -985,14 +1012,17 @@ const getSalesReport = async (req, res) => {
       const today = new Date();
       const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
       const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-      filter.createdAt = {
+      filter.orderDate = {
         $gte: new Date(startOfMonth),
         $lte: new Date(endOfMonth),
       };
     }
 
     // Fetch orders based on the filter
+    console.log(filter);
+
     const orders = await orderModel.find(filter);
+    console.log(orders);
 
     // Calculate overall stats
     let totalSales = 0;
@@ -1000,7 +1030,7 @@ const getSalesReport = async (req, res) => {
     let totalOrders = orders.length;
 
     orders.forEach((order) => {
-      totalSales += order.totalAmount; // Assuming totalAmount contains the final price
+      totalSales += order.totalPrice; // Assuming totalAmount contains the final price
       totalDiscount += order.discount; // Assuming discount field exists in order
     });
 
@@ -1053,4 +1083,6 @@ module.exports = {
   getCouponForEdit,
   updateCoupon,
   acceptCancel,
+  getSalesReport,
+  salesReport,
 };

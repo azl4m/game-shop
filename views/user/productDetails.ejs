@@ -160,6 +160,7 @@ function showToast(data,result) {
 document.addEventListener('DOMContentLoaded', function () {
     const quantityInput = document.getElementById('quantity');
     const addToCartBtn = document.getElementById('addToCartBtn');
+    const addToWishListBtn = document.getElementById('addToWishListBtn')
     const variantSelect = document.getElementById('variantSelect'); // Select element for platform
     const stockDisplay = document.getElementById('stockDisplay'); 
     const stock = document.getElementById("stock")
@@ -186,6 +187,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const baseUrl = '/addToCart';
             const baseUrl1 = "/addToWishlist"
             addToCartBtn.setAttribute('data-href', `${baseUrl}?id=${productId}&quantity=${quantity}&platform=${platform}`);
+            addToWishListBtn.setAttribute('data-href',`${baseUrl1}?id=${productId}&platform=${platform}`)
         } else {
             addToCartBtn.setAttribute('data-href', '#'); // Disable link if platform is invalid      
         }
@@ -234,7 +236,6 @@ document.addEventListener('DOMContentLoaded', () => {
     addToCartButton.addEventListener('click', async (event) => {
       event.preventDefault()
       
-      event.preventDefault(); // Prevent default page reload
       const platform = document.getElementById('variantSelect').value;
 
       // Check if platform is valid before making the request
@@ -244,7 +245,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const url = addToCartButton.getAttribute('data-href'); // Fetch URL stored in data-href
-
       try {
         const response = await fetch(url);
         if (response.ok) {
@@ -333,10 +333,17 @@ document.addEventListener('DOMContentLoaded', function () {
 document.addEventListener('DOMContentLoaded',function(){
       const addToWishListBtn = document.getElementById("addToWishListBtn")
       const productId = '<%= product._id %>';
-      addToWishListBtn.setAttribute('data-href',`/addToWishList?id=${productId}`)
+      const platform = document.getElementById('variantSelect').value;      
       addToWishListBtn.addEventListener('click',async(event)=>{
+        const platformVal = document.getElementById('variantSelect').value;
         event.preventDefault()
-        console.log("hello");
+
+// Check if platform is valid before making the request
+if (platformVal === "Select Variant") {
+  showToast("Please select a platform",0)
+  return;
+}
+
         const url = addToWishListBtn.getAttribute('data-href'); // Fetch URL stored in data-href
       
       try {

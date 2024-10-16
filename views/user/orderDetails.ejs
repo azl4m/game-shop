@@ -107,7 +107,16 @@
           <div class="row no-gutters">
             <div class="col-12 col-md-9 pr-0 pr-md-3">
               <div class="alert p-2 alert-success w-100 mb-3 text-center">
-                <h6 class="text-green mb-0"><b><%=order.orderStatus%></b></h6>
+                <h6 class="text-green mb-0">
+                  <b>
+                    <% if (order.isCancelled && !order.cancelAccepted) { %>
+                      Cancellation Request Pending
+                    <% } else { %>
+                      <%= order.orderStatus %>
+                    <% } %>
+                  </b>
+                </h6>
+                
                 <%if(order.orderStatus !=="Delivered" && order.orderStatus !== "Cancelled"){%>
                 <p class="text-green hidden-sm-down mb-0">
                   Est. delivery between
@@ -118,11 +127,16 @@
                 <%}%>
               </div>
             </div>
-            <% if(!order.isCancelled){ %>
+            <% if(!order.isCancelled&&order.orderStatus!=="Delivered"){ %>
             <div class="col-12 col-md-3">
               <a href="/cancelOrder?id=<%=order._id%>" class="btn btn-danger w-100 mb-2">Cancel Order</a>
             </div>
             <%}%>
+            <% if(!order.paymentStatus==="Failed"){ %>
+              <div class="col-12 col-md-3">
+                <a href="/cancelOrder?id=<%=order._id%>" class="btn btn-success w-100 mb-2">Pay now</a>
+              </div>
+              <%}%>
             
             <div class="row no-gutters mt-3">
               <% order.cartItems.forEach(item => { %>
@@ -140,7 +154,7 @@
                 <div class="col-12 col-md-3 hidden-sm-down">
                   <a href="/productDetails?id=<%=item.product._id%>" class="btn btn-success w-100 mb-1">Buy It Again</a>
                   <%if(order.orderStatus==="Delivered"){%>
-                    <% if (!item.returnAccepted !== "REJECTED") { %>
+                    <% if (!item.isReturned) { %>
                       <a href="/requestReturn?orderid=<%= order._id %>&product=<%= item.product._id %>" class="btn btn-danger w-100">Request a Return</a>
                       <% } %>
                   <%}%>
