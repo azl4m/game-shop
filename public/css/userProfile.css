@@ -1,97 +1,174 @@
-.body-userprofile{
-    /* background: -webkit-linear-gradient(left, #eb8282, #fe2c2c); */
-    background: white;
+/* Body */
+.body-userprofile {
+    background: #f4f7fc; /* Soft background */
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
-.emp-profile{
+
+/* Profile container */
+.emp-profile {
     padding: 3%;
     margin-top: 3%;
     margin-bottom: 3%;
-    border-radius: 0.5rem;
+    border-radius: 1rem; /* Soft rounded corners */
     background: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    transition: box-shadow 0.3s ease; /* Smooth hover effect */
+}
+
+.emp-profile:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* More intense shadow on hover */
+}
+
+/* Profile image */
+.profile-img {
+    text-align: center;
+    position: relative;
     
 }
-.profile-img{
-    text-align: center;
+
+.profile-img img {
+    width: 100%;
+    border-radius: 50%; /* Circular profile image */
+    object-fit: cover;
+    border: 4px solid #ddd;
+    transition: transform 0.3s ease;
 }
-.profile-img img{
-    width: 70%;
-    height: 100%;
+
+.profile-img img:hover {
+    transform: scale(1.05); /* Slight zoom on hover */
 }
+
+/* Change Photo button */
 .profile-img .file {
-    position: relative;
-    overflow: hidden;
-    margin-top: -20%;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
     width: 70%;
-    border: none;
-    border-radius: 0;
-    font-size: 15px;
-    background: #212529b8;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    border-radius: 0.5rem;
+    font-size: 14px;
+    padding: 8px;
+    text-align: center;
+    cursor: pointer;
 }
+
 .profile-img .file input {
     position: absolute;
     opacity: 0;
     right: 0;
     top: 0;
 }
-.profile-head h5{
+
+/* Profile header */
+.profile-head h5 {
     color: #333;
+    font-size: 22px;
+    font-weight: 700;
 }
-.profile-head h6{
+
+.profile-head h6 {
+    color: #0062cc;
+    font-size: 16px;
+    margin-top: 5px;
+}
+
+/* Edit button */
+.profile-edit-btn {
+    border: 2px solid #0062cc;
+    border-radius: 1.5rem;
+    width: 100%;
+    padding: 8px;
+    font-weight: 600;
+    color: #0062cc;
+    background: #fff;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.profile-edit-btn:hover {
+    background: #0062cc;
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(0, 98, 204, 0.3); /* Shadow on hover */
+}
+
+/* Profile navigation */
+.profile-head .nav-tabs {
+    margin-bottom: 15px;
+    border-bottom: 2px solid #ddd;
+}
+
+.profile-head .nav-tabs .nav-link {
+    font-weight: 600;
+    border: none;
+    color: #495057;
+}
+
+.profile-head .nav-tabs .nav-link.active {
+    border: none;
+    border-bottom: 2px solid #0062cc;
     color: #0062cc;
 }
-.profile-edit-btn{
-    border: none;
-    border-radius: 1.5rem;
-    width: 70%;
-    padding: 2%;
-    font-weight: 600;
-    color: #6c757d;
-    cursor: pointer;
-}
-.proile-rating{
-    font-size: 12px;
-    color: #818182;
-    margin-top: 5%;
-}
-.proile-rating span{
-    color: #495057;
-    font-size: 15px;
-    font-weight: 600;
-}
-.profile-head .nav-tabs{
-    margin-bottom:5%;
-}
-.profile-head .nav-tabs .nav-link{
-    font-weight:600;
-    border: none;
-}
-.profile-head .nav-tabs .nav-link.active{
-    border: none;
-    border-bottom:2px solid #0062cc;
-}
-.profile-work{
+
+/* Profile work section */
+.profile-work {
     padding: 14%;
-    margin-top: -15%;
+    background: #f9f9f9;
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
-.profile-work p{
-    font-size: 12px;
+
+.profile-work p {
+    font-size: 14px;
     color: #818182;
     font-weight: 600;
     margin-top: 10%;
+    margin-bottom: 15px;
 }
-.profile-work a{
+
+.profile-work a {
     text-decoration: none;
-    color: #495057;
+    color: #0062cc;
     font-weight: 600;
     font-size: 14px;
 }
-.profile-work ul{
-    list-style: none;
+
+.profile-work a:hover {
+    text-decoration: underline;
 }
-.profile-tab label{
+
+/* Profile details labels */
+.profile-tab label {
     font-weight: 600;
+    color: #333;
 }
-.profile-tab p{
+
+.profile-tab p {
     font-weight: 600;
     color: #0062cc;
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .profile-head h5 {
+        font-size: 18px;
+    }
+    
+    .profile-img img {
+        width: 80%;
+    }
+    
+    .profile-work {
+        padding: 10%;
+    }
+    
+    .profile-edit-btn {
+        padding: 10px;
+        width: 90%;
+    }
 }

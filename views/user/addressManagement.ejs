@@ -1,67 +1,213 @@
 <%- include("../partials/user/header.ejs") %>
+<style>
+#body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 20px;
+}
 
+.emp-profile {
+  max-width: 600px;
+  margin: 20px auto;
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+h2, h3 {
+  text-align: center;
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+label {
+  font-size: 16px;
+  color: #555;
+  display: block;
+  margin-bottom: 5px;
+}
+
+input[type="text"], input[type="checkbox"] {
+  width: calc(100% - 20px);
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  background-color: #f9f9f9;
+}
+
+input[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+input[type="submit"]:hover {
+  background-color: #0056b3;
+}
+
+.container-box {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.address-item {
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  background-color: #f9f9f9;
+}
+
+.address-item p {
+  margin: 5px 0;
+  font-size: 16px;
+}
+
+.address-item button {
+  padding: 8px 12px;
+  font-size: 14px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 10px;
+  transition: background-color 0.3s ease;
+}
+
+.address-item button:hover {
+  background-color: #0056b3;
+}
+
+.address-item a {
+  text-decoration: none;
+  color: white;
+}
+
+.error-message {
+  color: red;
+  font-size: 12px;
+}
+.input-tag:focus{
+  border-color: #007bff;
+  outline: none;
+}
+/* Media queries for mobile responsiveness */
+@media (max-width: 768px) {
+  .emp-profile, .container {
+    padding: 15px;
+  }
+
+  input[type="text"], input[type="checkbox"] {
+    font-size: 14px;
+  }
+
+  h2, h3 {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  h2, h3 {
+    font-size: 20px;
+  }
+
+  input[type="submit"], .address-item button {
+    font-size: 12px;
+    padding: 8px;
+  }
+}
+</style>
 
 <!-- Form to add a new address -->
- <div class="emp-profile">
+ <div id="body">
+  <div class="emp-profile">
     
-<h2>Manage Addresses</h2>
-    <form action="/addAddress" method="POST" id="addressForm">
-        <input type="hidden" name="userId" value="<%= userDetails._id %>">
-        <label for="street">Street:</label>
-        <span id="error1" class="error-message"></span>
-        <input type="text" id="street" name="street" required>
-        
-        <label for="city">City:</label>
-        <span id="error2" class="error-message"></span>
-        <input type="text" id="city" name="city" required>
-      
-        <label for="state">State:</label>
-        <span id="error3" class="error-message"></span>
-        <input type="text" id="state" name="state" required>
-      
-        <label for="postalCode">Postal Code:</label>
-        <span id="error4" class="error-message"></span>
-        <input type="text" id="postalCode" name="postalCode" required>
-      
-        <label for="country">Country:</label>
-        <span id="error5" class="error-message"></span>
-        <input type="text" id="country" name="country" required>
-      
-        <label for="phoneNumber">Phone Number:</label>
-        <span id="error6" class="error-message"></span>
-        <input type="text" id="phoneNumber" name="phoneNumber" required>
-      
-        <label for="isDefault">Set as default:</label>
-        <input type="checkbox" id="isDefault" name="isDefault">
-
-        <input hidden type="text" name="check" id="check" value="<%=check%>">
-      
-        <input type="submit">
-      </form>
+    <h2>Add New Address</h2>
+        <form action="/addAddress" method="POST" id="addressForm">
+            <input type="hidden" name="userId" value="<%= userDetails._id %>">
+            <label for="street">Street:</label>
+            <span id="error1" class="error-message"></span>
+            <input class="input-tag" type="text" id="street" name="street" required>
+            
+            <label for="city">City:</label>
+            <span id="error2" class="error-message"></span>
+            <input class="input-tag" type="text" id="city" name="city" required>
+          
+            <label for="state">State:</label>
+            <span id="error3" class="error-message"></span>
+            <input class="input-tag" type="text" id="state" name="state" required>
+          
+            <label for="postalCode">Postal Code:</label>
+            <span id="error4" class="error-message"></span>
+            <input class="input-tag" type="text" id="postalCode" name="postalCode" required>
+          
+            <label for="country">Country:</label>
+            <span id="error5" class="error-message"></span>
+            <input class="input-tag" type="text" id="country" name="country" required>
+          
+            <label for="phoneNumber">Phone Number:</label>
+            <span id="error6" class="error-message"></span>
+            <input class="input-tag" type="text" id="phoneNumber" name="phoneNumber" required>
+            <table>
+              <tr>
+                <td><label for="isDefault">Set as default Address:</label></td>
+                <td>
+                  <input type="checkbox" id="isDefault" name="isDefault">
+                </td>
+              </tr>
+            </table>
+          
+            
+            
+    
+            <input hidden type="text" name="check" id="check" value="<%=check%>">
+          <div style="text-align: center;">
+            <button class="btn btn-success" type="submit">Submit</button>
+          </div>
+            
+          </form>
+     </div>
+    
+    
+    <hr>
+    
+    <!-- List of addresses -->
+     <%if(typeof addresses !== 'undefined'){%>
+    
+    <div class="container-box">
+        <h3>Your Addresses</h3>
+        <% addresses.forEach(address => { %>
+            <div>
+              <p><%= address.street %>, <%= address.city %>, <%= address.state %> - <%= address.postalCode %>, <%= address.country %></p>
+              <p>Phone: <%= address.phoneNumber %></p>
+                <button class="btn btn-danger"><a href="/deleteAddress?id=<%= address._id %>" style="text-decoration: none; color: rgb(255, 255, 255);">Remove Address</a></button>
+              <button class="btn btn-primary"><a href="/editAddress?id=<%=address._id%>" style="text-decoration: none; color: rgb(255, 255, 255);">Edit Address</a></button>
+              <%if(address.isDefault===false){%>
+              <button class="btn btn-success"><a href="/setDefaultAddress?id=<%=address._id%>" style="text-decoration: none; color: rgb(255, 255, 255);">Set  As Default</a></button>
+              <%}%>
+            </div>
+          <% }) %>
+    </div>
+    
+    <%}%>
  </div>
-
-
-<hr>
-
-<!-- List of addresses -->
- <%if(typeof addresses !== 'undefined'){%>
-
-<div class="container">
-    <h3>Your Addresses</h3>
-    <% addresses.forEach(address => { %>
-        <div>
-          <p><%= address.street %>, <%= address.city %>, <%= address.state %> - <%= address.postalCode %>, <%= address.country %></p>
-          <p>Phone: <%= address.phoneNumber %></p>
-            <button><a href="/deleteAddress?id=<%= address._id %>" style="text-decoration: none; color: black;">Remove Address</a></button>
-          <button><a href="/editAddress?id=<%=address._id%>" style="text-decoration: none; color: black;">Edit Address</a></button>
-          <%if(address.isDefault===false){%>
-          <button><a href="/setDefaultAddress?id=<%=address._id%>" style="text-decoration: none; color: black;">Set  As Default</a></button>
-          <%}%>
-        </div>
-      <% }) %>
-</div>
-
-<%}%>
+ 
 
 <script>
     const streetid = document.getElementById("street");

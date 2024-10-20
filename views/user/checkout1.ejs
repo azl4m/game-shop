@@ -1,6 +1,170 @@
 <%- include("../partials/user/header.ejs")%>
 <style>
-  .container {
+  #body {
+    font-family: "Arial", sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+  }
+
+  .container-box {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  h2 {
+    text-align: center;
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  label {
+    font-size: 16px;
+    color: #555;
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    background-color: #f9f9f9;
+    margin-bottom: 20px;
+    transition: border-color 0.3s ease;
+  }
+
+  select:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+  #fname:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+  #email:focus {
+    border-color: #007bff;
+    outline: none;
+  }
+
+  .btn-primary {
+    display: inline-block;
+    padding: 10px 30px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-align: center;
+  }
+
+  .btn-primary:hover {
+    background-color: #0056b3;
+  }
+
+  .btn-primary a {
+    text-decoration: none;
+    color: white;
+    display: block;
+  }
+
+  .btn-container {
+    text-align: center;
+  }
+
+  /* Media queries for mobile responsiveness */
+  @media (max-width: 768px) {
+    .container {
+      padding: 15px;
+    }
+
+    h2 {
+      font-size: 22px;
+    }
+
+    select {
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      font-size: 14px;
+      padding: 8px 15px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .container {
+      padding: 10px;
+    }
+
+    h2 {
+      font-size: 20px;
+    }
+
+    .btn-primary {
+      font-size: 12px;
+      padding: 6px 12px;
+    }
+  }
+  /* Coupon Section */
+  .coupon-container label {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    display: block;
+    color: #333;
+  }
+
+  .coupon-container select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    margin-bottom: 10px;
+  }
+
+  .coupon-container .btn-success {
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .coupon-container .btn-success:hover {
+    background-color: #218838;
+  }
+
+  .coupon-container .btn-danger {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+
+  .coupon-container .btn-danger:hover {
+    background-color: #c82333;
+  }
+
+  .coupon-container p {
+    font-size: 14px;
+    margin-top: 10px;
+  }
+
+  .container-box {
     background-color: #fff;
     padding: 20px;
     border-radius: 10px;
@@ -106,6 +270,25 @@
     -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
     animation: fadein 0.5s, fadeout 0.5s 2.5s;
   }
+  /* Order Summary */
+  .order-summary h2 {
+    font-size: 22px;
+    margin-bottom: 15px;
+  }
+
+  .order-summary .item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .order-summary .total {
+    font-weight: bold;
+    font-size: 18px;
+    padding-top: 10px;
+    border-top: 1px solid #ddd;
+    margin-top: 10px;
+  }
 
   /* Animations */
   @-webkit-keyframes fadein {
@@ -163,223 +346,221 @@
     visibility: hidden;
   }
 </style>
-
-<div class="row">
-  <div class="col-75">
-    <div class="container">
-      <form id="checkoutForm">
-        <div class="row">
-          <!-- Billing Details -->
-          <div class="col-50">
-            <h3>Billing Address</h3>
+<div id="body">
+  <div class="row">
+    <div class="col-75">
+      <div class="container-box">
+        <form id="checkoutForm">
+          <div class="row">
+            <!-- Billing Details -->
             <div class="col-50">
-              <div class="container">
-                <h2>Select Delivery Address</h2>
-                <form id="checkout-form" method="POST" action="/checkout">
-                  <div>
-                    <label for="address">Select Address:</label>
-                    <select name="address" id="address">
-                      <% addresses.forEach(function(address) { %>
-                      <option
-                        value="<%= address._id %>"
-                        data-street="<%= address.street %>"
-                        data-city="<%= address.city %>"
-                        data-state="<%= address.state %>"
-                        data-postalcode="<%= address.postalCode %>"
-                        data-phone="<%= address.phoneNumber %>"
-                        data-country="<%= address.country %>"
+              <div class="col-50">
+                <div class="container">
+                  <h2>Select Delivery Address</h2>
+                  <form id="checkout-form" method="POST" action="/checkout">
+                    <div>
+                      <label for="address">Select Address:</label>
+                      <select name="address" id="address">
+                        <% addresses.forEach(function(address) { %>
+                        <option
+                          value="<%= address._id %>"
+                          data-street="<%= address.street %>"
+                          data-city="<%= address.city %>"
+                          data-state="<%= address.state %>"
+                          data-postalcode="<%= address.postalCode %>"
+                          data-phone="<%= address.phoneNumber %>"
+                          data-country="<%= address.country %>"
+                        >
+                          <%= address.street %>, <%= address.city %>, <%=
+                          address.state %>, <%= address.postalCode %>
+                        </option>
+                        <% }) %>
+                      </select>
+                      <button
+                        class="btn-primary p-1"
+                        style="
+                          border: radius 50px;
+                          align-items: center;
+                          align-content: center;
+                        "
                       >
-                        <%= address.street %>, <%= address.city %>, <%=
-                        address.state %>, <%= address.postalCode %>
-                      </option>
-                      <% }) %>
-                    </select>
-                    <button
-                      class="btn-primary p-1"
-                      style="
-                        border: radius 50px;
-                        align-items: center;
-                        align-content: center;
-                      "
-                    >
-                      <a
-                        style="text-decoration: none; color: white"
-                        href="/addressManagement?check=true"
-                        >Add new address</a
-                      >
-                    </button>
-                  </div>
-
-                  <!-- Add new address if user wants -->
-                  <!-- <div>
-                          <label for="new-address">Or Add New Address:</label>
-                          <input
-                            type="text"
-                            name="newAddress"
-                            id="new-address"
-                            placeholder="Add a new address"
-                          />
-                        </div> -->
-                </form>
+                        <a
+                          style="text-decoration: none; color: white"
+                          href="/addressManagement?check=true"
+                          >Add new address</a
+                        >
+                      </button>
+                    </div>
+                  </form>
+                </div>
+                <!-- Address Form Fields -->
+                <label for="fname"><i class="fa fa-user"></i> Full Name</label>
+                <span class="error" id="error1"></span>
+                <input
+                  type="text"
+                  id="fname"
+                  name="fname"
+                  value="<%= (userDetails.firstName && userDetails.lastName) ? (userDetails.firstName + ' ' + userDetails.lastName) : userDetails.username %>"
+                />
+                <label for="email"><i class="fa fa-envelope"></i> Email</label>
+                <span class="error" id="error2"></span>
+                <input
+                  type="text"
+                  id="email"
+                  name="email"
+                  value="<%= userDetails.email %>"
+                />
+                <!-- Add other form fields as necessary -->
               </div>
-              <!-- Address Form Fields -->
-              <label for="fname"><i class="fa fa-user"></i> Full Name</label>
-              <span class="error" id="error1"></span>
-              <input
-                type="text"
-                id="fname"
-                name="fname"
-                value="<%= (userDetails.firstName && userDetails.lastName) ? (userDetails.firstName + ' ' + userDetails.lastName) : userDetails.username %>"
-              />
-              <label for="email"><i class="fa fa-envelope"></i> Email</label>
-              <span class="error" id="error2"></span>
-              <input
-                type="text"
-                id="email"
-                name="email"
-                value="<%= userDetails.email %>"
-              />
-              <!-- Add other form fields as necessary -->
-            </div>
 
-            <!-- Payment Mode Selection -->
-            <div class="col-50">
-              <h3>Payment</h3>
-              <label for="payment-mode">Select Payment Mode:</label>
-              <select id="payment-mode" name="payment-mode">
-                <option value="">Select a Payment Mode</option>
-                <option value="razorpay">Razorpay</option>
-                <%if(total<=1000){%>
-                <option value="cod">Cash On Delivery</option>
-                <%}%>
-              </select>
-              <!-- Payment Details (Shown for Razorpay) -->
-              <div id="paymentDetails" style="display: none">
-                <label for="fname">Accepted Cards via Razorpay</label>
-                <div class="icon-container">
-                  <i class="fa fa-cc-visa" style="color: navy"></i>
-                  <i class="fa fa-cc-mastercard" style="color: red"></i>
-                  <i class="fa fa-cc-amex" style="color: blue"></i>
-                  <i class="fa fa-cc-discover" style="color: orange"></i>
+              <!-- Payment Mode Selection -->
+              <div class="col-50">
+                <h3>Payment</h3>
+                <label for="payment-mode">Select Payment Mode:</label>
+                <select id="payment-mode" name="payment-mode">
+                  <option value="">Select a Payment Mode</option>
+                  <option value="razorpay">Razorpay</option>
+                  <%if(total<=1000){%>
+                  <option value="cod">Cash On Delivery</option>
+                  <%}%>
+                </select>
+                <!-- Payment Details (Shown for Razorpay) -->
+                <div id="paymentDetails" style="display: none">
+                  <label for="fname">Accepted Cards via Razorpay</label>
+                  <div class="icon-container">
+                    <i class="fa fa-cc-visa" style="color: navy"></i>
+                    <i class="fa fa-cc-mastercard" style="color: red"></i>
+                    <i class="fa fa-cc-amex" style="color: blue"></i>
+                    <i class="fa fa-cc-discover" style="color: orange"></i>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="container">
-            <h4>
-              Cart
-              <span class="price" style="color: black">
-                <i class="fa fa-shopping-cart"></i>
-                <b><%=products.length%></b>
-              </span>
-            </h4>
-            <%products.forEach(product=>{%>
-            <p>
-              <%=product.name%> <%=product.platform%>
-              <span class="price"><%=product.price%></span>
-              <span>X</span>
-              <span class="price"><%=product.quantity%> </span>
-            </p>
-            <%})%>
-            <hr />
-            <div>
-              <label for="coupon">Apply Coupon:</label>
-              <form id="applyCouponForm" action="/applyCoupon" method="POST">
-                <select id="coupon" name="couponId">
-                  <option value="">Select a coupon</option>
-                  <% eligibleCoupons.forEach(function(coupon) { %>
-                  <option value="<%= coupon._id %>">
-                    <%= coupon.code %> - <% if (coupon.discountType === 'fixed')
-                    { %> ₹<%= coupon.discountValue %> <% } else { %> <%=
-                    coupon.discountValue %>% <% } %>
-                  </option>
-                  <% }) %>
-                </select>
-                <button class="btn-success" type="submit">Apply Coupon</button>
-                <% if (typeof appliedCoupon!=='undefined') { %>
-                <p>Coupon Applied: <%= appliedCoupon.code %></p>
-                <button
-                  class="btn-danger"
-                  type="submit"
-                  form="removeCouponForm"
-                >
-                  Remove Coupon
-                </button>
+            <div class="container-box">
+              <table>
+                <tr>
+                  <td>
+                    <span class="price" style="color: black">
+                      <i class="fa fa-shopping-cart"></i>
+                    </span>
+                  </td>
+
+                  <td><%=products.length%></td>
+                </tr>
+                <%products.forEach(product=>{%>
+                <tr>
+                  <td><%=product.name%> <%=product.platform%></td>
+
+                  <td>
+                    <span class="price"><%=product.price%></span>
+                    <span>X</span>
+                    <span class="price"><%=product.quantity%> </span>
+                  </td>
+                </tr>
+                <%})%>
+              </table>
+
+              <div class="coupon-container">
+                <label for="coupon">Apply Coupon:</label>
+                <form id="applyCouponForm" action="/applyCoupon" method="POST">
+                  <select id="coupon" name="couponId">
+                    <option value="">Select a coupon</option>
+                    <% eligibleCoupons.forEach(function(coupon) { %>
+                    <option value="<%= coupon._id %>">
+                      <%= coupon.code %> - <% if (coupon.discountType ===
+                      'fixed') { %> ₹<%= coupon.discountValue %> <% } else { %>
+                      <%= coupon.discountValue %>% <% } %>
+                    </option>
+                    <% }) %>
+                  </select>
+                  <button class="btn-success" type="submit">
+                    Apply Coupon
+                  </button>
+                  <% if (typeof appliedCoupon!=='undefined') { %>
+                  <p>Coupon Applied: <%= appliedCoupon.code %></p>
+                  <button
+                    class="btn-danger"
+                    type="submit"
+                    form="removeCouponForm"
+                  >
+                    Remove Coupon
+                  </button>
+                  <% } %>
+                </form>
+                <!-- Hidden form for removing coupon -->
+                <form
+                  id="removeCouponForm"
+                  action="/removeCoupon"
+                  method="POST"
+                ></form>
+              </div>
+
+              <table>
+                <tr>
+                  <td>Subtotal</td>
+                  <td><%=subtotal%></td>
+                </tr>
+                <tr>
+                  <td>Delivery</td>
+                  <td>
+                    <span class="price" style="color: black" id="delivery"
+                      ><%=delivery%></span
+                    >
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <p>Tax</p>
+                  </td>
+                  <td>
+                    <span class="price" style="color: black"
+                      ><b id="tax"><%=tax%></b></span
+                    >
+                  </td>
+                </tr>
+
+                <% if (typeof appliedCoupon!=="undefined") { %>
+                <tr>
+                  <td>Coupon Applied: <%= appliedCoupon.code %></td>
+                  <span hidden id="couponCode"><%=appliedCoupon._id%></span>
+                  <td>
+                    (<% if (appliedCoupon.discountType === 'fixed') { %> -₹<%=
+                    appliedCoupon.discountValue %> <% } else { %> <%=
+                    appliedCoupon.discountValue %>% Off <% } %>)
+                  </td>
+                </tr>
+
+                <% } %> <% if (typeof reducedAmount!=="undefined") { %>
+                <tr>
+                  <td>Amount Saved:</td>
+                  <td>
+                    <span id="reducedAmount"><%=reducedAmount%></span>
+                  </td>
+                </tr>
+
                 <% } %>
-              </form>
-              <!-- Hidden form for removing coupon -->
-              <form
-                id="removeCouponForm"
-                action="/removeCoupon"
-                method="POST"
-              ></form>
+                <tr>
+                  <td>
+                    <p>Total</p>
+                  </td>
+                  <td>
+                    <span class="price" style="color: black"
+                      ><b id="totalPrice"><%=total%></b></span
+                    >
+                  </td>
+                </tr>
+              </table>
             </div>
-
-            <table>
-              <tr>
-                <td>Subtotal</td>
-                <td><%=subtotal%></td>
-              </tr>
-              <tr>
-                <td>Delivery</td>
-                <td>
-                  <span class="price" style="color: black" id="delivery"
-                    ><%=delivery%></span
-                  >
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <p>Tax</p>
-                </td>
-                <td>
-                  <span class="price" style="color: black"
-                    ><b id="tax"><%=tax%></b></span
-                  >
-                </td>
-              </tr>
-
-              <% if (typeof appliedCoupon!=="undefined") { %>
-              <tr>
-                <td>Coupon Applied: <%= appliedCoupon.code %></td>
-                <span hidden id="couponCode"><%=appliedCoupon._id%></span>
-                <td>
-                  (<% if (appliedCoupon.discountType === 'fixed') { %> -₹<%=
-                  appliedCoupon.discountValue %> <% } else { %> <%=
-                  appliedCoupon.discountValue %>% Off <% } %>)
-                </td>
-              </tr>
-
-              <% } %> <% if (typeof reducedAmount!=="undefined") { %>
-              <tr>
-                <td>Amount Saved:</td>
-                <td>
-                  <span id="reducedAmount"><%=reducedAmount%></span>
-                </td>
-              </tr>
-
-              <% } %>
-              <tr>
-                <td>
-                  <p>Total</p>
-                </td>
-                <td>
-                  <span class="price" style="color: black"
-                    ><b id="totalPrice"><%=total%></b></span
-                  >
-                </td>
-              </tr>
-            </table>
           </div>
-        </div>
-        <label>
-          <input type="checkbox" checked="checked" name="sameadr" /> Shipping
-          address same as billing
-        </label>
-        <button type="submit" class="btn" id="submitLink">
-          Proceed to order
-        </button>
-      </form>
+          <label>
+            <input type="checkbox" checked="checked" name="sameadr" /> Shipping
+            address same as billing
+          </label>
+          <button type="submit" class="btn" id="submitLink">
+            Proceed to order
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 </div>
@@ -551,15 +732,22 @@
                 if (verifyData.success) {
                   showToast("Payment Successfull, Order Placed", 1);
                   setTimeout(() => {
-                    window.location.href = "/orderSuccess";
+                    window.location.href = `/orderSuccess?orderId=${data.orderId}`;
                   }, 2000);
                 } else {
                   alert("Payment Verification failed, Please try again");
+                  window.location.href = `/paymentFailed?orderId=${data.orderId}`
                 }
               } catch (error) {
                 console.error("Error verifying payment:", error.message);
                 alert("Error verifying payment. Please try again.");
               }
+            },
+            modal: {
+              ondismiss: function () {
+                // This triggers when the user closes the Razorpay modal (before payment)
+                window.location.href = `/paymentFailed?orderId=${data.orderId}`; // Redirect to cancellation page
+              },
             },
             prefill: {
               name: data.name,

@@ -73,63 +73,145 @@
     pointer-events: none;
     visibility: hidden;
   }
+  .body-userprofile {
+    background: white;
+}
+
+.emp-profile {
+    padding: 3%;
+    margin-top: 3%;
+    margin-bottom: 3%;
+    border-radius: 0.5rem;
+    background: #fff;
+}
+
+.profile-img {
+    text-align: center;
+}
+
+.profile-img img {
+    width: 70%;
+    height: 100%;
+}
+
+.profile-img .file {
+    position: relative;
+    overflow: hidden;
+    margin-top: -20%;
+    width: 70%;
+    border: none;
+    border-radius: 0;
+    font-size: 15px;
+    background: #212529b8;
+    color: white;
+}
+
+.profile-img .file input {
+    position: absolute;
+    opacity: 0;
+    right: 0;
+    top: 0;
+}
+
+.profile-head h5 {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.profile-edit-btn {
+    border: none;
+    border-radius: 1.5rem;
+    width: 40%;
+    padding: 2%;
+    font-weight: 600;
+    color: white;
+    background-color: #0062cc;
+    cursor: pointer;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #333;
+}
+
+.form-control {
+    border-radius: 0.5rem;
+    padding: 10px;
+    width: 100%;
+    border: 1px solid #ced4da;
+}
+
+.error {
+    color: red;
+    font-size: 12px;
+}
+
+.toast {
+    display: none;
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background-color: #333;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+}
+
 </style>
-<div class="container" style="border: 2px black">
-  <form id="editProfileForm" action="/user/edit-profile" method="POST">
-    <div>
-      <label for="username">Username:</label>
-      <input
-        type="text"
-        id="username"
-        name="username"
-        required
-        value="<%=userDetails.username%>"
-      />
-      <span id="error1" class="error"></span>
-    </div>
+<div class="body-userprofile">
+  <div class="container emp-profile">
+    <form id="editProfileForm" action="/user/edit-profile" method="POST">
+      <div class="row">
+        <div class="col-md-4">
+          <div class="profile-img">
+            <img src="/images/dummy-avatar.png" alt="Profile Image" />
+            <!-- <div class="file btn btn-lg btn-primary">Change Photo
+              <input type="file" name="file" />
+            </div> -->
+          </div>
+        </div>
 
-    <!-- <div>
-          <label for="email">Email:</label>
-          <input type="email" id="email" name="email" required />
-          <span id="error2" class="error"></span>
-        </div> -->
+        <div class="col-md-8">
+          <div class="profile-head">
+            <h5>Edit Profile</h5>
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input type="text" class="form-control" id="username" name="username" value="<%=userDetails.username%>" required />
+              <span id="error1" class="error"></span>
+            </div>
 
-    <div>
-      <label for="phoneNumber">Phone Number:</label>
-      <input
-        type="text"
-        id="phoneNumber"
-        name="phoneNumber"
-        value="<%=userDetails.phoneNumber%>"
-      />
-      <span id="error3" class="error"></span>
-    </div>
+            <div class="form-group">
+              <label for="phoneNumber">Phone Number</label>
+              <input type="text" class="form-control" id="phoneNumber" name="phoneNumber" value="<%=userDetails.phoneNumber%>" />
+              <span id="error3" class="error"></span>
+            </div>
 
-    <div>
-      <label for="firstName">First Name:</label>
-      <input
-        type="text"
-        id="firstName"
-        name="firstName"
-        value="<%=userDetails.firstName%>"
-      />
-      <span id="error4" class="error"></span>
-    </div>
+            <div class="form-group">
+              <label for="firstName">First Name</label>
+              <input type="text" class="form-control" id="firstName" name="firstName" value="<%=userDetails.firstName%>" />
+              <span id="error4" class="error"></span>
+            </div>
 
-    <div>
-      <label for="lastName">Last Name:</label>
-      <input
-        type="text"
-        id="lastName"
-        name="lastName"
-        value="<%=userDetails.lastName%>"
-      />
-      <span id="error5" class="error"></span>
-    </div>
-    <div id="toast" class="toast"></div>
-    <button type="submit">Save Changes</button>
-  </form>
+            <div class="form-group">
+              <label for="lastName">Last Name</label>
+              <input type="text" class="form-control" id="lastName" name="lastName" value="<%=userDetails.lastName%>" />
+              <span id="error5" class="error"></span>
+            </div>
+
+            <button type="submit" class="profile-edit-btn">Save Changes</button>
+          </div>
+        </div>
+      </div>
+      <div id="toast" class="toast"></div>
+    </form>
+  </div>
 </div>
+
 
 <script>
   function showToast(data, result) {
@@ -146,22 +228,22 @@
       toast.className = toast.className.replace("show", "");
     }, 3000); // The toast will disappear after 3 seconds
   }
-
+  document.addEventListener("DOMContentLoaded", function () {
   document
     .getElementById("editProfileForm")
     .addEventListener("submit", function (event) {
+      console.log("Form submission initiated");
+
       event.preventDefault(); // Prevent the form's default submission behavior
 
       // Clear previous error messages
       document.getElementById("error1").textContent = "";
-      //   document.getElementById("error2").textContent = '';
       document.getElementById("error3").textContent = "";
       document.getElementById("error4").textContent = "";
       document.getElementById("error5").textContent = "";
 
       // Collect form inputs
       const username = document.getElementById("username").value.trim();
-      //   const email = document.getElementById("email").value.trim();
       const phoneNumber = document.getElementById("phoneNumber").value.trim();
       const firstName = document.getElementById("firstName").value.trim();
       const lastName = document.getElementById("lastName").value.trim();
@@ -175,7 +257,6 @@
           "Username should only contain alphabets and spaces.";
         isValid = false;
       }
-      // Validate Email: Built-in email validation is handled by the browser due to input type="email"
 
       // Validate Phone Number: Must be a 10-digit number
       const phoneNumberRegex = /^[0-9]{10}$/;
@@ -185,7 +266,7 @@
         isValid = false;
       }
 
-      // Validate First Name: Only alphabets allowed and auto-capitalize
+      // Validate First Name: Only alphabets allowed
       const nameRegex = /^[A-Za-z]+$/;
       if (firstName && !nameRegex.test(firstName)) {
         document.getElementById("error4").textContent =
@@ -193,7 +274,7 @@
         isValid = false;
       }
 
-      // Validate Last Name: Only alphabets allowed and auto-capitalize
+      // Validate Last Name: Only alphabets allowed
       if (lastName && !nameRegex.test(lastName)) {
         document.getElementById("error5").textContent =
           "Last name should only contain alphabets.";
@@ -211,7 +292,6 @@
         // Prepare form data object
         const formData = {
           username,
-
           phoneNumber,
           firstName: formattedFirstName,
           lastName: formattedLastName,
@@ -226,24 +306,32 @@
           body: JSON.stringify(formData), // Send form data as JSON
         })
           .then((response) => {
+            // Check if the response is OK (status code 200-299)
             if (response.ok) {
-              return response.json();
+              console.log("Form submission successful");
+              return response.json(); // Convert response to JSON
             } else {
-              // Handle server-side errors (e.g., validation failures, etc.)
-              response.json().then((data) => {
+              return response.json().then((data) => {
+                // Handle validation or server errors
                 alert(`Error: ${data.message || "Failed to update profile."}`);
+                throw new Error(data.message || "Unknown error");
               });
             }
           })
           .then((data) => {
+            // Show a success message using the toast
             showToast(data.message, 1);
+            console.log("Redirecting to /userProfile...");
+            window.location.href = "/userProfile"; // Correct redirection
           })
           .catch((error) => {
             console.error("Error:", error);
-            showToast(data.message, 0);
+            showToast("Error updating profile", 0);
           });
       }
     });
+});
+  
 </script>
 
 <%- include("../partials/user/footer.ejs") %>

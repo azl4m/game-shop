@@ -29,7 +29,7 @@ const addressController = require('../controllers/user/addressController')
 const orderController = require('../controllers/user/orderController')
 const wishlistController = require('../controllers/user/wishlistController')
 const profileController = require('../controllers/user/profileController')
-
+const paymentController = require('../controllers/user/paymentController')
 //for signup
 user.get("/signup",addminAuth.isLogout,auth.isLogout,userController.signupLoad)
 user.post("/signup",userController.registerUser)
@@ -86,8 +86,12 @@ user.get('/orderDetails',addminAuth.isLogout,auth.isLogin,orderController.orderD
 user.get('/requestReturn',addminAuth.isLogout,auth.isLogin,orderController.requestReturn)
 user.get('/orderSuccess',addminAuth.isLogout,auth.isLogin,orderController.orderSuccessLoad)
 user.get('/cancelOrder',addminAuth.isLogout,auth.isLogin,orderController.requestCancel)
+user.get('/downloadInvoice',addminAuth.isLogout,auth.isLogin,orderController.downloadInvoice)
 //razorpay
-user.post("/verifyPayment",addminAuth.isLogout,auth.isLogin,userController.razorpayPaymentVerification)
+user.post("/verifyPayment",addminAuth.isLogout,auth.isLogin,paymentController.razorpayPaymentVerification)
+user.get("/paymentFailed",auth.isLogin,paymentController.paymentFailure)
+user.get("/orderFailed",auth.isLogin,paymentController.orderFailed)
+user.post("/retryPayment",auth.isLogin,paymentController.retryPayment)
 
 //wishlist
 user.get('/addToWishList',addminAuth.isLogout,auth.isLogin,wishlistController.addToWishList)
@@ -95,8 +99,8 @@ user.get('/wishlist',addminAuth.isLogout,auth.isLogin,wishlistController.wishlis
 user.delete('/wishlistRemove',addminAuth.isLogout,auth.isLogin,wishlistController.wishlistRemove)
 
 //wallet
-user.get("/wallet",addminAuth.isLogout,auth.isLogin,userController.loadWalletPage)
-user.post("/addToWallet",addminAuth.isLogout,auth.isLogin,userController.addToWallet)
+user.get("/wallet",addminAuth.isLogout,auth.isLogin,profileController.loadWalletPage)
+user.post("/addToWallet",addminAuth.isLogout,auth.isLogin,profileController.addToWallet)
 //for page not found
 user.get("/pageNotFound",userController.pageNotFound)
 user.get('/',addminAuth.isLogout,userController.loadHomePage);

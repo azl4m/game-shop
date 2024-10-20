@@ -1,54 +1,55 @@
 <%- include("../partials/admin/header.ejs")%>
 
 <style>
-    #salesFilterForm {
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-  position: relative !important;
-  z-index: 999 !important;
-}
-/* General styles */
-body {
+  #salesFilterForm {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 999 !important;
+  }
+  /* General styles */
+  body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
     background-color: #f4f4f4;
-}
+  }
 
-.container {
+  .container {
     max-width: 800px;
     margin: 20px auto;
     padding: 20px;
     background-color: white;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
-}
+  }
 
-h1 {
+  h1 {
     text-align: center;
     color: #333;
-}
+  }
 
-.filter-form {
+  .filter-form {
     display: flex;
     flex-direction: column;
     gap: 15px;
     margin-bottom: 20px;
-}
+  }
 
-label {
+  label {
     font-weight: bold;
-}
+  }
 
-select, input {
+  select,
+  input {
     padding: 10px;
     border-radius: 5px;
     border: 1px solid #ccc;
     width: 100%;
-}
+  }
 
-button {
+  button {
     padding: 10px;
     background-color: #28a745;
     color: white;
@@ -56,53 +57,51 @@ button {
     border-radius: 5px;
     cursor: pointer;
     width: 100%;
-}
+  }
 
-button:hover {
+  button:hover {
     background-color: #218838;
-}
+  }
 
-.custom-dates {
+  .custom-dates {
     display: flex;
     gap: 10px;
-}
+  }
 
-.custom-dates input {
+  .custom-dates input {
     flex: 1;
-}
+  }
 
-.report {
+  .report {
     margin-top: 20px;
     padding: 20px;
     background-color: #fafafa;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
-}
+  }
 
-.report h2 {
+  .report h2 {
     text-align: center;
     margin-bottom: 20px;
-}
+  }
 
-.report-table {
+  .report-table {
     width: 100%;
     border-collapse: collapse;
-}
+  }
 
-.report-table th, .report-table td {
+  .report-table th,
+  .report-table td {
     padding: 10px;
     border: 1px solid #ddd;
     text-align: center;
-}
+  }
 
-.report-table th {
+  .report-table th {
     background-color: #f1f1f1;
     font-weight: bold;
-}
-
-
+  }
 </style>
-
 
 <div id="page-wrapper">
   <div class="header">
@@ -134,37 +133,70 @@ button:hover {
       </div>
     </div>
     <div class="row">
-        <div class="col-md-8 col-sm-12 col-xs-12 browser-default" style="display: inline-block;">
-          <!-- Filters Section -->
-          <form id="salesFilterForm" class="filter-form browser-default" style="display: inline-block;">
-            <label for="range">Filter by:</label>
-            <select class="browser-default" id="range" name="range" onchange="toggleDateInputs()">
-              <option value="daily">Daily</option>
-              <option value="weekly">Weekly</option>
-              <option value="monthly">Monthly</option>
-              <option value="custom">Custom Range</option>
-            </select>
-      
-            <!-- Date Range Inputs (hidden by default for non-custom range) -->
-            <div class="custom-dates browser-default"  id="customDates" >
-              <label for="startDate" class="browser-default">Start Date:</label>
-              <input type="date" id="startDate" name="startDate" class="browser-default">
-      
-              <label for="endDate" class="browser-default">End Date:</label>
-              <input type="date" id="endDate" name="endDate" class="browser-default">
-            </div>
-      
-            <!-- Submit Button -->
-            <button type="button" class="btn btn-primary" onclick="getSalesReport()">View Report</button>
-          </form>
-          <div id="salesReport" class="report browser-default">
-            <!-- Report content will be rendered here -->
-        </div>
+      <div
+        class="col-md-8 col-sm-12 col-xs-12 browser-default"
+        style="display: inline-block"
+      >
+        <!-- Filters Section -->
+        <form
+          id="salesFilterForm"
+          class="filter-form browser-default"
+          style="display: inline-block"
+        >
+          <label for="range">Filter by:</label>
+          <select
+            class="browser-default"
+            id="range"
+            name="range"
+            onchange="toggleDateInputs()"
+          >
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="custom">Custom Range</option>
+          </select>
+
+          <!-- Date Range Inputs (hidden by default for non-custom range) -->
+          <div class="custom-dates browser-default" id="customDates">
+            <label for="startDate" class="browser-default">Start Date:</label>
+            <input
+              type="date"
+              id="startDate"
+              name="startDate"
+              class="browser-default"
+            />
+
+            <label for="endDate" class="browser-default">End Date:</label>
+            <input
+              type="date"
+              id="endDate"
+              name="endDate"
+              class="browser-default"
+            />
+          </div>
+
+          <!-- Submit Button -->
+          <button
+            type="button"
+            class="btn btn-primary"
+            onclick="getSalesReport(0)"
+          >
+            View Report
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            onclick="getSalesReport(1)"
+          >
+            Download Report
+          </button>
+        </form>
+        <div id="salesReport" class="report browser-default">
+          <!-- Report content will be rendered here -->
         </div>
       </div>
-      
-      
-      
+    </div>
+
     <div class="row">
       <div class="col-md-4 col-sm-12 col-xs-12">
         <div class="card">
@@ -337,55 +369,62 @@ button:hover {
         </li>
       </ul>
     </div>
-
-    <%- include("../partials/admin/footer.ejs")%>
   </div>
 </div>
+<%- include("../partials/admin/footer.ejs")%>
 <script>
-
-    // Function to show/hide custom date inputs
-function toggleDateInputs() {
-    const range = document.getElementById('range').value;
-    const customDates = document.getElementById('customDates');
-    if (range === 'custom') {
-        customDates.style.display = 'flex';
+  // Function to show/hide custom date inputs
+  function toggleDateInputs() {
+    const range = document.getElementById("range").value;
+    const customDates = document.getElementById("customDates");
+    if (range === "custom") {
+      customDates.style.display = "flex";
     } else {
-        customDates.style.display = 'none';
+      customDates.style.display = "none";
     }
-}
+  }
 
-// Fetch sales report based on selected filters
-async function getSalesReport() {
-    const range = document.getElementById('range').value;
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
+  // Fetch sales report based on selected filters
+  async function getSalesReport(download) {
+  let downloadVal = download || 0;
+  const range = document.getElementById('range').value;
+  const startDate = document.getElementById('startDate').value;
+  const endDate = document.getElementById('endDate').value;
 
-    // Construct query params
-    let query = `?range=${range}`;
-    if (range === 'custom' && startDate && endDate) {
-        query += `&startDate=${startDate}&endDate=${endDate}`;
-    }
+  // Construct query params
+  let query = `?range=${range}&download=${downloadVal}`;
+  if (range === 'custom' && startDate && endDate) {
+    query += `&startDate=${startDate}&endDate=${endDate}`;
+  }
+  console.log(query);
+  
 
+  if (downloadVal) {
+    
+    // If download is true, handle PDF download
+    window.location.href = `/admin/getSalesReport${query}`;
+  } else {
+    // Fetch the report as JSON for displaying in the UI
     try {
-        const response = await fetch(`/admin/getSalesReport${query}`);
-        const report = await response.json();
-
-        if (response.ok) {
-            displayReport(report);
-        } else {
-            alert(report.message || 'Failed to fetch report');
-        }
+      const response = await fetch(`/admin/getSalesReport${query}`);
+      const report = await response.json();
+      if (response.ok) {
+        displayReport(report); // Your function to display the report in UI
+      } else {
+        alert(report.message || 'Failed to fetch report');
+      }
     } catch (error) {
-        console.error('Error fetching sales report:', error);
+      console.error('Error fetching sales report:', error);
     }
+  }
 }
 
-// Display the sales report in the report section
-function displayReport(report) {
-    const reportSection = document.getElementById('salesReport');
+  // Display the sales report in the report section
+  function displayReport(report) {
+    const reportSection = document.getElementById("salesReport");
 
     // Clear any existing content
-    reportSection.innerHTML = '';
+    reportSection.innerHTML = "";
 
     // Generate HTML content for the report
     const reportContent = `
@@ -404,20 +443,25 @@ function displayReport(report) {
                 </tr>
             </thead>
             <tbody>
-                ${report.orders.map(order => `
+                ${report.orders
+                  .map(
+                    (order) => `
                     <tr>
                         <td>${order.orderNumber}</td>
-                        <td>${new Date(order.orderDate).toLocaleDateString()}</td>
+                        <td>${new Date(
+                          order.orderDate
+                        ).toLocaleDateString()}</td>
                         <td>₹${order.totalPrice}</td>
                         <td>₹${order.discount}</td>
                     </tr>
-                `).join('')}
+                `
+                  )
+                  .join("")}
             </tbody>
         </table>
     `;
 
     // Inject the generated HTML into the report section
     reportSection.innerHTML = reportContent;
-}
-
-  </script>
+  }
+</script>

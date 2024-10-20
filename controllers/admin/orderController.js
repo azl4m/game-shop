@@ -193,6 +193,7 @@ const orderManagementLoad = async (req, res) => {
     }
   };
 
+
   module.exports={
     orderDetails,
     orderManagementLoad,

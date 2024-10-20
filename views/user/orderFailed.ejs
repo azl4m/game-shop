@@ -1,86 +1,129 @@
 <%- include("../partials/user/header.ejs")%>
 <style>
-.container {
-  max-width: 1200px; /* Limit the width of the container */
-}
+  .order-failed-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f8f9fa;
+    padding: 20px;
+  }
+  .order-failed-box {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    animation: fadeInUp 0.5s ease-in-out;
+    width: 100%;
+    max-width: 600px;
+  }
+  .order-failed-icon {
+    font-size: 50px;
+    color: #dc3545;
+    margin-bottom: 20px;
+    animation: shake 0.5s ease;
+  }
+  .order-failed-title {
+    font-size: 28px;
+    color: #dc3545;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  .order-details {
+    font-size: 16px;
+    margin-bottom: 30px;
+    color: #6c757d;
+  }
+  .btn-retry,
+  .btn-products {
+    padding: 12px 20px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+  }
+  .btn-retry {
+    background-color: #28a745;
+    color: #fff;
+  }
+  .btn-products {
+    background-color: #007bff;
+    color: #fff;
+  }
+  .btn-retry:hover {
+    background-color: #218838;
+  }
+  .btn-products:hover {
+    background-color: #0069d9;
+  }
 
-h2 {
-  font-size: 2.5rem; /* Adjusted font size for better visibility */
-  font-weight: bold;
-  color: #333; /* Darker color for better contrast */
-  margin-bottom: 1.5rem;
-}
+  /* Keyframes for subtle animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-10px);
+    }
+    50% {
+      transform: translateX(10px);
+    }
+    75% {
+      transform: translateX(-10px);
+    }
+  }
 
-.card {
-  border-radius: 15px; /* Rounded corners for cards */
-  border: none; /* Remove default card border */
-  transition: transform 0.3s, box-shadow 0.3s; /* Smooth transition for hover effects */
-}
-
-.card:hover {
-  transform: translateY(-5px); /* Slight lift effect on hover */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Enhanced shadow on hover */
-}
-
-.card-title {
-  font-size: 1.25rem; /* Font size for order title */
-  color: #333; /* Dark text for card title */
-}
-
-.text-primary {
-  color: #007bff; /* Primary color for order ID */
-}
-
-.text-success {
-  color: #28a745; /* Success color for total price */
-}
-
-.btn-primary {
-  background-color: #007bff; /* Primary button color */
-  border-color: #007bff; /* Primary button border color */
-  border-radius: 25px; /* Rounded button corners */
-  transition: background-color 0.3s, border-color 0.3s; /* Transition for hover */
-}
-
-.btn-primary:hover {
-  background-color: #0056b3; /* Darker shade on hover */
-  border-color: #0056b3; /* Darker border shade */
-}
-
-
+  /* Responsive */
+  @media (max-width: 576px) {
+    .order-failed-box {
+      padding: 20px;
+    }
+    .order-failed-title {
+      font-size: 24px;
+    }
+    .btn-retry,
+    .btn-products {
+      padding: 10px 15px;
+      font-size: 14px;
+    }
+  }
 </style>
-<div class="container mt-3 mt-md-5">
-  <h2 class="text-charcoal">Your Orders</h2>
-  <div class="row">
-    <div class="col-12">
-      <div class="row">
-        <% orders.forEach(order => { %>
-        <div class="col-12 col-md-6 mb-4">
-          <div class="card shadow-sm border-light">
-            <div class="card-body">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="card-title text-dark mb-0">Order Id: <span class="text-primary"><%= order.orderNumber %></span></h5>
-                <h5 class="card-title text-dark mb-0">Order Status: <span class="text-primary"><%= order.orderStatus %></span></h5>
-                <p class="text-muted mb-0"><%= moment(order.orderDate).format("MMM Do, YYYY") %></p>
-              </div>
-              <h6 class="text-dark">Total: <span class="text-success">₹<%= order.totalPrice %></span></h6>
-              <h6 class="text-dark mt-3">Shipped To:</h6>
-              <p class="text-muted mb-0"><%= order.shippingAddress.name %></p>
-              <div class="mt-4">
-                <a href="/orderDetails?id=<%= order._id %>" class="btn btn-primary">View Order</a>
-              </div>
-            </div>
-          </div>
-        </div>
-        <% }) %>
-      </div>
+
+<div class="order-failed-page">
+  <div class="order-failed-box">
+    <i class="fas fa-exclamation-circle order-failed-icon"></i>
+    <!-- Error icon -->
+    <h1 class="order-failed-title">Payment Failed</h1>
+    <p class="order-details">
+      We're sorry, your payment for order
+      <strong><%= order.orderNumber %></strong> could not be completed.
+    </p>
+    <p class="order-details">Total Amount: ₹ <%= order.totalPrice %></p>
+
+    <div class="mt-4">
+      <a
+        href="/retryPayment?orderId=<%= order._id %>"
+        data-href="<%= order._id %>"
+        class="btn btn-retry"
+        id="retrylink"
+        >Retry Payment</a
+      >
+      <a href="/products" class="btn btn-products ms-3">Back to Products</a>
     </div>
   </div>
 </div>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-
 <script>
-   window.addEventListener("DOMContentLoaded", function () {
+  window.addEventListener("DOMContentLoaded", function () {
     const retrylink = document.getElementById("retrylink");
     retrylink.addEventListener("click", async (event) => {
   
@@ -166,4 +209,5 @@ h2 {
   }
   });
 </script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <%- include("../partials/user/footer.ejs")%>

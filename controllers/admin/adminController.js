@@ -7,8 +7,8 @@ const couponModel = require("../../models/couponModel");
 const multer = require("multer");
 const sharp = require("sharp");
 const fs = require("fs");
-
-//for handling photo upload
+const PDFDocument = require("pdfkit");
+const borderForPdf = require("../../helpers/borderForPdf");
 
 const pageNotFound = async (req, res) => {
   try {
@@ -39,10 +39,7 @@ const salesReport = async (req, res) => {
 
 const getSalesReport = async (req, res) => {
   try {
-    console.log("hello1");
-
-    const { startDate, endDate, range } = req.query; // Range: 'daily', 'weekly', 'monthly', 'custom'
-
+    const { startDate, endDate, range, download } = req.query; // Range: 'daily', 'weekly', 'monthly', 'custom'
     let filter = {};
 
     // Determine the date range filter based on the request
@@ -76,10 +73,11 @@ const getSalesReport = async (req, res) => {
     }
 
     // Fetch orders based on the filter
-    console.log(filter);
 
-    const orders = await orderModel.find(filter);
-    console.log(orders);
+    const orders = await orderModel.find(filter).populate({
+      path: "cartItems.product", // Path to populate
+      select: "productName", // Fields to select from the Product model
+    });
 
     // Calculate overall stats
     let totalSales = 0;
@@ -90,13 +88,135 @@ const getSalesReport = async (req, res) => {
       totalSales += order.totalPrice; // Assuming totalAmount contains the final price
       totalDiscount += order.discount; // Assuming discount field exists in order
     });
+    // If the `download` query parameter is true, generate a PDF
+    if (download) {
+      // Generate the PDF report
 
-    res.status(200).json({
-      totalOrders,
-      totalSales,
-      totalDiscount,
-      orders, // For detailed information
-    });
+
+      const doc = new PDFDocument({ size: "A4", margin: 50 });
+      const filePath = path.join(__dirname, "sales_report.pdf");
+      const stream = fs.createWriteStream(filePath);
+
+      doc.pipe(stream);
+ 
+      borderForPdf.addPageBorder(doc);
+
+      // Add Header with Logo
+      const logoPath = path.join(
+        __dirname,
+        "..",
+        "..",
+        "public",
+        "images",
+        "game-logo.png"
+      );
+      console.log(logoPath);
+
+      doc.image(logoPath, { width: 100, align: "center" });
+      doc
+        .fontSize(20)
+        .fillColor("#000080")
+        .text("Sales Report", { align: "center" });
+      doc.moveDown();
+      doc
+        .fontSize(12)
+        .fillColor("gray")
+        .text(`Generated on: ${new Date().toLocaleDateString()}`, {
+          align: "right",
+        });
+      doc.moveDown();
+
+      // Add Report Summary with Borders
+      doc
+        .fontSize(12)
+        .fillColor("#333")
+        .text("Report Summary", { underline: true,align:"center" });
+      doc.rect(doc.x, doc.y, 500, 100).stroke(); // Add a border box around summary
+      doc.moveDown();
+      doc.fontSize(12).text(`Total Orders: ${totalOrders}`,{align:"center"}).te;
+      doc.text(`Total Sales: Rs.${totalSales.toFixed(2)}`,{align:"center"});
+      doc.text(`Total Discount: Rs.${totalDiscount.toFixed(2)}`,{align:"center"});
+      doc.moveDown();
+
+      // Add Order Details with Styling
+      doc
+        .fontSize(14)
+        .fillColor("#000080")
+        .text("Order Details", { underline: true ,align:"center"});
+      // Pagination settings
+      const ordersPerPage = 4; // Define how many orders per page
+      let currentOrder = 0;
+      orders.forEach((order, index) => {
+        if(currentOrder===3){
+          doc.addPage();
+          borderForPdf.addPageBorder(doc); // Add border to the new page
+          doc.text("Order Details:", { underline: true,align:"center" });
+        }
+        
+        // Check if we need to add a new page
+        else if (currentOrder > 0 && currentOrder % ordersPerPage === 0 && currentOrder!==4) {
+          doc.addPage();
+          borderForPdf.addPageBorder(doc); // Add border to the new page
+          doc.text("Order Details:", { underline: true,align:"center" });
+        }
+        doc.moveDown();
+        doc
+          .fontSize(12)
+          .fillColor("black")
+          .text(`Order #${index + 1}`, { bold: true });
+        doc
+          .fontSize(9)
+          .text(
+            `Order Date: ${new Date(order.orderDate).toLocaleDateString()}`
+          );
+        doc.text(
+          `Shipping Address: ${order.shippingAddress.name}, ${order.shippingAddress.street}, ${order.shippingAddress.city}, ${order.shippingAddress.state}`
+        );
+        doc.text(`Order Status: Rs.${order.orderStatus}`);
+        doc.text(`Total Price: Rs.${order.totalPrice}`);
+        doc.text(`Discount: Rs.${order.discount}`);
+        doc.text(`Payment Method: Rs.${order.paymentMethod}`);
+        doc.text(`Payment Status: ${order.paymentStatus}`);
+        if (order.isCancelled && order.cancelAccepted) {
+          doc.text(`Product has been cancelled and money refunded`);
+        }
+
+        // Add Cart Items
+        doc.moveDown().fillColor("#666").fontSize(10).text("Cart Items:");
+        order.cartItems.forEach((item, idx) => {
+          doc.text(
+            `  - ${item.product.productName} (${item.platform}), Quantity: ${item.quantity}, Price: Rs.${item.price}`
+          );
+        });
+        currentOrder++;
+      });
+
+      // Add Footer
+      doc
+        .fontSize(10)
+        .fillColor("gray")
+        .text("End Of Report", { align: "center", lineGap: 5 });
+      doc.text("", { align: "center" });
+
+      // Finalize and Download the PDF
+      doc.end();
+      stream.on("finish", () => {
+        res.download(filePath, "sales_report.pdf", (err) => {
+          if (err) {
+            res.status(500).send("Error generating the report");
+          }
+          fs.unlinkSync(filePath); // Optional: Delete the file after download
+        });
+      });
+    } else {
+      // If not downloading, send the sales report as JSON
+      res.status(200).json({
+        totalOrders,
+        totalSales,
+        totalDiscount,
+        orders, // For detailed information
+      });
+    }
   } catch (error) {
     console.error("Error fetching sales report:", error);
     res.status(500).json({ message: "Server error" });

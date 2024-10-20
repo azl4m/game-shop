@@ -255,7 +255,8 @@ document.addEventListener('DOMContentLoaded', () => {
           }, 2000); // 2-second delay before redirecting
         }
         else{
-          showToast("Error adding product",0)
+          const data = await response.json()
+          showToast(data.message||"Error adding product",0)
         }
       } catch (error) {
         console.error('Error adding to cart:', error);

@@ -5,7 +5,8 @@
     max-width: 1200px; /* Limit the width of the container */
   }
 
-  h2, h5 {
+  h2,
+  h5 {
     font-weight: bold;
     color: #333; /* Darker color for better contrast */
   }
@@ -73,6 +74,14 @@
       display: none; /* Hide on medium and up screens */
     }
   }
+  #invoiceDiv {
+    border-radius: 5px;
+  }
+  #invoiceDiv:hover {
+    background-color: #007bff;
+    transform: scale(0.99); /* Slightly enlarge the div */
+    cursor: pointer;
+  }
 </style>
 
 <div class="container mt-3 mt-md-5">
@@ -89,7 +98,9 @@
             </div>
             <div class="col-6 col-md">
               <h6 class="text-charcoal mb-0">Date</h6>
-              <p class="text-pebble mb-0"><%= moment(order.orderDate).format("MMM Do, YYYY") %></p>
+              <p class="text-pebble mb-0">
+                <%= moment(order.orderDate).format("MMM Do, YYYY") %>
+              </p>
             </div>
             <div class="col-6 col-md">
               <h6 class="text-charcoal mb-0">Total</h6>
@@ -110,54 +121,80 @@
                 <h6 class="text-green mb-0">
                   <b>
                     <% if (order.isCancelled && !order.cancelAccepted) { %>
-                      Cancellation Request Pending
-                    <% } else { %>
-                      <%= order.orderStatus %>
-                    <% } %>
+                    Cancellation Request Pending <% } else { %> <%=
+                    order.orderStatus %> <% } %>
                   </b>
                 </h6>
-                
-                <%if(order.orderStatus !=="Delivered" && order.orderStatus !== "Cancelled"){%>
+
+                <%if(order.orderStatus !=="Delivered" && order.orderStatus !==
+                "Cancelled"){%>
                 <p class="text-green hidden-sm-down mb-0">
-                  Est. delivery between
-                  <%= moment(order.orderDate).add(5, 'days').format("MMM Do") %>
-                  – 
-                  <%= moment(order.orderDate).add(9, 'days').format("MMM Do") %>
+                  Est. delivery between <%= moment(order.orderDate).add(5,
+                  'days').format("MMM Do") %> – <%=
+                  moment(order.orderDate).add(9, 'days').format("MMM Do") %>
                 </p>
                 <%}%>
               </div>
             </div>
-            <% if(!order.isCancelled&&order.orderStatus!=="Delivered"){ %>
+
             <div class="col-12 col-md-3">
-              <a href="/cancelOrder?id=<%=order._id%>" class="btn btn-danger w-100 mb-2">Cancel Order</a>
-            </div>
-            <%}%>
-            <% if(!order.paymentStatus==="Failed"){ %>
-              <div class="col-12 col-md-3">
-                <a href="/cancelOrder?id=<%=order._id%>" class="btn btn-success w-100 mb-2">Pay now</a>
-              </div>
+              <% if(!order.isCancelled&&order.orderStatus!=="Delivered"){ %>
+              <a
+                href="/cancelOrder?id=<%=order._id%>"
+                class="btn btn-danger w-100 mb-2"
+                >Cancel Order</a
+              >
+              <%}%> <% if(order.paymentStatus==="Failed"){ %>
+              <a
+                href="/retryPayment?id=<%=order._id%>"
+                data-href="<%=order._id%>"
+                id="retrylink"
+                class="btn btn-success w-100 mb-2"
+                >Pay now</a
+              >
               <%}%>
-            
+            </div>
+
             <div class="row no-gutters mt-3">
               <% order.cartItems.forEach(item => { %>
               <div class="col-12 d-flex align-items-start mb-3">
                 <div class="col-3 col-md-1 pr-0">
-                  <img class="img-fluid" src="<%=item.product.images[0]%>" alt="" />
+                  <img
+                    class="img-fluid"
+                    src="<%=item.product.images[0]%>"
+                    alt=""
+                  />
                 </div>
                 <div class="col-9 col-md-8 pr-3">
-                  <h6 class="text-charcoal mb-1"><a href="#" class="text-charcoal"><%= item.quantity %> x <%= item.product.productName %></a></h6>
+                  <h6 class="text-charcoal mb-1">
+                    <a href="#" class="text-charcoal"
+                      ><%= item.quantity %> x <%= item.product.productName %></a
+                    >
+                  </h6>
                   <ul class="list-unstyled text-pebble mb-1 small">
                     <li><b>Platform:</b> <%= item.platform %></li>
                   </ul>
                   <h6 class="text-charcoal mb-0"><b>₹<%= item.price %></b></h6>
                 </div>
                 <div class="col-12 col-md-3 hidden-sm-down">
-                  <a href="/productDetails?id=<%=item.product._id%>" class="btn btn-success w-100 mb-1">Buy It Again</a>
+                  <a
+                    href="/productDetails?id=<%=item.product._id%>"
+                    class="btn btn-success w-100 mb-1"
+                    >Buy It Again</a
+                  >
                   <%if(order.orderStatus==="Delivered"){%>
-                    <% if (!item.isReturned) { %>
-                      <a href="/requestReturn?orderid=<%= order._id %>&product=<%= item.product._id %>" class="btn btn-danger w-100">Request a Return</a>
-                      <% } %>
-                  <%}%>
+                  <a
+                    class="btn btn-warning w-100 mb-1"
+                    href="/downloadInvoice?orderId=<%=order._id%>&productId=<%=item.product._id%>&platform=<%=item.platform%>"
+                    >Download Invoice</a
+                  >
+                  <% if (!item.isReturned) { %>
+                  <a
+                    href="/requestReturn?orderid=<%= order._id %>&product=<%= item.product._id %>&platform=<%=item.platform%>"
+                    class="btn btn-danger w-100"
+                    >Request a Return</a
+                  >
+                  <% } %> <%}%>
                 </div>
               </div>
               <% }) %>
@@ -168,5 +205,82 @@
     </div>
   </div>
 </div>
+<script>
+  window.addEventListener("DOMContentLoaded", function () {
+    const retrylink = document.getElementById("retrylink");
+    retrylink.addEventListener("click", async (event) => {
+      event.preventDefault();
+      const orderId = retrylink.getAttribute("data-href");
 
+      try {
+        const response = await fetch("/retryPayment", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ orderId: orderId }),
+        });
+        const result = await response.json();
+
+        if (response.ok) {
+          const options = {
+            key: result.razorpayKeyId, // Razorpay Key ID
+            amount: result.amount, // Amount in paise (multiply by 100 for INR)
+            currency: "INR",
+            name: result.name, // Name of the customer
+            order_id: result.razorpayOrderId, // Razorpay order ID
+            handler: function (paymentResponse) {
+              // Handle payment success
+              verifyPayment(paymentResponse, result.orderId);
+            },
+            modal: {
+              ondismiss: function () {
+                // This triggers when the user closes the Razorpay modal (before payment)
+                window.location.href = `/paymentFailed?orderId=${data.orderId}`; // Redirect to cancellation page
+              },
+            },
+            prefill: {
+              name: result.name,
+              email: "<%= userDetails.email %>", // You can add dynamic email if available
+              contact: "<%= userDetails.phone %>", // Dynamic contact number if available
+            },
+          };
+          const razorpay = new Razorpay(options);
+          razorpay.open(); // Trigger the Razorpay payment modal
+        } else {
+          alert(result.message || "Failed to retry payment.");
+        }
+      } catch (error) {}
+    });
+    function verifyPayment(paymentResponse, orderId) {
+      // Handle the verification logic, send the paymentResponse to your backend for verification
+      const response = fetch("/verifyPayment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          razorpay_payment_id: paymentResponse.razorpay_payment_id,
+          razorpay_order_id: paymentResponse.razorpay_order_id,
+          razorpay_signature: paymentResponse.razorpay_signature,
+          orderId: orderId,
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.message === "Payment Successful and Order Updated!") {
+            window.location.href = `/orderSuccess?orderId=${orderId}`; // Redirect to order success page
+          } else {
+            alert(data.message || "Payment verification failed");
+            window.location.href = `/paymentFailed?orderId=${data.orderId}`;
+          }
+        })
+        .catch((err) => {
+          console.error("Error verifying payment:", err);
+          alert("Payment verification failed");
+        });
+    }
+  });
+</script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <%- include("../partials/user/footer.ejs")%>

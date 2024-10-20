@@ -55,8 +55,69 @@ const userProfileLoad = async (req, res) => {
     }
   };
 
+    //wallet
+  // walletController.js
+  const loadWalletPage = async (req, res) => {
+    try {
+      const userId = req.session.user;
+      const user = await userModel.findById(userId);
+  
+      if (!user) {
+        return res.status(404).render("wallet", {
+          walletBalance: 0,
+          message: "User not found",
+        });
+      }
+  
+      // Render the wallet page with the user's current wallet balance
+      res.render("wallet", {
+        userDetails: user,
+      });
+    } catch (error) {
+      console.log("Error loading wallet page: " + error);
+      res
+        .status(500)
+        .render("wallet", { walletBalance: 0, message: "Internal Server Error" });
+    }
+  };
+  
+  // wallet ad
+  const addToWallet = async (req, res) => {
+    try {
+      const userId = req.session.user;
+      const { amount } = req.body;
+  
+      if (!userId) {
+        return res.status(400).json({ message: "User not logged in" });
+      }
+  
+      const user = await userModel.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      // Validate amount
+      if (!amount || isNaN(amount) || amount <= 0) {
+        return res.status(400).json({ message: "Invalid amount" });
+      }
+  
+      // Update wallet balance
+      user.wallet = (user.wallet || 0) + Number(amount);
+      await user.save();
+  
+      return res
+        .status(200)
+        .json({ message: "Money added successfully", wallet: user.wallet });
+    } catch (error) {
+      console.log("Error adding money to wallet: " + error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  };
+
   module.exports={
     editProfile,
     editProfileLoad,
-    userProfileLoad
+    userProfileLoad,
+    loadWalletPage,
+    addToWallet
   }

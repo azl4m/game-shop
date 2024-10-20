@@ -112,7 +112,7 @@ const editProductLoad = async (req, res) => {
     const productId = req.query.id;
     const product = await productModel.findById({ _id: productId });
     const category = await categoryModel.find({});
-    const images = fileNames(product.images);
+    const images = fileUploadHelper.fileNames(product.images);
     res.render("editProduct", {
       product: product,
       category: category,
@@ -125,31 +125,38 @@ const editProductLoad = async (req, res) => {
 };
 
 //edit product
-
 const editProduct = async (req, res) => {
   fileUploadHelper.upload(req, res, async function (err) {
     if (err) {
-      console.log("error: " + err);
-      return res.status(400).send({ message: err.message });
+      console.log("Error during file upload: " + err);
+      return res.status(400).json({ message: err.message });
     }
 
     try {
-      const productId = req.body.productId;
+      // Convert req.body to a plain JavaScript object
+      const plainBody = Object.assign({}, req.body);
+
+      const productId = plainBody.productId;
 
       const product = await productModel.findById(productId);
-
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
       }
 
-      // Destructure form data from the request body
-      const { productName, description, price, version, stock } = req.body;
-      const platforms = req.body.platforms || []; // Multiple selected platforms
+      // Parse variants if necessary
+      let variants = plainBody.variant;
+      if (typeof variants === 'string') {
+        variants = JSON.parse(variants);  // Convert stringified array back to array
+      }
+      if (Array.isArray(variants)) {
+        variants = variants.filter(variant => typeof variant === 'object' && variant !== null);
+    }
 
+     
       // Process any new images uploaded
       let newImages = [];
       if (req.files && req.files.length > 0) {
-        newImages = await fileUploadHelper.processImages(req.files, req.body.productName);
+        newImages = await fileUploadHelper.processImages(req.files, plainBody.productName);
       }
 
       // Append new images to the existing ones
@@ -157,30 +164,32 @@ const editProduct = async (req, res) => {
 
       // Find the category by name to get its ID
       const category = await categoryModel.findOne({
-        categoryName: req.body.category,
+        categoryName: plainBody.category,
       });
       if (!category) {
         return res.status(400).json({ message: "Category not found" });
       }
 
       // Update the product with new data
-      product.productName = productName;
-      product.description = description;
-      product.price = price;
-      product.variant = [{ version, stock, platforms }]; // Assuming only one variant
+      product.productName = plainBody.productName;
+      product.description = plainBody.description;
+      product.price = plainBody.price;
+      product.variant = variants;  // Update all variants
       product.images = updatedImages;
-      product.category = category._id; // Assign the category ID
+      product.category = category._id;
 
       // Save the updated product to the database
       await product.save();
 
-      res.redirect("/productManagement");
+      return res.status(200).json({ message: "Product updated successfully",success:true });
     } catch (error) {
-      console.log("Error at updating product: " + error);
+      console.log("Error during product update: " + error);
       res.status(500).json({ message: error.message });
     }
   });
 };
+
+
 //deleteImage
 const deleteSingleImage = async (req, res) => {
   try {
