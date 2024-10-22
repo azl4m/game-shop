@@ -67,6 +67,12 @@ const productSchema = new Schema({
   updatedBy: {
     type: String,
   },
+  offer: {
+    type: { type: String, enum: ['percentage', 'flat'], required: false }, // Offer type: percentage or flat
+    value: { type: Number, default: 0 }, // Discount value (percentage or flat amount)
+    startDate: Date,
+    endDate: Date,
+  },
 });
 
 module.exports = mongoose.model("Product", productSchema);

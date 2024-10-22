@@ -55,21 +55,39 @@
                            <label for="description">Description</label>
                         </div>
                      </div>
+                     
                      <div class="row">
-                        <label class="pm-label" for="pm-images"
-                           >Product Images (Minimum 3)</label
-                           >
-                        <input
-                           class="pm-input-file"
-                           type="file"
-                           id="pm-images"
-                           name="productImage"
-                           accept="image/*"
-                           multiple
-                           required
-                           />
-                        <div id="imagesToCrop"></div>
-                        <div id="imagePreview" class="img-preview"></div>
+                        <h3 class="pm-variant-heading">Offer</h3>
+                        <div class="input-field col s12">
+                            
+                            <select id="offer" name="offerType" style="display: block;">
+                                <option value="" selected>No offer</option>
+                                <option value="percentage">Percentage</option>
+                                <option value="flat">Flat</option>
+                            </select>
+                            <input type="number" name="offerValue" placeholder="Offer Value" id="offervalue" disabled>
+                            <input type="date" name="offerStartDate" placeholder="From date" id="offerstartdate" disabled>
+                            <input type="date" name="offerEndDate" placeholder="Expires at" id="offerenddate" disabled>
+                        </div>  
+                     </div>
+                     <div class="row">
+                        <div class="input-field col s12">
+                            <label class="pm-label" for="pm-images"
+                            >Product Images (Minimum 3)</label
+                            >
+                         <input
+                            class="pm-input-file"
+                            type="file"
+                            id="pm-images"
+                            name="productImage"
+                            accept="image/*"
+                            multiple
+                            required
+                            />
+                         <div id="imagesToCrop"></div>
+                         <div id="imagePreview" class="img-preview"></div>
+                        </div>
+                       
                      </div>
                      <div id="cropperModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.4);">
                         <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 80%; max-width: 600px;">
@@ -158,7 +176,27 @@
       const error4 = document.getElementById("error4");
       const error5 = document.getElementById("error5");
       const prodForm = document.getElementById("prodForm");
-      
+      const offerSelect = document.getElementById('offer');
+  const offerValueInput = document.getElementById('offervalue');
+  const offerStartDate = document.getElementById('offerstartdate');
+  const offerEndDate = document.getElementById('offerenddate');
+document.addEventListener("DOMContentLoaded",function() {
+    offerSelect.addEventListener('change', function() {
+    if (this.value === 'percentage' || this.value === 'flat') {
+      offerValueInput.disabled = false;
+      offerStartDate.disabled = false;
+      offerEndDate.disabled = false;
+    } else {
+      offerValueInput.disabled = true;
+      offerStartDate.disabled = true;
+      offerEndDate.disabled = true;
+      offerValueInput.value = ''; // Clear the value
+      offerStartDate.value = ''; // Clear the dates
+      offerEndDate.value = ''; // Clear the dates
+    }
+  });
+})
+  
       // Validate Product Name
       function nameValidate() {
           const nameVal = nameid.value;
@@ -372,7 +410,41 @@
           const isDescriptionValid = descriptionValidate();
           const isVersionValid = versionValidate();
           const isStockValid = stockValidate();
-      
+       // Validate offer selection
+     // Validate offer selection
+     const offerType = offerSelect.value;
+
+// Validate offer value only if an offer type is selected
+const offerValue = offerValueInput.value.trim();
+if ((offerType === 'percentage' || offerType === 'flat') && offerValue === '') {
+  alert('Please enter a valid offer value.');
+  return;
+}
+if ((offerType === 'percentage' || offerType === 'flat') && offerValue <= 0) {
+  alert('Offer value must be greater than 0.');
+  return;
+}
+if(offerType==='percentage' || offerType === 'flat'){
+ // Validate dates
+ const startDate = new Date(offerStartDate.value);
+    const endDate = new Date(offerEndDate.value);
+    
+    if (!offerStartDate.value) {
+      alert('Please select a start date for the offer.');
+      return;
+    }
+    if (!offerEndDate.value) {
+      alert('Please select an end date for the offer.');
+      return;
+    }
+    if (endDate < startDate) {
+      alert('End date cannot be earlier than the start date.');
+      return;
+    }
+}
+
+   
+
           // Stop form submission if any validation fails
           if (!isNameValid || !isPriceValid || !isDescriptionValid || !isVersionValid || !isStockValid) {
              
@@ -402,6 +474,7 @@
           
 
           formData.delete('productImage'); // Remove the original image files
+console.log(formData);
 
           // Add variant data to FormData
     formData.append('variant', JSON.stringify(variantData)); // Append variant as a JSON string

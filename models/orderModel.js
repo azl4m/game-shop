@@ -126,7 +126,15 @@ const orderSchema = new mongoose.Schema({
   discount:{
     type:Number,
     default:0,
-  }
+  },
+  deliveryCharge:{
+    type:Number,
+    default:0
+  },
+  walletDeduction:{
+    type:Number,
+    default:0
+  } 
 },{timestamps:true});
 
 module.exports = mongoose.model("Order", orderSchema);

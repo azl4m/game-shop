@@ -63,6 +63,7 @@ user.get("/checkout",addminAuth.isLogout,auth.isLogin,checkoutController.getChec
 user.post('/checkout',addminAuth.isLogout,auth.isLogin,checkoutController.checkoutLoad)
 user.post('/applyCoupon',addminAuth.isLogout,auth.isLogin,checkoutController.applyCoupon)
 user.post('/removeCoupon',addminAuth.isLogout,auth.isLogin,checkoutController.removeCoupon)
+user.post("/applyWalletBalance",auth.isLogin,checkoutController.applyWalletBalance)
 //address management
 user.get('/addressManagement',addminAuth.isLogout,auth.isLogin,addressController.addressManagementLoad)
 user.post('/addAddress',addminAuth.isLogout,auth.isLogin,addressController.addAddress)

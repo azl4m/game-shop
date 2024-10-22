@@ -140,6 +140,13 @@
     border-radius: 5px;
     cursor: pointer;
   }
+  .coupon-container .btn-warning{
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
 
   .coupon-container .btn-success:hover {
     background-color: #218838;
@@ -420,9 +427,9 @@
                 <select id="payment-mode" name="payment-mode">
                   <option value="">Select a Payment Mode</option>
                   <option value="razorpay">Razorpay</option>
-                  <%if(total<=1000){%>
-                  <option value="cod">Cash On Delivery</option>
-                  <%}%>
+                  
+                  <option id="cod-option" style="display: none;" value="cod">Cash On Delivery</option>
+                 
                 </select>
                 <!-- Payment Details (Shown for Razorpay) -->
                 <div id="paymentDetails" style="display: none">
@@ -460,6 +467,8 @@
                 <%})%>
               </table>
 
+
+
               <div class="coupon-container">
                 <label for="coupon">Apply Coupon:</label>
                 <form id="applyCouponForm" action="/applyCoupon" method="POST">
@@ -473,13 +482,13 @@
                     </option>
                     <% }) %>
                   </select>
-                  <button class="btn-success" type="submit">
+                  <button class="btn-success w-100" type="submit">
                     Apply Coupon
                   </button>
                   <% if (typeof appliedCoupon!=='undefined') { %>
                   <p>Coupon Applied: <%= appliedCoupon.code %></p>
                   <button
-                    class="btn-danger"
+                    class="btn-danger w-100"
                     type="submit"
                     form="removeCouponForm"
                   >
@@ -496,6 +505,10 @@
               </div>
 
               <table>
+                <tr>
+                  <td>Offer Discount</td>
+                  <td><%=totalDiscount%></td>
+                </tr>
                 <tr>
                   <td>Subtotal</td>
                   <td><%=subtotal%></td>
@@ -551,6 +564,18 @@
                 </tr>
               </table>
             </div>
+            <div class="coupon-container">
+              <label for="coupon">Wallet Balance</label>
+               <table>
+                <tr>
+                  <td>Balace</td>
+                  <td><%=userDetails.wallet.balance%></td>
+                </tr>
+               </table>
+                <button id="applyWalletBalance" class="btn-warning w-100" type="button">
+                  Redeem Amount
+                </button>
+            </div>
           </div>
           <label>
             <input type="checkbox" checked="checked" name="sameadr" /> Shipping
@@ -569,6 +594,21 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
+  // Function to update payment options based on total price
+function updatePaymentOptions(totalPrice) {
+  const codOption = document.getElementById("cod-option");
+  if (totalPrice < 1000) {
+    codOption.style.display = "block"; // Show COD option
+  } else {
+    codOption.style.display = "none"; // Hide COD option
+    if (document.getElementById("payment-mode").value === "cod") {
+      document.getElementById("payment-mode").value = "razorpay"; // Switch to Razorpay if COD is selected
+    }
+  }
+}
+
+// Example call after calculating total price
+updatePaymentOptions(totalPrice);
   // for toast
   function showToast(data, result) {
     // toast.className.replace("show","");
@@ -612,6 +652,73 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
+    
+    document.getElementById("applyWalletBalance").addEventListener("click", function() {
+  // Get wallet balance from the page
+  const walletBalance = "<%= userDetails.wallet.balance %>";
+  const totalPriceElement = document.getElementById("totalPrice");
+  let totalPrice = parseFloat(totalPriceElement.innerText);
+  updatePaymentOptions(totalPrice)
+  if (walletBalance > 0) {
+    // Calculate the reduced amount
+    const reducedAmount = Math.min(totalPrice, walletBalance); // Use the smaller value
+
+    // Make an AJAX request to update the total on the server side
+    fetch("/applyWalletBalance", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        reducedAmount: reducedAmount,
+        totalPrice
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          // Update the total price on the frontend
+          totalPriceElement.innerText = data.updatedTotal
+          updatePaymentOptions(parseFloat(totalPriceElement.innerText))
+          showToast("Wallet balance applied successfully!",1)
+        } else {
+          showToast(data.message,0)
+        }
+      })
+      .catch((error) => {
+        console.error("Error applying wallet balance:", error);
+        showToast("Failed to apply wallet balance. Try again.",0)
+      });
+  } else {
+    showToast("Insufficient wallet balance.",0)
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     const addressSelect = document.getElementById("address");
 
     // Get form fields
@@ -681,6 +788,8 @@
       if (!isValid) {
         return; // If validation fails, stop further processing (i.e., prevent fetch)
       }
+      const deliverid = document.getElementById("delivery")
+      const deliveryVal = parseInt(deliverid.innerHTML)
       const addressField = document.getElementById("address");
       const addressid = addressField.value;
       try {
@@ -696,13 +805,15 @@
             address: addressid,
             fname: nameVal, // Sending fname (full name)
             couponCode: couponCode,
+            delivery:deliveryVal
           }),
         });
         const data = await response.json();
         if (paymentVal === "cod" && response.ok) {
+         
           showToast("Order Placed", 1);
           setTimeout(() => {
-            window.location.href = "/orderSuccess";
+            window.location.href = `orderSuccess?orderId=${data.orderId}`;
           }, 2000);
         } else if (paymentVal === "razorpay" && data.razorpayOrderId) {
           const options = {

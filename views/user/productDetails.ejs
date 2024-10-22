@@ -80,7 +80,13 @@
         <div class="template-col-2">
             <p>Home / <%=product.productName%></p>
             <h1><%=product.productName%></h1>
-            <h4>₹<%=product.price%></h4>
+            <!-- <h4>₹<%=product.price%></h4> -->
+            <% if (discountedPrice < product.price) { %>
+              <h4>Applied Offer: <%= appliedOfferType === 'percentage' ? productOfferValue + '%' : '₹' + productOfferValue %> discount</h4>
+              <h3>Discounted Price: ₹<%= discountedPrice.toFixed(2) %></h3>
+            <% } else { %>
+              <h4>Price: ₹<%= product.price %></h4>
+            <% } %>
             <select id="variantSelect">
                 <option>Select Variant</option>
                 <% platforms.forEach(function(platform) { %>

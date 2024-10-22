@@ -96,7 +96,7 @@
   <div class="order-success-box">
     <i class="fas fa-check-circle order-success-icon"></i> <!-- Success icon -->
     <h1 class="order-success-title">Order Placed Successfully!</h1>
-    <p class="order-details">Thank you, <%= userDetails.fname %>, your order <strong><%= order.orderNumber %></strong> has been successfully placed.</p>
+    <p class="order-details">Thank you <%= userDetails.username %>, your order <strong><%= order.orderNumber %></strong> has been successfully placed.</p>
     <p class="order-details">Total Amount: ₹ <%= order.totalPrice %></p>
 
     <div class="mt-4">

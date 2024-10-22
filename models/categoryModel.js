@@ -23,7 +23,13 @@ const categorySchema = new Schema({
       updatedAt : {
         type : Date,
         default : Date.now
-      }
+      },
+      offer: {
+        type: { type: String, enum: ['percentage', 'flat'], required: false }, // Offer type: percentage or flat
+        value: { type: Number, default: 0 }, // Discount value (percentage or flat amount)
+        startDate: Date,
+        endDate: Date,
+      },
 })
 
 module.exports = mongoose.model('Category',categorySchema);

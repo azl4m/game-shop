@@ -2,6 +2,7 @@ const productModel = require('../../models/productModel')
 const userModel = require('../../models/userModel')
 const cartModel = require('../../models/cartModel')
 const addressModel = require('../../models/addressModel')
+const categoryModel = require("../../models/categoryModel")
 //cart value calculation
 const calculateCartTotals = (cart) => {
   let subtotal = 0;
@@ -107,41 +108,106 @@ const addToCart = async (req, res) => {
     }
   };
 
-  //get cart
-const cartLoad = async (req, res) => {
+  const cartLoad = async (req, res) => {
     try {
       const userId = req.session.user;
       const user = await userModel.findOne({ _id: userId });
       let cartIsEmpty = true;
+  
       if (user) {
         // Fetch the cart for the user
         const cart = await cartModel.findOne({ userId: userId }).populate({
           path: "items.productId",
           model: "Product",
-          select: "productName images price", // Include only necessary fields
+          select: "productName images price category offer", // Include necessary fields
         });
   
         if (cart) {
           cartIsEmpty = false;
-          const { subtotal, tax, total, delivery } = calculateCartTotals(cart);
-          // Extract product IDs and quantity for further use
-          const items = cart.items.map((item) => ({
-            productId: item.productId._id,
-            quantity: item.quantity,
-            productName: item.productId.productName,
-            images: item.productId.images,
-            price: item.productId.price,
-            platform: item.platform,
-          }));
   
+          // Initialize totals
+          let subtotal = 0;
+          let totalDiscount = 0;
+  
+          const items = await Promise.all(
+            cart.items.map(async (item) => {
+              const product = item.productId;
+              const quantity = item.quantity;
+              console.log(product);
+              
+              // Fetch the category for the product
+              const category = await categoryModel.findById(product.category);
+  
+              // Apply the best discount (product or category)
+              const productOfferValue = product.offer.value || 0;
+              const productOfferType = product.offer.type || "percentage";
+              const categoryOfferValue = category ? category.offer.value || 0 : 0;
+              const categoryOfferType = category ? category.offer.type || "percentage" : "percentage";
+              console.log(productOfferValue);
+              console.log(productOfferType);
+              console.log(categoryOfferValue);
+              console.log(categoryOfferType);
+              
+              
+              
+              
+              let productDiscountedPrice = product.price;
+              let categoryDiscountedPrice = product.price;
+  
+              if (productOfferType === "percentage") {
+                productDiscountedPrice = product.price - (product.price * (productOfferValue / 100));
+              } else if (productOfferType === "flat") {
+                productDiscountedPrice = product.price - productOfferValue;
+              }
+  
+              if (categoryOfferType === "percentage") {
+                categoryDiscountedPrice = product.price - (product.price * (categoryOfferValue / 100));
+              } else if (categoryOfferType === "flat") {
+                categoryDiscountedPrice = product.price - categoryOfferValue;
+              }
+              console.log(`category discount:${categoryDiscountedPrice} product discount :${productDiscountedPrice}`);
+              
+              // Choose the best discount (lower price)
+              const finalDiscountedPrice = Math.min(productDiscountedPrice, categoryDiscountedPrice);
+              const discountedPrice = Math.max(finalDiscountedPrice, 0); // Ensure price doesn’t go below 0
+              console.log(finalDiscountedPrice);
+              
+              // Calculate subtotal for this item
+              const itemTotal = product.price * quantity;
+              const discountedItemTotal = discountedPrice * quantity;
+              const itemDiscount = itemTotal - discountedItemTotal;
+  
+              subtotal += discountedItemTotal;
+              totalDiscount += itemDiscount;
+  
+              return {
+                productId: product._id,
+                quantity: item.quantity,
+                productName: product.productName,
+                images: product.images,
+                price: product.price,
+                platform: item.platform,
+                discountedPrice: discountedPrice.toFixed(2),
+              };
+            })
+          );
+  
+          // Calculate additional totals
+          const taxRate = 0.1; // Example tax rate (10%)
+          const tax = subtotal * taxRate;
+          const deliveryCharge = subtotal < 2000 ? 150 : 0; // Apply delivery charge for orders below 2000
+          const total = subtotal + tax + deliveryCharge;
+  
+          // Render the cart page with all the calculated values
           res.render("cart", {
             cart: cart,
             items: items,
             userDetails: user,
-            subtotal: subtotal,
-            tax: tax,
-            total: total,
-            deliveryCharge: delivery,
+            subtotal: subtotal.toFixed(2),
+            tax: tax.toFixed(2),
+            total: total.toFixed(2),
+            deliveryCharge: deliveryCharge.toFixed(2),
+            totalDiscount: totalDiscount.toFixed(2), // Display the total discount availed
             empty: cartIsEmpty,
             message: "",
           });
@@ -156,6 +222,7 @@ const cartLoad = async (req, res) => {
             deliveryCharge: "",
             message: "Cart is empty",
             empty: cartIsEmpty,
+            totalDiscount:""
           });
         }
       } else {
@@ -166,6 +233,66 @@ const cartLoad = async (req, res) => {
       res.status(500).json({ message: "Internal server error" });
     }
   };
+  
+//   //get cart
+// const cartLoad = async (req, res) => {
+//     try {
+//       const userId = req.session.user;
+//       const user = await userModel.findOne({ _id: userId });
+//       let cartIsEmpty = true;
+//       if (user) {
+//         // Fetch the cart for the user
+//         const cart = await cartModel.findOne({ userId: userId }).populate({
+//           path: "items.productId",
+//           model: "Product",
+//           select: "productName images price offer category", // Include only necessary fields
+//         });
+  
+//         if (cart) {
+//           cartIsEmpty = false;
+//           const { subtotal, tax, total, delivery } = calculateCartTotals(cart);
+//           // Extract product IDs and quantity for further use
+//           const items = cart.items.map((item) => ({
+//             productId: item.productId._id,
+//             quantity: item.quantity,
+//             productName: item.productId.productName,
+//             images: item.productId.images,
+//             price: item.productId.price,
+//             platform: item.platform,
+//           }));
+  
+//           res.render("cart", {
+//             cart: cart,
+//             items: items,
+//             userDetails: user,
+//             subtotal: subtotal,
+//             tax: tax,
+//             total: total,
+//             deliveryCharge: delivery,
+//             empty: cartIsEmpty,
+//             message: "",
+//           });
+//         } else {
+//           res.render("cart", {
+//             cart: "",
+//             items: "",
+//             userDetails: "",
+//             subtotal: "",
+//             tax: "",
+//             total: "",
+//             deliveryCharge: "",
+//             message: "Cart is empty",
+//             empty: cartIsEmpty,
+//           });
+//         }
+//       } else {
+//         res.status(400).json({ message: "User not found" });
+//       }
+//     } catch (error) {
+//       console.log("error loading cart :" + error);
+//       res.status(500).json({ message: "Internal server error" });
+//     }
+//   };
 
   // Remove from cart
 const removeFromCart = async (req, res) => {

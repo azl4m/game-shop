@@ -32,26 +32,78 @@ const addProduct = async (req, res) => {
       return res.status(400).send({ message: err.message });
     }
     try {
-      const { productName, description, price, variant } = req.body;
+      const {
+        productName,
+        description,
+        price,
+        variant,
+        offerType,
+        offerValue,
+        offerStartDate,
+        offerEndDate,
+      } = req.body;
+      console.log(offerType, offerValue, offerStartDate, offerEndDate);
+
       const parsedVariants = JSON.parse(variant); // Make sure it's parsed correctly
-      const images = await fileUploadHelper.processImages(req.files, req.body.productName);
+      const images = await fileUploadHelper.processImages(
+        req.files,
+        req.body.productName
+      );
       const categoryId = await categoryModel.findOne({
         categoryName: req.body.category,
       });
-      const newProduct = new productModel({
+      // Prepare the product object
+      const newProductData = {
         productName: productName,
         description: description,
         price: price,
         images: images,
         category: categoryId._id,
         variant: parsedVariants,
-        // createdBy:admin.username
-      });
+      };
+
+      // Check if offer details are provided and valid
+      if (offerType && offerType !== "no offer") {
+        console.log("inside offer");
+
+        if (!offerValue || offerValue <= 0) {
+          return res
+            .status(400)
+            .json({ message: "Offer value must be greater than 0." });
+        }
+        if (!offerStartDate || !offerEndDate) {
+          return res
+            .status(400)
+            .json({ message: "Offer start and end dates must be provided." });
+        }
+
+        const startDate = new Date(offerStartDate);
+        const endDate = new Date(offerEndDate);
+
+        if (endDate < startDate) {
+          return res.status(400).json({
+            message: "End date cannot be earlier than the start date.",
+          });
+        }
+        // Add offer details to the product object
+        newProductData.offer = {
+          type: offerType, // Either 'percentage' or 'flat'
+          value: offerValue,
+          startDate: startDate,
+          endDate: endDate,
+        };
+      }
+      console.log(newProductData);
+
+      // Create a new product
+      const newProduct = new productModel(newProductData);
+
+      // Save the product
       const save = await newProduct.save();
       if (save) {
         return res.status(200).json({
           message: "Product added successfully",
-          redirectUrl: "/admin",
+          redirectUrl: "/admin/productManagement",
         });
         // return res.redirect("/admin");
       }
@@ -135,7 +187,7 @@ const editProduct = async (req, res) => {
     try {
       // Convert req.body to a plain JavaScript object
       const plainBody = Object.assign({}, req.body);
-
+      
       const productId = plainBody.productId;
 
       const product = await productModel.findById(productId);
@@ -145,18 +197,22 @@ const editProduct = async (req, res) => {
 
       // Parse variants if necessary
       let variants = plainBody.variant;
-      if (typeof variants === 'string') {
-        variants = JSON.parse(variants);  // Convert stringified array back to array
+      if (typeof variants === "string") {
+        variants = JSON.parse(variants); // Convert stringified array back to array
       }
       if (Array.isArray(variants)) {
-        variants = variants.filter(variant => typeof variant === 'object' && variant !== null);
-    }
+        variants = variants.filter(
+          (variant) => typeof variant === "object" && variant !== null
+        );
+      }
 
-     
       // Process any new images uploaded
       let newImages = [];
       if (req.files && req.files.length > 0) {
-        newImages = await fileUploadHelper.processImages(req.files, plainBody.productName);
+        newImages = await fileUploadHelper.processImages(
+          req.files,
+          plainBody.productName
+        );
       }
 
       // Append new images to the existing ones
@@ -169,26 +225,49 @@ const editProduct = async (req, res) => {
       if (!category) {
         return res.status(400).json({ message: "Category not found" });
       }
-
+      // Offer details handling
+      let offer = {};
+      if (plainBody.offerType) {
+        if (plainBody.offerType === "percentage" || plainBody.offerType === "flat") {
+          offer.type = plainBody.offerType;
+          offer.value = plainBody.offerValue
+            ? parseFloat(plainBody.offerValue)
+            : 0;
+          offer.startDate = new Date(plainBody.offerStartDate) || null;
+          offer.endDate = new Date(plainBody.offerEndDate) || null;
+        } else {
+          // No offer selected
+          offer = null;
+        }
+      }
+      
       // Update the product with new data
       product.productName = plainBody.productName;
       product.description = plainBody.description;
       product.price = plainBody.price;
-      product.variant = variants;  // Update all variants
+      product.variant = variants; // Update all variants
       product.images = updatedImages;
       product.category = category._id;
-
+      // Check if offer details need to be updated
+      if (offer) {
+        
+        product.offer = offer;
+      } else {
+        product.offer = null; // If no offer is selected, clear offer details
+      }
+      
       // Save the updated product to the database
       await product.save();
 
-      return res.status(200).json({ message: "Product updated successfully",success:true });
+      return res
+        .status(200)
+        .json({ message: "Product updated successfully", success: true });
     } catch (error) {
       console.log("Error during product update: " + error);
       res.status(500).json({ message: error.message });
     }
   });
 };
-
 
 //deleteImage
 const deleteSingleImage = async (req, res) => {
@@ -281,5 +360,5 @@ module.exports = {
   restoreProduct,
   unlistProduct,
   addProduct,
-  addProductLoad
+  addProductLoad,
 };

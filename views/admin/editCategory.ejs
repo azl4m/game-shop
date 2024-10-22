@@ -14,7 +14,7 @@
         <div class="card">
           <div class="card-action">Basic Form Elements</div>
           <div class="card-content">
-            <form class="col s12" action="/admin/editCategory?id=<%=category._id%>" method="post">
+            <form class="col s12" action="/admin/editCategory?id=<%=category._id%>" method="post" id="catForm">
               <div class="row">
                 <div class="input-field col s6">
                   <input
@@ -25,6 +25,37 @@
                     value="<%=category.categoryName%>"
                   />
                   <label for="categoryName">Category Name</label>
+                </div>
+              </div>
+              <div class="row">
+                <h3 class="pm-variant-heading">Offer</h3>
+                <div class="input-field col s12">
+                  <select id="offer" name="offerType" style="display: block">
+                    <option value="" selected <%=(!category.offer)?"selected":""%>>No offer</option>
+                    <option value="percentage"  <%=(category.offer?.type==="percentage")?"selected":""%>>Percentage</option>
+                    <option value="flat" <%=(category.offer?.type==="flat")?"selected":""%>>Flat</option>
+                  </select>
+                  <input
+                    type="number"
+                    name="offerValue"
+                    placeholder="Offer Value"
+                    id="offervalue"
+                    disabled value="<%=category.offer.value%>"
+                  />
+                  <input
+                    type="date"
+                    name="offerStartDate"
+                    placeholder="From date"
+                    id="offerstartdate"
+                    <input type="date" name="offerStartDate" placeholder="From date" id="offerstartdate" value="<%=category.offer.startDate%>" disabled>
+               
+                  <input
+                    type="date"
+                    name="offerEndDate"
+                    placeholder="Expires at"
+                    id="offerenddate"
+                    disabled value="<%=category.offer.endDate%>"
+                  />
                 </div>
               </div>
 
@@ -45,3 +76,86 @@
     <%- include("../partials/admin/footer.ejs")%>
   </div>
 </div>
+<script>
+   const nameid = document.getElementById("categoryName");
+  const error1 = document.getElementById("error1");
+  const catForm = document.getElementById("catForm");
+
+  function nameValidate(e) {
+    const nameVal = nameid.value;
+    const namePattern = /^[A-Za-z\s]+$/;
+    if (nameVal.trim() === "") {
+      error1.style.display = "block";
+      error1.innerHTML = "Please enter a valid Category Name";
+    } else if (!namePattern.test(nameVal)) {
+      error1.style.display = "block";
+      error1.innerHTML = "Name can only contain alphabets";
+    } else {
+      error1.style.display = "none";
+      error1.innerHTML = "";
+    }
+  }
+  document.addEventListener("DOMContentLoaded", () => {
+    const offerSelect = document.getElementById("offer");
+    const offerValueInput = document.getElementById("offervalue");
+    const offerStartDate = document.getElementById("offerstartdate");
+    const offerEndDate = document.getElementById("offerenddate");
+    offerSelect.addEventListener("change", function () {
+      if (this.value === "percentage" || this.value === "flat") {
+        offerValueInput.disabled = false;
+        offerStartDate.disabled = false;
+        offerEndDate.disabled = false;
+      } else {
+        offerValueInput.disabled = true;
+        offerStartDate.disabled = true;
+        offerEndDate.disabled = true;
+        offerValueInput.value = ""; // Clear the value
+        offerStartDate.value = ""; // Clear the dates
+        offerEndDate.value = ""; // Clear the dates
+      }
+    });
+    catForm.addEventListener("submit", (e) => {
+      const offerType = offerSelect.value;
+      // Validate offer value only if an offer type is selected
+const offerValue = offerValueInput.value.trim();
+if ((offerType === 'percentage' || offerType === 'flat') && offerValue === '') {
+  alert('Please enter a valid offer value.');
+  e.preventDefault()
+  return;
+}
+if ((offerType === 'percentage' || offerType === 'flat') && offerValue <= 0) {
+  alert('Offer value must be greater than 0.');
+  e.preventDefault()
+  return;
+}
+if(offerType==='percentage' || offerType === 'flat'){
+ // Validate dates
+ const startDate = new Date(offerStartDate.value);
+    const endDate = new Date(offerEndDate.value);
+    
+    if (!offerStartDate.value) {
+      e.preventDefault()
+      alert('Please select a start date for the offer.');
+      return;
+    }
+    if (!offerEndDate.value) {
+      e.preventDefault()
+      alert('Please select an end date for the offer.');
+      return;
+    }
+    if (endDate < startDate) {
+      e.preventDefault()
+      alert('End date cannot be earlier than the start date.');
+      return;
+    }
+}
+      nameValidate();
+      if (!nameid) {
+        console.log("One or more elements not found");
+      }
+      if (error1.innerHTML) {
+        e.preventDefault();
+      }
+    });
+  });
+</script>

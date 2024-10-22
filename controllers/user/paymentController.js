@@ -1,9 +1,11 @@
+
 const cartModel = require("../../models/cartModel");
 const orderModel = require("../../models/orderModel");
 const dotenv = require("dotenv").config();
 const paymentTimeStamp = require("../../helpers/paymentTimeStamp");
 const userModel = require("../../models/userModel");
 const razorpayInstance = require("../../config/razorpay");
+const walletHelper = require("../../helpers/walletTransactions")
 //razorpay payment verify place order
 const razorpayPaymentVerification = async (req, res) => {
   try {
@@ -27,7 +29,10 @@ const razorpayPaymentVerification = async (req, res) => {
       if (!order) {
         return res.status(404).json({ message: "Order not found" });
       }
-
+      //if wallet deduced save it
+      if(order.walletDeduction){
+        await walletHelper.addWalletTransaction(order.user,order.walletDeduction,"debit",`Wallet amount debited for order :${order.orderNumber} `)
+      } 
       // Update order with successful payment details
       order.paymentStatus = "Success";
       order.orderStatus = "Processing";
