@@ -9,7 +9,7 @@ const sharp = require("sharp");
 const fs = require("fs");
 const PDFDocument = require("pdfkit");
 const borderForPdf = require("../../helpers/borderForPdf");
-
+const referralModel = require("../../models/referralModel")
 const pageNotFound = async (req, res) => {
   try {
     res.render("page-404");
@@ -223,9 +223,36 @@ const getSalesReport = async (req, res) => {
   }
 };
 
+const referralLoad = async(req,res)=>{
+  try {
+    const referral = await referralModel.findOne()
+    return res.render("referralOffer",{referral})
+  } catch (error) {
+    console.log("error loading referral :"+error.message);
+    return res.status(500).json({message:"Internal Server Error"})
+    
+  }
+}
+const referralPost = async(req,res)=>{
+  try {
+    const{amount,isActive} = req.body
+    const referral = new referralModel({
+      referralAmount:amount,
+      isActive:isActive==="true"?true:false
+    })
+    await referral.save()
+    res.redirect("/admin/referralOffer")
+  } catch (error) {
+    console.log("error at referralpost :"+error.message);
+    return res.status(500).json({message:"Internal Server Error"})
+    
+  }
+}
 module.exports = {
   pageNotFound,
   dashboardLoad,
   getSalesReport,
   salesReport,
+  referralLoad,
+  referralPost
 };

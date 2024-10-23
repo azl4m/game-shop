@@ -54,4 +54,7 @@ admin.post('/updateCoupon',auth.isLogin,couponController.updateCoupon)
 //salesReport
 admin.get('/salesReport',auth.isLogin,adminController.salesReport)
 admin.get('/getSalesReport',auth.isLogin,adminController.getSalesReport)
+//referral
+admin.get("/referralOffer",auth.isLogin,adminController.referralLoad)
+admin.post("/referralOffer",auth.isLogin,adminController.referralPost)
 module.exports = admin

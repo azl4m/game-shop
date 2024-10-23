@@ -82,12 +82,21 @@ const userSchema = new Schema({
     transactions: [
       {
         amount: Number,
-        type: { type: String, enum: ['credit', 'debit'] },
+        type: { type: String, enum: ["credit", "debit"] },
         date: { type: Date, default: Date.now },
         description: String,
-      }
-    ]
-  }
+      },
+    ],
+  },
+  referralCode: {
+    type: String,
+    unique: true,
+    index: true,
+  },
+  referredBy: {
+    type: String, // This can store the referral code of the referrer
+    index: true,
+  },
 });
 
 const User = mongoose.model("User", userSchema);

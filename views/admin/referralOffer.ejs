@@ -1,0 +1,73 @@
+<%- include("../partials/admin/header.ejs")%>
+<div id="page-wrapper">
+  <div class="header">
+    <h1 class="page-header">Form Inputs Page</h1>
+    <ol class="breadcrumb">
+      <li><a href="#">Home</a></li>
+      <li><a href="#">Forms</a></li>
+      <li class="active">Data</li>
+    </ol>
+  </div>
+  <div id="page-inner">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-action">Basic Form Elements</div>
+          <div class="card-content">
+            <form class="col s12" action="/admin/referralOffer" method="post" id="catForm">
+              <div class="row">
+                <div class="input-field col s6">
+                  <input
+                    id="amount"
+                    type="text"
+                    class="validate"
+                    name="amount"
+                    value="<%=referral.referralAmount%>"
+                  />
+                  <label for="amount">Referral Amount</label>
+                </div>
+              </div>
+              <div class="card-action">Is Active ?</div>
+              <div class="row">
+                <div class="col s12">
+                  <div class="input-field inline">
+                    <select class="browser-default" name="isActive" id="isActive">
+                        <option <%=(referral.isActive)?"selected":""%> value="true">YES</option>
+                        <option <%=(!referral.isActive)?"selected":""%> value="false">NO</option>
+                    </select>
+                   
+                  </div>
+                </div>
+              </div>
+              
+
+              <div class="row">
+                <div class="col s12">
+                  <div class="input-field inline">
+                    <input type="submit" />
+                  </div>
+                </div>
+              </div>
+            </form>
+            <div class="clearBoth"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%- include("../partials/admin/footer.ejs")%>
+  </div>
+</div>
+<script>
+      document.getElementById("catForm").addEventListener("submit", function(event) {
+    const amountInput = document.getElementById("amount");
+    const amountValue = parseFloat(amountInput.value);
+
+    // Check if amount is negative
+    if (amountValue <= 0) {
+      alert("Referral Amount cannot be negative or zero!");
+      event.preventDefault(); // Prevent form submission
+      amountInput.focus(); // Optional: Focus on the input field
+    }
+  });
+</script>

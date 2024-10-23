@@ -19,31 +19,9 @@ const paymentTimeStamp = require("../../helpers/paymentTimeStamp");
 const OTP_TIMEOUT = 30 * 1000;
 const spasswordandotp = require("../../helpers/spasswordandotp");
 const sendMail = require("../../helpers/sendmail");
-
-//cart value calculation
-const calculateCartTotals = (cart) => {
-  let subtotal = 0;
-
-  // Loop through the items in the cart and calculate the subtotal
-  cart.items.forEach((item) => {
-    const price = item.productId.price || 0;
-    const quantity = item.quantity || 0;
-
-    subtotal += price * quantity; // Calculate subtotal
-  });
-
-  const tax = Math.floor(subtotal * 0.18); //  18% tax rate
-  let total = Math.floor(subtotal + tax);
-  let delivery = 0;
-  if (total < 2000) {
-    delivery = 150;
-  }
-  if (delivery) {
-    total += delivery;
-  }
-
-  return { subtotal, tax, total, delivery };
-};
+const { generateReferralCode } = require("../../helpers/referralHelper");
+const referralModel = require("../../models/referralModel");
+const walletHelper = require("../../helpers/walletTransactions");
 
 //
 
@@ -61,7 +39,8 @@ const signupLoad = async (req, res) => {
 const registerUser = async (req, res) => {
   try {
     const { username, email, password, cPassword, phone } = req.body;
-
+    const referralCode = req.body.referralCode || "";
+    const referer = await userModel.findOne({ referralCode: referralCode });
     const findUser = await userModel.findOne({ email: email });
     if (findUser) {
       return res.render("signup", { message: "Email already in use" });
@@ -77,7 +56,11 @@ const registerUser = async (req, res) => {
         email: email,
         password: passwordHash,
         phoneNumber: phone,
+        referralCode: generateReferralCode(username),
       });
+      if (referer) {
+        user.referredBy = referer.referralCode;
+      }
       await user.save();
       req.session.userOTP = otp;
       req.session.userData = { username, email, password, phone };
@@ -104,7 +87,25 @@ const verifyOtp = async (req, res) => {
       const user = req.session.userData;
       const userExist = await userModel.findOne({ email: user.email });
       if (userExist) {
+
         await userExist.updateOne({ $set: { isVerified: true } });
+        if (userExist.referredBy) {
+
+          const referrer = await userModel.findOne({
+            referralCode: userExist.referredBy,
+          });
+
+          const referralOffer = await referralModel.findOne();
+          if (referralOffer.isActive) {
+            const bonus = referralOffer.referralAmount;
+            await walletHelper.addWalletTransaction(
+              referrer._id,
+              bonus,
+              "credit",
+              `Referral bonus credited for referring ${userExist.username}`
+            );
+          }
+        }
         return res.json({
           success: true,
           redirectUrl: "/login",
@@ -118,7 +119,8 @@ const verifyOtp = async (req, res) => {
         password: sPassword,
         isVerified: true,
       });
-      const userData = await saveUser.save();
+
+      await saveUser.save();
       res.json({
         success: true,
         redirectUrl: "/login",
