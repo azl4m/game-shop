@@ -1,18 +1,21 @@
 const productModel = require("../../models/productModel");
 const categoryModel = require("../../models/categoryModel");
 const userModel = require("../../models/userModel");
+const { addWalletTransaction } = require("../../helpers/walletTransactions");
+const orderModel = require("../../models/orderModel");
 
 //for product details page laoding
 const productDetailsLoad = async (req, res) => {
   try {
     const productId = req.query.id;
-    const product = await productModel.findById({ _id: productId });
+    const product = await productModel.findById({ _id: productId }).populate("reviews.user")
     const category = await categoryModel.findOne({ _id: product.category });
     const platforms = await productModel.aggregate([
       { $match: { productName: product.productName } },
       { $unwind: "$variant" },
       { $group: { _id: "$variant.platform" } },
     ]);
+   
     let parsedPlatdforms = [];
     platforms.forEach((platform) => {
       parsedPlatdforms.push(platform._id);
@@ -50,7 +53,7 @@ const productDetailsLoad = async (req, res) => {
       productDiscountedPrice,
       categoryDiscountedPrice
     );
-
+    let offerSelected = Math.min(productDiscountedPrice,categoryDiscountedPrice)===productDiscountedPrice?"product":"category"
     // Ensure the price doesn’t go below zero
     const discountedPrice = Math.max(finalDiscountedPrice, 0);
 
@@ -64,6 +67,7 @@ const productDetailsLoad = async (req, res) => {
         platforms,
         productOfferValue,
         categoryOfferValue,
+        offerSelected,
         appliedOfferType:
           discountedPrice === productDiscountedPrice
             ? productOfferType
@@ -77,6 +81,7 @@ const productDetailsLoad = async (req, res) => {
       platforms,
       productOfferValue,
       categoryOfferValue,
+      offerSelected,
       appliedOfferType:
         discountedPrice === productDiscountedPrice
           ? productOfferType
@@ -200,8 +205,84 @@ const getPlatformStock = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
+const addReviewLoad = async (req, res) => {
+  try {
+    const { productId } = req.query;
+    const product = await productModel.findById(productId);
+    const userId = req.session.user;
+    const user = await userModel.findById(userId);
+    let existingReview = product.reviews.find(
+      (review) => review.user.toString() === userId
+    );
+    return res.render("addReview", { userDetails: user, product:product,existingReview:existingReview||null });
+  } catch (error) {
+    console.error("error at addreviewload :" + error.message);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+const submitReview = async (req, res) => {
+  try {
+    let { comment, rating, productId } = req.body;
+    comment = comment.trimStart()
+    const product = await productModel.findById(productId);
+    const userId = req.session.user;
+
+    // Check if the user has already submitted a review
+    const existingReviewIndex = product.reviews.findIndex(
+      (review) => review.user.toString() === userId
+    );
+
+    const review = {
+      user: userId,
+      rating: rating,
+      comment: comment,
+      createdAt: new Date(),
+    };
+
+    if (existingReviewIndex !== -1) {
+      // If the review exists, update it
+      product.reviews[existingReviewIndex] = review; // Update the existing review
+      req.flash("success", "Your review has been updated successfully.");
+    } else {
+      // If it's a new review, add it
+      product.reviews.push(review);
+      req.flash("success", "Thank you! Your review has been submitted.");
+    }
+
+    await product.save(); // Save the product with the updated reviews
+    return res.redirect(`/addReview?productId=${productId}`);
+  } catch (error) {
+    console.error("Error submitting review: " + error.message);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
+const addNewReview = async(req,res)=>{
+  try {
+    const{productId} = req.query
+    const userId = req.session.user
+    if(!userId){
+      return res.status(200).json({redirectUrl:"/login",message:""})
+    }
+    const boughtProduct = await orderModel.find({user:userId,orderStatus:"Delivered","cartItems.product":productId})
+    if(boughtProduct.length>0){
+
+      return res.status(200).json({redirectUrl:`/addReview?productId=${productId}`,message:""})
+
+    }
+    return res.status(200).json({message:"You have not bought this product yet, Please try again later"})
+   
+  } catch (error) {
+    console.error("error adding new review :"+error.message)
+  }
+}
 module.exports = {
   productDetailsLoad,
+  addNewReview,
   productsLoad,
   getPlatformStock,
+  addReviewLoad,
+  submitReview,
 };

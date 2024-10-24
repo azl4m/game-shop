@@ -69,11 +69,12 @@ p{
     transition: background 0.5s;
 }
 .template-btn:hover{
-    background: #563434;
+    background: #000000;
 }
-.template-header{
-    background: radial-gradient(#fff,#ffd6d6);
-}
+/* .template-header{
+    /* background: radial-gradient(#fff,#ffd6d6); */
+    /* background-color: rgb(0, 0, 0); */
+/* }  */
 .template-header .template-row{
     margin-top: 70px;
 }

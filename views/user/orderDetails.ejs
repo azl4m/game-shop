@@ -51,7 +51,7 @@
 
   .btn-danger {
     background-color: #dc3545; /* Danger button color */
-    border-color: #dc3545; /* Danger button border color */
+      border-color: #dc3545; /* Danger button border color */
   }
 
   .btn:hover {
@@ -188,6 +188,7 @@
                     href="/downloadInvoice?orderId=<%=order._id%>&productId=<%=item.product._id%>&platform=<%=item.platform%>"
                     >Download Invoice</a
                   >
+                  <a class="btn btn-primary w-100 mb-1" href="/addReview?productId=<%=item.product._id%>">Writa a review</a>
                   <% if (!item.isReturned) { %>
                   <a
                     href="/requestReturn?orderid=<%= order._id %>&product=<%= item.product._id %>&platform=<%=item.platform%>"

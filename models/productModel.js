@@ -17,6 +17,28 @@ const variantSchema = new mongoose.Schema({
   },
 });
 
+const reviewSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', // Reference to the User who made the review
+    required: true,
+  },
+  rating: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 5, // Ratings are typically between 1 and 5
+  },
+  comment: {
+    type: String,
+    required: true, // Comment is required for the review
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now, // Timestamp when the review was created
+  },
+});
+
 const productSchema = new Schema({
   productName: {
     type: String,
@@ -72,6 +94,11 @@ const productSchema = new Schema({
     value: { type: Number, default: 0 }, // Discount value (percentage or flat amount)
     startDate: Date,
     endDate: Date,
+  },
+  reviews: [reviewSchema], // Embedded reviews schema
+  createdAt: {
+    type: Date,
+    default: Date.now,
   },
 });
 

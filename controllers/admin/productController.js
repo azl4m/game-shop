@@ -64,7 +64,7 @@ const addProduct = async (req, res) => {
 
       // Check if offer details are provided and valid
       if (offerType && offerType !== "no offer") {
-        console.log("inside offer");
+        
 
         if (!offerValue || offerValue <= 0) {
           return res
@@ -93,7 +93,7 @@ const addProduct = async (req, res) => {
           endDate: endDate,
         };
       }
-      console.log(newProductData);
+     
 
       // Create a new product
       const newProduct = new productModel(newProductData);

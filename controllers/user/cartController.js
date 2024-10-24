@@ -133,7 +133,6 @@ const addToCart = async (req, res) => {
             cart.items.map(async (item) => {
               const product = item.productId;
               const quantity = item.quantity;
-              console.log(product);
               
               // Fetch the category for the product
               const category = await categoryModel.findById(product.category);
@@ -143,10 +142,7 @@ const addToCart = async (req, res) => {
               const productOfferType = product.offer.type || "percentage";
               const categoryOfferValue = category ? category.offer.value || 0 : 0;
               const categoryOfferType = category ? category.offer.type || "percentage" : "percentage";
-              console.log(productOfferValue);
-              console.log(productOfferType);
-              console.log(categoryOfferValue);
-              console.log(categoryOfferType);
+  
               
               
               
@@ -165,12 +161,10 @@ const addToCart = async (req, res) => {
               } else if (categoryOfferType === "flat") {
                 categoryDiscountedPrice = product.price - categoryOfferValue;
               }
-              console.log(`category discount:${categoryDiscountedPrice} product discount :${productDiscountedPrice}`);
               
               // Choose the best discount (lower price)
               const finalDiscountedPrice = Math.min(productDiscountedPrice, categoryDiscountedPrice);
               const discountedPrice = Math.max(finalDiscountedPrice, 0); // Ensure price doesn’t go below 0
-              console.log(finalDiscountedPrice);
               
               // Calculate subtotal for this item
               const itemTotal = product.price * quantity;
@@ -234,65 +228,6 @@ const addToCart = async (req, res) => {
     }
   };
   
-//   //get cart
-// const cartLoad = async (req, res) => {
-//     try {
-//       const userId = req.session.user;
-//       const user = await userModel.findOne({ _id: userId });
-//       let cartIsEmpty = true;
-//       if (user) {
-//         // Fetch the cart for the user
-//         const cart = await cartModel.findOne({ userId: userId }).populate({
-//           path: "items.productId",
-//           model: "Product",
-//           select: "productName images price offer category", // Include only necessary fields
-//         });
-  
-//         if (cart) {
-//           cartIsEmpty = false;
-//           const { subtotal, tax, total, delivery } = calculateCartTotals(cart);
-//           // Extract product IDs and quantity for further use
-//           const items = cart.items.map((item) => ({
-//             productId: item.productId._id,
-//             quantity: item.quantity,
-//             productName: item.productId.productName,
-//             images: item.productId.images,
-//             price: item.productId.price,
-//             platform: item.platform,
-//           }));
-  
-//           res.render("cart", {
-//             cart: cart,
-//             items: items,
-//             userDetails: user,
-//             subtotal: subtotal,
-//             tax: tax,
-//             total: total,
-//             deliveryCharge: delivery,
-//             empty: cartIsEmpty,
-//             message: "",
-//           });
-//         } else {
-//           res.render("cart", {
-//             cart: "",
-//             items: "",
-//             userDetails: "",
-//             subtotal: "",
-//             tax: "",
-//             total: "",
-//             deliveryCharge: "",
-//             message: "Cart is empty",
-//             empty: cartIsEmpty,
-//           });
-//         }
-//       } else {
-//         res.status(400).json({ message: "User not found" });
-//       }
-//     } catch (error) {
-//       console.log("error loading cart :" + error);
-//       res.status(500).json({ message: "Internal server error" });
-//     }
-//   };
 
   // Remove from cart
 const removeFromCart = async (req, res) => {

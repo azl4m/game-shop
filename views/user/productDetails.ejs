@@ -54,7 +54,36 @@
   pointer-events: none;
   visibility: hidden;
 }
+.existing-reviews-container {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
 
+  .review {
+    margin-bottom: 15px;
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .star-rating {
+    color: #f39c12; /* Star color */
+  }
+
+  .star-rating .selected {
+    color: #e67e22; /* Selected star color */
+  }
+
+  .review-comment {
+    margin: 10px 0;
+    font-style: italic;
+  }
+
+  .review-date {
+    color: #888;
+  }
 
 </style>
 <div class="template-small-container single-product">
@@ -82,11 +111,17 @@
             <h1><%=product.productName%></h1>
             <!-- <h4>₹<%=product.price%></h4> -->
             <% if (discountedPrice < product.price) { %>
-              <h4>Applied Offer: <%= appliedOfferType === 'percentage' ? productOfferValue + '%' : '₹' + productOfferValue %> discount</h4>
-              <h3>Discounted Price: ₹<%= discountedPrice.toFixed(2) %></h3>
+              <% if (offerSelected === "product") { %>
+                <h4>Applied Offer: <%= appliedOfferType === 'percentage' ? productOfferValue + '%' : '₹' + productOfferValue %> discount</h4>
+                <h3>Discounted Price: ₹<%= discountedPrice.toFixed(2) %></h3>
+              <% } else if (offerSelected === "category") { %>
+                <h4>Applied Offer: <%= appliedOfferType === 'percentage' ? categoryOfferValue + '%' : '₹' + categoryOfferValue %> discount</h4>
+                <h3>Discounted Price: ₹<%= discountedPrice.toFixed(2) %></h3>
+              <% } %>
             <% } else { %>
               <h4>Price: ₹<%= product.price %></h4>
             <% } %>
+            
             <select id="variantSelect">
                 <option>Select Variant</option>
                 <% platforms.forEach(function(platform) { %>
@@ -106,6 +141,44 @@
         </div>
     </div>
 </div>
+<div class="template-small-container">
+  <div class="existing-reviews-container">
+    <!-- Flash messages -->
+  <% if (messages.success) { %>
+    <div class="alert alert-success"><%= messages.success %></div>
+    <% } %> <% if (messages.error) { %>
+    <div class="alert alert-danger"><%= messages.error %></div>
+    <% } %>
+  
+    <h3>Product Reviews</h3>
+    <!-- Button to add a new review -->
+    <div class="text-end mb-3">
+      <a href="/addNewReview?productId=<%= product._id %>" data-href="/addNewReview?productId=<%= product._id %>" id="addnewreview" class="btn btn-primary">Add a New Review</a>
+    </div>
+    <div id="reviewsList">
+      <% if (product.reviews.length > 0) { %>
+        <% product.reviews.forEach(review => { %>
+          <div class="review">
+            <div class="review-header">
+              <strong>User: <%= review.user.username %></strong>
+              <div class="star-rating">
+                <% for (let i = 1; i <= 5; i++) { %>
+                  <i class="fa-star <%= i <= review.rating ? 'fas selected' : 'far' %>"></i>
+
+                <% } %>
+              </div>
+            </div>
+            <p class="review-comment"><%= review.comment %></p>
+            <p class="review-date"><small>Reviewed on: <%= review.createdAt.toLocaleDateString() %></small></p>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <p>No reviews yet. Be the first to leave a review!</p>
+      <% } %>
+    </div>
+  </div>
+</div>
+
 <!-- title -->
 <div class="template-small-container">
     <div class="template-row template-row-2">
@@ -376,7 +449,31 @@ if (platformVal === "Select Variant") {
       
     })
 
-
+document.addEventListener("DOMContentLoaded",async()=>{
+  const addNewReview = document.getElementById("addnewreview")
+  const url = addNewReview.getAttribute("data-href")
+  addNewReview.addEventListener("click",async(e)=>{
+    console.log(url);
+    
+    e.preventDefault()
+    try {
+      const response = await fetch(url)
+    if(response.ok){
+      const data = await response.json()
+      if(data.redirectUrl){
+        window.location.href=data.redirectUrl
+      }
+      else{
+        showToast(data.message,0)
+      }
+    }  
+    } catch (error) {
+      
+    }
+    
+  })
+  
+})
 
 </script>
 

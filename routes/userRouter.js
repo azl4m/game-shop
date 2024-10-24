@@ -51,7 +51,9 @@ user.get('/productDetails',productController.productDetailsLoad)
 user.get("/getPlatformStock",productController.getPlatformStock);
 //products
 user.get('/products',productController.productsLoad)
-
+user.get("/addReview",auth.isLogin,productController.addReviewLoad)
+user.post("/submitReview",auth.isLogin,productController.submitReview)
+user.get("/addNewReview",productController.addNewReview)
 //for cart
 user.get("/addToCart",addminAuth.isLogout,auth.isLogin,cartController.addToCart)
 user.get("/cart",addminAuth.isLogout,auth.isLogin,cartController.cartLoad)
