@@ -64,8 +64,6 @@ const addProduct = async (req, res) => {
 
       // Check if offer details are provided and valid
       if (offerType && offerType !== "no offer") {
-        
-
         if (!offerValue || offerValue <= 0) {
           return res
             .status(400)
@@ -93,7 +91,6 @@ const addProduct = async (req, res) => {
           endDate: endDate,
         };
       }
-     
 
       // Create a new product
       const newProduct = new productModel(newProductData);
@@ -187,7 +184,7 @@ const editProduct = async (req, res) => {
     try {
       // Convert req.body to a plain JavaScript object
       const plainBody = Object.assign({}, req.body);
-      
+
       const productId = plainBody.productId;
 
       const product = await productModel.findById(productId);
@@ -228,7 +225,10 @@ const editProduct = async (req, res) => {
       // Offer details handling
       let offer = {};
       if (plainBody.offerType) {
-        if (plainBody.offerType === "percentage" || plainBody.offerType === "flat") {
+        if (
+          plainBody.offerType === "percentage" ||
+          plainBody.offerType === "flat"
+        ) {
           offer.type = plainBody.offerType;
           offer.value = plainBody.offerValue
             ? parseFloat(plainBody.offerValue)
@@ -240,7 +240,7 @@ const editProduct = async (req, res) => {
           offer = null;
         }
       }
-      
+
       // Update the product with new data
       product.productName = plainBody.productName;
       product.description = plainBody.description;
@@ -250,12 +250,11 @@ const editProduct = async (req, res) => {
       product.category = category._id;
       // Check if offer details need to be updated
       if (offer) {
-        
         product.offer = offer;
       } else {
         product.offer = null; // If no offer is selected, clear offer details
       }
-      
+
       // Save the updated product to the database
       await product.save();
 
@@ -351,6 +350,63 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+const offersLoad = async (req, res) => {
+  try {
+    const searchQuery = req.query.search || "";
+    const currentPage = parseInt(req.query.page) || 1;
+    const limit = 3;
+    const skip = (currentPage - 1) * limit;
+    const products = await productModel.aggregate([
+      {
+        $addFields: {
+          "category.offer.value": {
+            $ifNull: ["$offer.value", 0], // Default to 0 if offer.value is not present
+          },
+          offerPrice: {
+            $cond: {
+              if: { $eq: ["$offer.type", "flat"] },
+              then: { $subtract: ["$price", "$offer.value"] }, // Flat discount
+              else: {
+                $subtract: [
+                  "$price",
+                  { $multiply: ["$price", { $divide: ["$offer.value", 100] }] }, // Percentage discount
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        $match: {
+          productName: {
+            $regex: searchQuery,
+            $options: "i", // Case-insensitive match
+          },
+        },
+      },
+      {
+        $sort: { "category.offer.value": -1 }, // Sort by the adjusted field
+      },
+      { $skip: skip },
+      { $limit: limit },
+    ]);
+    const totalProducts = await productModel.countDocuments({
+      productName: { $regex: searchQuery, $options: "i" },
+    });
+    const totalPages = Math.ceil(totalProducts / limit);
+
+    return res.render("productOffer", {
+      data: products,
+      searchQuery,
+      totalPages: totalPages,
+      currentPage: currentPage,
+    });
+  } catch (error) {
+    console.log("error at product offers load :" + error.message);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 module.exports = {
   productManagementLoad,
   editProductLoad,
@@ -361,4 +417,5 @@ module.exports = {
   unlistProduct,
   addProduct,
   addProductLoad,
+  offersLoad,
 };

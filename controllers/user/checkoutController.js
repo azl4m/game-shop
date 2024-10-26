@@ -6,24 +6,26 @@ const addressModel = require("../../models/addressModel");
 const razorpay = require("razorpay");
 const razorpayInstance = require("../../config/razorpay");
 const paymentTimeStamp = require("../../helpers/paymentTimeStamp");
-const walletHelper = require("../../helpers/walletTransactions")
+const walletHelper = require("../../helpers/walletTransactions");
 function isOfferValid(offer, currentDate) {
   if (!offer) return false;
   if (offer.startDate && offer.endDate) {
-    return currentDate >= new Date(offer.startDate) && currentDate <= new Date(offer.endDate);
+    return (
+      currentDate >= new Date(offer.startDate) &&
+      currentDate <= new Date(offer.endDate)
+    );
   }
   return false;
 }
 function calculateDiscount(offer, price) {
   let discount = 0;
-  if (offer.type === 'percentage') {
+  if (offer.type === "percentage") {
     discount = (price * offer.value) / 100;
-  } else if (offer.type === 'flat') {
+  } else if (offer.type === "flat") {
     discount = offer.value;
   }
   return discount;
 }
-
 
 //cart value calculation
 const calculateCartTotals = (cart, totalDiscount) => {
@@ -40,7 +42,7 @@ const calculateCartTotals = (cart, totalDiscount) => {
   // Subtract the total discount from the subtotal
   subtotal -= totalDiscount;
 
-  const tax = Math.floor(subtotal * 0.10); // Apply tax on the discounted subtotal
+  const tax = Math.floor(subtotal * 0.1); // Apply tax on the discounted subtotal
   let total = Math.floor(subtotal + tax);
   let delivery = 0;
 
@@ -56,26 +58,23 @@ const calculateCartTotals = (cart, totalDiscount) => {
   return { subtotal, tax, total, delivery };
 };
 
-
 const getCheckoutPage = async (req, res) => {
   try {
     const userId = req.session.user;
     const user = await userModel.findOne({ _id: userId });
-    const cart = await cartModel
-      .findOne({ userId: userId })
-      .populate({
-        path: 'items.productId',
-        populate: {
-          path: 'category', // Populate the category inside product schema
-          model: 'Category',
-        },
-      });
+    const cart = await cartModel.findOne({ userId: userId }).populate({
+      path: "items.productId",
+      populate: {
+        path: "category", // Populate the category inside product schema
+        model: "Category",
+      },
+    });
 
     if (!cart) {
       return res.status(400).json({ message: "No items in cart" });
     }
 
-    let totalDiscount = 0;  // Initialize total discount
+    let totalDiscount = 0; // Initialize total discount
     const currentDate = new Date();
 
     const products = cart.items.map((item) => {
@@ -84,13 +83,22 @@ const getCheckoutPage = async (req, res) => {
       let categoryDiscount = 0;
 
       // Check for product-specific offer
-      if (item.productId.offer && isOfferValid(item.productId.offer, currentDate)) {
+      if (
+        item.productId.offer &&
+        isOfferValid(item.productId.offer, currentDate)
+      ) {
         productDiscount = calculateDiscount(item.productId.offer, productPrice);
       }
 
       // Check for category-level offer if no product offer is available or category offer is higher
-      if (item.productId.category && isOfferValid(item.productId.category.offer, currentDate)) {
-        categoryDiscount = calculateDiscount(item.productId.category.offer, productPrice);
+      if (
+        item.productId.category &&
+        isOfferValid(item.productId.category.offer, currentDate)
+      ) {
+        categoryDiscount = calculateDiscount(
+          item.productId.category.offer,
+          productPrice
+        );
       }
 
       // Apply whichever is the higher discount
@@ -102,8 +110,8 @@ const getCheckoutPage = async (req, res) => {
         price: productPrice,
         quantity: item.quantity,
         platform: item.platform,
-        discount: highestDiscount,  // Show applied discount
-        finalPrice: productPrice - highestDiscount,  // Calculate final price after discount
+        discount: highestDiscount, // Show applied discount
+        finalPrice: productPrice - highestDiscount, // Calculate final price after discount
       };
     });
 
@@ -111,16 +119,25 @@ const getCheckoutPage = async (req, res) => {
     const defaultAddress = await addressModel.findOne({ isDefault: true });
 
     // Now pass totalDiscount to calculateCartTotals function to adjust before tax
-    const { subtotal, tax, total, delivery } = calculateCartTotals(cart, totalDiscount);
+    const { subtotal, tax, total, delivery } = calculateCartTotals(
+      cart,
+      totalDiscount
+    );
 
     // Fetch eligible coupons (coupons that haven't expired and meet the minCartValue requirement)
     const eligibleCoupons = await couponModel.find({
       isActive: true,
       expiresAt: { $gte: currentDate }, // Coupon hasn't expired
       minCartValue: { $lte: subtotal }, // Cart meets the minimum value for coupon
+      $or: [
+        { discountType: "percentage" }, // Allow all percentage-based discounts
+        {
+          discountType: "flat",
+          discountValue: { $lte: { $multiply: [subtotal, 0.8] } }, // Flat discount should not exceed 80% of subtotal
+        },
+      ],
     });
-
-    res.render("checkout1", {
+    res.render("checkout", {
       addresses: addresses,
       userDetails: user,
       defaultAddress: defaultAddress,
@@ -129,7 +146,7 @@ const getCheckoutPage = async (req, res) => {
       tax: tax,
       total: total, // Total price after applying the discount and tax
       subtotal: subtotal,
-      totalDiscount: totalDiscount,  // Pass total discount to the template
+      totalDiscount: totalDiscount, // Pass total discount to the template
       eligibleCoupons: eligibleCoupons,
     });
   } catch (error) {
@@ -137,7 +154,6 @@ const getCheckoutPage = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 const checkoutLoad = async (req, res) => {
   try {
@@ -206,7 +222,7 @@ const checkoutLoad = async (req, res) => {
       const discount = Math.max(productDiscount, categoryDiscount);
       const finalProductPrice = productPrice - discount;
       totalPrice += finalProductPrice * item.quantity;
-      totalPrice += finalProductPrice *0.1* item.quantity
+      totalPrice += finalProductPrice * 0.1 * item.quantity;
 
       return {
         product: item.productId._id,
@@ -217,17 +233,17 @@ const checkoutLoad = async (req, res) => {
       };
     });
     console.log(totalPrice);
-   
+
     // Subtract any coupon-based discount from the total price
     totalPrice -= reducedAmountFinal;
-    if(totalPrice<2000){
-      totalPrice+=150 
+    if (totalPrice < 2000) {
+      totalPrice += 150;
     }
-    totalPrice = parseInt(totalPrice)
-    if(req.session.wallet){
-      totalPrice -= req.session.wallet
+    totalPrice = parseInt(totalPrice);
+    if (req.session.wallet) {
+      totalPrice -= req.session.wallet;
     }
-    const walletUsed = req.session.wallet || 0 ;
+    const walletUsed = req.session.wallet || 0;
     // Function to generate unique order number
     function generateUniqueOrder() {
       let prefix = "ORD";
@@ -246,13 +262,18 @@ const checkoutLoad = async (req, res) => {
 
     // Handling COD payment method
     if (paymentMode === "cod") {
-      await walletHelper.addWalletTransaction(userId,walletUsed,"debit",`Wallet amount debited for order :${orderNumber} `)
+      await walletHelper.addWalletTransaction(
+        userId,
+        walletUsed,
+        "debit",
+        `Wallet amount debited for order :${orderNumber} `
+      );
       const order = new orderModel({
         user: userId,
         orderStatus: "Processing",
         orderNumber: orderNumber,
         cartItems: cartItems,
-        totalPrice: totalPrice+walletUsed,
+        totalPrice: totalPrice + walletUsed,
         paymentMethod: "COD",
         shippingAddress: {
           name: fname,
@@ -266,7 +287,7 @@ const checkoutLoad = async (req, res) => {
         couponUsed: couponCodeFinal,
         discount: reducedAmountFinal,
         deliveryCharge: delivery,
-        walletDeduction:walletUsed
+        walletDeduction: walletUsed,
       });
 
       const saveOrder = await order.save();
@@ -277,7 +298,9 @@ const checkoutLoad = async (req, res) => {
       );
       await cartModel.findOneAndDelete({ userId });
 
-      return res.status(200).json({ message: "Checkout successful",orderId:order._id });
+      return res
+        .status(200)
+        .json({ message: "Checkout successful", orderId: order._id });
     }
 
     // Handling Razorpay payment method
@@ -293,7 +316,7 @@ const checkoutLoad = async (req, res) => {
         user: userId,
         orderNumber: orderNumber,
         cartItems: cartItems,
-        totalPrice: totalPrice+walletUsed,
+        totalPrice: totalPrice + walletUsed,
         paymentMethod: "Razorpay",
         shippingAddress: {
           name: fname,
@@ -309,7 +332,7 @@ const checkoutLoad = async (req, res) => {
         couponUsed: couponCodeFinal,
         discount: reducedAmountFinal,
         deliveryCharge: delivery,
-        walletDeduction:walletUsed
+        walletDeduction: walletUsed,
       });
 
       const saveOrder = await order.save();
@@ -340,18 +363,16 @@ const applyCoupon = async (req, res) => {
   try {
     const userId = req.session.user;
     const couponId = req.body.couponId; // Get coupon ID from the form
-    if(!couponId){
-      return res.redirect("/checkout")
+    if (!couponId) {
+      return res.redirect("/checkout");
     }
-    const cart = await cartModel
-      .findOne({ userId })
-      .populate({
-        path: 'items.productId',
-        populate: {
-          path: 'category', // Populate the category inside the product schema
-          model: 'Category',
-        },
-      });
+    const cart = await cartModel.findOne({ userId }).populate({
+      path: "items.productId",
+      populate: {
+        path: "category", // Populate the category inside the product schema
+        model: "Category",
+      },
+    });
 
     if (!cart) {
       return res.status(400).json({ message: "No items in cart" });
@@ -380,13 +401,22 @@ const applyCoupon = async (req, res) => {
       let categoryDiscount = 0;
 
       // Check for product-specific offer
-      if (item.productId.offer && isOfferValid(item.productId.offer, currentDate)) {
+      if (
+        item.productId.offer &&
+        isOfferValid(item.productId.offer, currentDate)
+      ) {
         productDiscount = calculateDiscount(item.productId.offer, productPrice);
       }
 
       // Check for category-level offer if no product offer is available or category offer is higher
-      if (item.productId.category && isOfferValid(item.productId.category.offer, currentDate)) {
-        categoryDiscount = calculateDiscount(item.productId.category.offer, productPrice);
+      if (
+        item.productId.category &&
+        isOfferValid(item.productId.category.offer, currentDate)
+      ) {
+        categoryDiscount = calculateDiscount(
+          item.productId.category.offer,
+          productPrice
+        );
       }
 
       // Apply whichever is the higher discount
@@ -398,13 +428,16 @@ const applyCoupon = async (req, res) => {
         price: productPrice,
         quantity: item.quantity,
         platform: item.platform,
-        discount: highestDiscount,  // Show applied discount
-        finalPrice: productPrice - highestDiscount,  // Calculate final price after discount
+        discount: highestDiscount, // Show applied discount
+        finalPrice: productPrice - highestDiscount, // Calculate final price after discount
       };
     });
 
     // Calculate the cart totals after applying offers
-    let { subtotal, tax, delivery, total } = calculateCartTotals(cart, totalDiscount);
+    let { subtotal, tax, delivery, total } = calculateCartTotals(
+      cart,
+      totalDiscount
+    );
 
     // Calculate the new total based on the coupon type
     let tempTotal = total; // Store the total before applying the coupon
@@ -422,7 +455,7 @@ const applyCoupon = async (req, res) => {
     if (total < 0) total = 0;
 
     // Render the checkout page again with the new total after applying offers and coupon
-    res.render("checkout1", {
+    res.render("checkout", {
       addresses: await addressModel.find({ userId }),
       userDetails: await userModel.findOne({ _id: userId }),
       defaultAddress: await addressModel.findOne({ userId, isDefault: true }),
@@ -431,7 +464,7 @@ const applyCoupon = async (req, res) => {
       tax,
       total, // Total price after applying offers and coupon
       subtotal,
-      totalDiscount,  // Total discount from product and category offers
+      totalDiscount, // Total discount from product and category offers
       eligibleCoupons: await couponModel.find({
         isActive: true,
         expiresAt: { $gte: new Date() },
@@ -446,19 +479,16 @@ const applyCoupon = async (req, res) => {
   }
 };
 
-
 const removeCoupon = async (req, res) => {
   try {
     const userId = req.session.user;
-    const cart = await cartModel
-      .findOne({ userId })
-      .populate({
-        path: 'items.productId',
-        populate: {
-          path: 'category', // Populate the category inside the product schema
-          model: 'Category',
-        },
-      });
+    const cart = await cartModel.findOne({ userId }).populate({
+      path: "items.productId",
+      populate: {
+        path: "category", // Populate the category inside the product schema
+        model: "Category",
+      },
+    });
 
     if (!cart) {
       return res.status(400).json({ message: "No items in cart" });
@@ -474,13 +504,22 @@ const removeCoupon = async (req, res) => {
       let categoryDiscount = 0;
 
       // Check for product-specific offer
-      if (item.productId.offer && isOfferValid(item.productId.offer, currentDate)) {
+      if (
+        item.productId.offer &&
+        isOfferValid(item.productId.offer, currentDate)
+      ) {
         productDiscount = calculateDiscount(item.productId.offer, productPrice);
       }
 
       // Check for category-level offer if no product offer is available or category offer is higher
-      if (item.productId.category && isOfferValid(item.productId.category.offer, currentDate)) {
-        categoryDiscount = calculateDiscount(item.productId.category.offer, productPrice);
+      if (
+        item.productId.category &&
+        isOfferValid(item.productId.category.offer, currentDate)
+      ) {
+        categoryDiscount = calculateDiscount(
+          item.productId.category.offer,
+          productPrice
+        );
       }
 
       // Apply whichever is the higher discount
@@ -498,10 +537,13 @@ const removeCoupon = async (req, res) => {
     });
 
     // Recalculate the cart totals after removing the coupon and applying offers
-    let { subtotal, tax, delivery, total } = calculateCartTotals(cart, totalDiscount);
+    let { subtotal, tax, delivery, total } = calculateCartTotals(
+      cart,
+      totalDiscount
+    );
 
     // Render the checkout page again with the updated total (without the coupon)
-    res.render("checkout1", {
+    res.render("checkout", {
       addresses: await addressModel.find({ userId }),
       userDetails: await userModel.findOne({ _id: userId }),
       defaultAddress: await addressModel.findOne({ userId, isDefault: true }),
@@ -523,17 +565,19 @@ const removeCoupon = async (req, res) => {
   }
 };
 
- const applyWalletBalance = async (req, res) => {
+const applyWalletBalance = async (req, res) => {
   try {
     const userId = req.session.user;
-    const { reducedAmount,totalPrice } = req.body;
-    req.session.wallet = reducedAmount
+    const { reducedAmount, totalPrice } = req.body;
+    req.session.wallet = reducedAmount;
     // Fetch the user's wallet balance and cart
     const user = await userModel.findOne({ _id: userId });
     const cart = await cartModel.findOne({ userId });
 
     if (!user || !cart) {
-      return res.status(400).json({ success: false, message: "User or cart not found." });
+      return res
+        .status(400)
+        .json({ success: false, message: "User or cart not found." });
     }
 
     const walletBalance = user.wallet.balance;
@@ -564,4 +608,10 @@ const removeCoupon = async (req, res) => {
   }
 };
 
-module.exports = { applyWalletBalance,getCheckoutPage, checkoutLoad, applyCoupon, removeCoupon };
+module.exports = {
+  applyWalletBalance,
+  getCheckoutPage,
+  checkoutLoad,
+  applyCoupon,
+  removeCoupon,
+};

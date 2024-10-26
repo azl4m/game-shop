@@ -21,6 +21,8 @@ admin.get('/unlistProduct',auth.isLogin,productController.unlistProduct)
 admin.get('/restoreProduct',auth.isLogin,productController.restoreProduct)
 admin.get('/deleteProduct',auth.isLogin,productController.deleteProduct)
 admin.get('/deleteImage',auth.isLogin,productController.deleteSingleImage)
+//product offer
+admin.get("/productOffer",auth.isLogin,productController.offersLoad)
 //user management
 admin.get('/userManagement',auth.isLogin,userController.userManagementLoad)
 admin.get('/blockUser',auth.isLogin,userController.blockUser)
