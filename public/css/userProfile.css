@@ -110,8 +110,8 @@
 
 .profile-head .nav-tabs .nav-link.active {
     border: none;
-    border-bottom: 2px solid #0062cc;
-    color: #0062cc;
+    border-bottom: 2px solid #ff6347;
+    color: #ff6347;
 }
 
 /* Profile work section */
@@ -132,13 +132,14 @@
 
 .profile-work a {
     text-decoration: none;
-    color: #0062cc;
+    color: #000000;
     font-weight: 600;
     font-size: 14px;
 }
 
 .profile-work a:hover {
-    text-decoration: underline;
+    text-decoration: none;
+    color: #ff6347;
 }
 
 /* Profile details labels */
@@ -149,7 +150,7 @@
 
 .profile-tab p {
     font-weight: 600;
-    color: #0062cc;
+    color: #ff6347;
     margin: 0;
 }
 

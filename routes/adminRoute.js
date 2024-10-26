@@ -34,7 +34,9 @@ admin.post('/editCategory',auth.isLogin,categoryController.editCategory)
 admin.get('/unlistCategory',auth.isLogin,categoryController.unlistCategory)
 admin.get('/listCategory',auth.isLogin,categoryController.listCategory)
 admin.get('/deleteCategory',auth.isLogin,categoryController.deleteCategory)
-
+//category offer
+admin.get("/categoryOffer",auth.isLogin,categoryController.offersLoad)
+admin.get("/deleteCategoryOffer",auth.isLogin,categoryController.deleteOffer)
 //order management
 admin.get('/orderManagement',auth.isLogin,orderController.orderManagementLoad)
 admin.get('/orderStatus',auth.isLogin,orderController.orderStatus)

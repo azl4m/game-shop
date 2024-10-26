@@ -27,12 +27,7 @@
     <!--signup page link-->
     <link rel="stylesheet" href="/css/signup.css" />
 
-    <!-- for user profile page -->
-    <link
-      href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
-      rel="stylesheet"
-      id="bootstrap-css"
-    />
+ 
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <link rel="stylesheet" href="/css/userProfile.css" />
@@ -53,167 +48,275 @@
  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script> -->
     <link rel="stylesheet" href="/css/orders1.scss" />
     <style>
-      a:hover {
-        text-decoration: none; /* Prevent underline on hover */
-        color: inherit; /* Prevent color change on hover */
-      }
-      /* Container for the entire header */
+     /* General Styling */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-      /* Container for the entire header */
-      .template-header {
-        background-color: #fffdfd;
-        padding: 20px 0;
-        text-align: center;
-      }
+body {
+  font-family: "Poppins", sans-serif;
+}
 
-      /* Align logo above the navigation */
-      .template-logo {
-        margin-bottom: 15px;
-      }
+/* Header Container */
+.main-header {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e5e5;
+  padding: 15px 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
 
-      .template-logo img {
-        width: 150px; /* Adjust logo size */
-        display: block;
-        margin: 0 auto; /* Center logo */
-      }
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
 
-      /* Navigation Styling */
-      nav {
-        text-align: center; /* Center the navigation links */
-      }
+/* Logo Styling */
+.logo-container {
+  display: flex;
+  align-items: center;
+}
 
-      #MenuItems {
-        list-style: none;
-        display: flex;
-        justify-content: center; /* Center items */
-        gap: 30px; /* Add space between links */
-        padding: 0;
-        margin: 0;
-      }
+.header-logo {
+  width: 150px;
+}
 
-      #MenuItems li {
-        display: inline-block;
-      }
+/* Navigation Menu */
+.main-nav {
+  display: flex;
+  align-items: center;
+}
 
-      .template-nav-a {
-        text-decoration: none;
-        color: #000000;
-        font-size: 16px;
-        font-weight: 500;
-        padding: 10px 15px;
-        transition: color 0.3s ease, background-color 0.3s ease;
-      }
+.nav-links {
+  display: flex;
+  list-style: none;
+  gap: 30px;
+}
 
-      .template-nav-a:hover {
-        background-color: black;
-        color: white;
-        border-radius: 10px;
-      }
+.nav-link {
+  color: #000;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 500;
+  transition: color 0.3s;
+}
 
-      /* Cart icon styling */
-      .cart-icon {
-        margin-top: 15px;
-      }
+.nav-link:hover {
+  color: #ff6347;
+}
 
-      .cart-icon img {
-        width: 30px;
-        transition: transform 0.3s ease;
-      }
+/* Dropdown Styling */
+.nav-dropdown {
+  position: relative;
+}
 
-      .cart-icon:hover img {
-        transform: scale(1.1);
-      }
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: white;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  min-width: fit-content;
+  z-index: 1001;
+}
 
-      /* Responsive Menu Icon */
-      .menu-icon {
-        display: none;
-      }
+.dropdown-content a {
+  padding: 10px 15px;
+  display: block;
+  text-decoration: none;
+  color: #333;
+}
 
-      @media (max-width: 768px) {
-        #MenuItems {
-          display: none;
-          flex-direction: column;
-          gap: 10px;
-        }
+.dropdown-content a:hover {
+  background-color: #f1f1f1;
+  text-decoration: none;
+  color: #ff6347;
+}
 
-        .menu-icon {
-          display: inline-block;
-        }
+/* Mobile Menu Toggle */
+.menu-toggle {
+  display: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #000;
+}
 
-        .menu-icon.active + #MenuItems {
-          display: flex;
-        }
-      }
+/* Cart Icon */
+.cart-icon {
+  color: #000;
+  font-size: 20px;
+  text-decoration: none;
+  margin: 0.4rem;
+}
+
+.cart-icon:hover {
+  color: #ff6347;
+}
+
+/* Show dropdown class */
+.show-dropdown {
+  display: block !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    background-color: white;
+    width: 100%;
+    text-align: center;
+    padding: 20px 0;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+  }
+
+  .nav-links.active {
+    display: flex;
+  }
+
+  .menu-toggle {
+    display: block;
+  }
+
+  .nav-dropdown {
+    position: static;
+  }
+
+  .dropdown-content {
+    position: static;
+    width: 100%;
+    box-shadow: none;
+    background-color: #f9f9f9;
+    margin-top: 10px;
+  }
+
+  .show-dropdown {
+    display: block !important;
+  }
+
+  .nav-links li {
+    margin: 10px 0;
+    width: 100%;
+  }
+
+  .dropdown-content a {
+    padding: 10px 0;
+  }
+}
     </style>
   </head>
 
   <body>
-    <div class="template-header">
-      <div class="container">
-        <div class="template-navbar">
-          <!-- Logo placed above the navigation links -->
-          <div class="template-logo">
-            <a href="/">
-              <img src="/images/game-logo.png" alt="logo" />
-            </a>
-          </div>
-          <!-- Navigation links centered below the logo -->
-          <nav>
-            <ul id="MenuItems">
-              <li><a class="template-nav-a" href="/">Home</a></li>
-              <li><a class="template-nav-a" href="/products">Products</a></li>
-              <li><a class="template-nav-a" href="#">About</a></li>
-              <li><a class="template-nav-a" href="#">Contact</a></li>
+    <header class="main-header">
+      <div class="header-container">
+        <!-- Logo -->
+        <div class="logo-container">
+          <a href="/">
+            <img
+              src="/images/game-shop.png"
+              alt="Game Shop Logo"
+              class="header-logo"
+            />
+          </a>
+        </div>
+
+        <!-- Navigation Menu -->
+        <div class="menu-container">
+          <nav class="main-nav">
+            <ul class="nav-links">
+              <li><a class="nav-link" href="/">Home</a></li>
+              <li><a class="nav-link" href="/products">Products</a></li>
+              <li><a class="nav-link" href="#">About</a></li>
+              <li><a class="nav-link" href="#">Contact</a></li>
+
+              <!-- User Profile or Auth Links -->
               <% if (typeof userDetails !== 'undefined') { %>
-              <li class="dropdown">
-                <a
-                  href="#"
-                  class="template-nav-a dropdown-toggle"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  <%= userDetails.username %>
+              <li class="nav-dropdown" id="user-dropdown">
+                <a href="#" class="nav-link">
+                  <%= userDetails.username %> <i class="fa fa-caret-down"></i>
                 </a>
-                <div class="dropdown-menu">
-                  <a href="/userProfile" class="dropdown-item">Profile</a>
-                  <a href="/logout" class="dropdown-item">Logout</a>
-                </div>
+                <ul class="dropdown-content" id="dropdown-menu">
+                  <li>
+                    <a
+                      id="profilelink"
+                      data-href="/userProfile"
+                      href="/userProfile"
+                      >Profile</a
+                    >
+                  </li>
+                  <li><a id="logoutlink" href="/logout">Logout</a></li>
+                </ul>
               </li>
               <% } else { %>
-              <li><a class="template-nav-a" href="/login">Login</a></li>
-              <li><a class="template-nav-a" href="/signup">Signup</a></li>
+              <li><a class="nav-link" href="/login">Login</a></li>
+              <li><a class="nav-link" href="/signup">Signup</a></li>
               <% } %>
             </ul>
           </nav>
-          <!-- Cart icon -->
-          <% if (typeof userDetails !== 'undefined') { %>
-          <a href="/cart" class="cart-icon">
-            <img src="images/cart.png" width="30px" height="30px" />
-          </a>
-          <% } %>
-          <!-- Menu icon for mobile -->
-          <img id="menuimg" src="images/menu.png" class="menu-icon" />
+        </div>
+
+        <!-- Cart Icon -->
+        <% if (typeof userDetails !== 'undefined') { %>
+        <a href="/cart" class="cart-icon">
+          <i class="fa fa-shopping-cart"></i>
+        </a>
+        <% } %>
+
+        <!-- Mobile Menu Icon -->
+        <div class="menu-toggle" id="menu-toggle">
+          <i class="fa fa-bars"></i>
         </div>
       </div>
-    </div>
-    <script>
-      const menuimg = document.getElementById("menuimg");
-      window.addEventListener("DOMContentLoaded", function () {
-        menuimg.addEventListener("click", function () {
-          console.log("hello1");
+    </header>
 
-          menutoggle();
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Toggle mobile menu on menu icon click
+        const menuToggle = document.getElementById("menu-toggle");
+        const navLinks = document.querySelector(".nav-links");
+
+        menuToggle.addEventListener("click", function () {
+          navLinks.classList.toggle("active");
         });
+
+        // Dropdown menu toggle for user profile
+        const userDropdown = document.getElementById("user-dropdown");
+        const dropdownMenu = document.getElementById("dropdown-menu");
+
+        userDropdown.addEventListener("click", function (event) {
+          event.preventDefault();
+          dropdownMenu.classList.toggle("show-dropdown");
+        });
+
+        // Close dropdown if clicked outside
+        document.addEventListener("click", function (event) {
+          if (!userDropdown.contains(event.target)) {
+            dropdownMenu.classList.remove("show-dropdown");
+          }
+        });
+
+        // Profile link navigation
+        const profileLink = document.getElementById("profilelink");
+        const url = profileLink.getAttribute("data-href");
+        profileLink.addEventListener("click", (event) => {
+          event.preventDefault();
+          window.location.href = url;
+        });
+        const logoutlink = document.getElementById("logoutlink")
+        logoutlink.addEventListener("click",e=>{
+          e.preventDefault()
+          window.location.href = "/logout"
+        })
       });
-      function menutoggle() {
-        const menuItems = document.getElementById("MenuItems");
-        if (menuItems) {
-          console.log("hello2");
-          menuItems.classList.toggle("active");
-        } else {
-          console.log("menuItems not found");
-        }
-      }
     </script>
-  </body>
-</html>

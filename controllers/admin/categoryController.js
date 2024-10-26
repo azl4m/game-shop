@@ -197,6 +197,57 @@ const deleteCategory = async (req, res) => {
   }
 };
 
+const offersLoad = async (req, res) => {
+  try {
+    const searchQuery = req.query.search||""
+    const currentPage = parseInt(req.query.page)||1;
+    const limit = 3
+    const skip = (currentPage-1)*limit
+    const categories = await categoryModel.aggregate([
+      {
+        $addFields: {
+          "category.offer.value": {
+            $ifNull: ["$offer.value", 0] // Replace `0` with any default value you prefer
+          }
+        }
+      },
+      {
+        $match: {
+          "categoryName": { 
+            $regex: searchQuery, // `searchQuery` is your search term
+            $options: "i" // Case-insensitive match
+          }
+        }
+      },
+      {
+        $sort: { "category.offer.value": -1 } // Sort by the adjusted field
+      }
+    ]).skip(skip)
+    .limit(limit) 
+    const totalcats = await categoryModel.countDocuments({});
+      const totalPages = Math.ceil(totalcats / limit);
+    
+       
+    return res.render("categoryOffer", { data: categories, searchQuery,
+      totalPages: totalPages,
+        currentPage: currentPage,
+    });
+  } catch (error) {
+    console.log("error at category offers load :" + error.message);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+const deleteOffer = async(req,res)=>{
+  try {
+    const catId = req.query.id
+    await categoryModel.findByIdAndUpdate(catId,{$set:{"offer.value":0}})
+    return res.redirect("/admin/categoryOffer")
+
+  } catch (error) {
+    console.error("ERROR DELETING CATEGORY OFFER :"+error.message)
+    return res.status(500).json({message:"Internal server error"})
+  }
+}
 module.exports = {
   deleteCategory,
   listCategory,
@@ -206,4 +257,6 @@ module.exports = {
   addCategoryLoad,
   editCategoryLoad,
   categoryManagementLoad,
+  offersLoad,
+  deleteOffer
 };

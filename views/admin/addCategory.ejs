@@ -130,6 +130,10 @@ if ((offerType === 'percentage' || offerType === 'flat') && offerValue <= 0) {
   alert('Offer value must be greater than 0.');
   return;
 }
+if(offerType === 'percentage' && offerValue>90){
+  alert('Cannot give offer more than 90%')
+  return
+}
 if(offerType==='percentage' || offerType === 'flat'){
  // Validate dates
  const startDate = new Date(offerStartDate.value);

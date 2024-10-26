@@ -5,7 +5,7 @@
     flex-wrap: wrap;
     gap: 20px; /* Adjust the space between products */
 }
-.active a {
+.on a {
   color: red; /* Change this to whatever color you prefer */
   font-weight: bold; /* Optional: Make it bold for more emphasis */
 }
@@ -67,7 +67,7 @@
     <div class="page-btn" style="display: inline-block;">
         <% for(let i = 1; i <= totalPages; i++) { %>
           <span data-href="?page=<%= i %>&search=<%= searchQuery %>&sortBy=<%= sortBy %>&sortOrder=<%= sortOrder %>&filter=<%= category?._id %>" 
-          class="<%= (i === currentPage) ? 'active' : '' %>">
+          class="<%= (i === currentPage) ? 'on' : '' %>">
             <a style="text-decoration: none;" href="?page=<%= i %>&search=<%=searchQuery%>&sortBy=<%=sortBy%>&sortOrder=<%=sortOrder%>&filter=<%=category?._id%>">
               <%= i %>
             </a>

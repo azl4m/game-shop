@@ -420,6 +420,10 @@ if ((offerType === 'percentage' || offerType === 'flat') && offerValue === '') {
   alert('Please enter a valid offer value.');
   return;
 }
+if(offerType === 'percentage' && offerValue>90){
+  alert('Cannot give offer more than 90%')
+  return
+}
 if ((offerType === 'percentage' || offerType === 'flat') && offerValue <= 0) {
   alert('Offer value must be greater than 0.');
   return;

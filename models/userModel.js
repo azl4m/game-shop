@@ -69,7 +69,7 @@ const userSchema = new Schema({
     type: Date,
     default: Date.now,
   },
-  updatedAd: {
+  updatedAt: {
     type: Date,
     default: Date.now,
   },
