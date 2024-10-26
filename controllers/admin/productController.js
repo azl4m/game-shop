@@ -406,9 +406,20 @@ const offersLoad = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+const deleteOffer = async(req,res)=>{
+  try {
+    const productId = req.query.id
+    await productModel.findByIdAndUpdate(productId,{$set:{"offer.value":0}})
+    return res.redirect("/admin/productOffer")
 
+  } catch (error) {
+    console.error("ERROR DELETING PRODUCT OFFER :"+error.message)
+    return res.status(500).json({message:"Internal server error"})
+  }
+}
 module.exports = {
   productManagementLoad,
+  deleteOffer,
   editProductLoad,
   editProduct,
   deleteProduct,

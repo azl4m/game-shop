@@ -100,6 +100,9 @@ const productSchema = new Schema({
     type: Date,
     default: Date.now,
   },
+  offerPrice:{
+    type:Number
+  }
 });
 
 module.exports = mongoose.model("Product", productSchema);
