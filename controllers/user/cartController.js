@@ -28,85 +28,105 @@ const calculateCartTotals = (cart) => {
   return { subtotal, tax, total, delivery };
 };
 
-// Add to cart
 const addToCart = async (req, res) => {
-    try {
-      const productId = req.query.id;
-      const quantity = parseInt(req.query.quantity);
-      const platform = req.query.platform;
-      const userId = req.session.user;
-  
-      // Find the product and selected platform variant
-      const product = await productModel.findById(productId);
-  
-      if (!product) {
-        return res.status(404).json({ message: "Product not found" });
-      }
-  
-      // Find the specific variant for the selected platform
-      const selectedVariant = product.variant.find(
-        (variant) => variant.platform === platform
-      );
-  
-      if (!selectedVariant) {
-        return res
-          .status(400)
-          .json({ message: "Selected platform not available" });
-      }
-  
-      // Check if the requested quantity is available in stock
-      if (selectedVariant.stock < quantity) {
-        return res.status(400).json({ message: "Not enough stock available" });
-      }
-  
-      let cart = await cartModel.findOne({ userId: userId });
-  
-      if (cart) {
-        const itemIndex = cart.items.findIndex(
-          (item) =>
-            item.productId.toString() === productId && item.platform === platform
-        );
-  
-        if (itemIndex > -1) {
-          // If the item already exists in the cart, increase the quantity
-          const currentQuantity = cart.items[itemIndex].quantity;
-  
-          if (selectedVariant.stock < currentQuantity + quantity) {
-            return res.status(400).json({
-              message: `Only ${selectedVariant.stock} units available in stock`,
-            });
-          }
-  
-          cart.items[itemIndex].quantity += quantity;
-        } else {
-          // If the item is not in the cart, add it to the cart
-          cart.items.push({ productId, quantity, platform });
-        }
-  
-        cart.updatedAt = Date.now();
-        await cart.save();
-      } else {
-        // If cart does not exist, create a new one
-        cart = new cartModel({
-          userId,
-          items: [{ productId, quantity, platform }],
-        });
-        await cart.save();
-      }
-  
-      // Deduct the quantity from the stock of the selected platform
-      selectedVariant.stock -= quantity;
-      await product.save();
-  
-      res.status(200).json({
-        message: "Product added to cart",
-        redirectUrl: `/productDetails?id=${productId}`,
-      });
-    } catch (error) {
-      console.log("error at add to cart :" + error);
-      return res.status(500).json({ message: error.message });
+  try {
+    const productId = req.query.id;
+    const quantity = parseInt(req.query.quantity);
+    const platform = req.query.platform;
+    const userId = req.session.user;
+
+    // Find the product and selected platform variant
+    const product = await productModel.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
     }
-  };
+
+    // Find the specific variant for the selected platform
+    const selectedVariant = product.variant.find(
+      (variant) => variant.platform === platform
+    );
+
+    if (!selectedVariant) {
+      return res.status(400).json({ message: "Selected platform not available" });
+    }
+
+    // Check if the requested quantity is available in stock
+    if (selectedVariant.stock < quantity) {
+      return res.status(400).json({ message: "Not enough stock available" });
+    }
+
+    // Fetch the category to get the category-level offer
+    const category = await categoryModel.findById(product.category);
+
+    // Calculate product and category offer prices with flat offer limit
+    const calculateDiscountedPrice = (offer, price) => {
+      let discount = 0;
+      if (offer.type === "percentage") {
+        discount = (price * offer.value) / 100;
+      } else if (offer.type === "flat") {
+        // Apply the flat offer only if it does not exceed 80% of the price
+        discount = offer.value <= price * 0.8 ? offer.value : 0;
+      }
+      return price - discount;
+    };
+
+    const productOfferPrice = product.offer
+      ? calculateDiscountedPrice(product.offer, product.price)
+      : product.price;
+
+    const categoryOfferPrice = category && category.offer
+      ? calculateDiscountedPrice(category.offer, product.price)
+      : product.price;
+
+    // Determine the best price (lower price after applying offers)
+    const offerPrice = Math.min(productOfferPrice, categoryOfferPrice);
+
+    // Find or create the user's cart
+    let cart = await cartModel.findOne({ userId: userId });
+    if (cart) {
+      const itemIndex = cart.items.findIndex(
+        (item) => item.productId.toString() === productId && item.platform === platform
+      );
+
+      if (itemIndex > -1) {
+        // If the item exists in the cart, increase the quantity
+        const currentQuantity = cart.items[itemIndex].quantity;
+        if (selectedVariant.stock < currentQuantity + quantity) {
+          return res.status(400).json({
+            message: `Only ${selectedVariant.stock} units available in stock`,
+          });
+        }
+        cart.items[itemIndex].quantity += quantity;
+      } else {
+        // If the item is not in the cart, add it with the offerPrice
+        cart.items.push({ productId, quantity, platform, offerPrice });
+      }
+
+      cart.updatedAt = Date.now();
+      await cart.save();
+    } else {
+      // If cart does not exist, create a new one with the item and offerPrice
+      cart = new cartModel({
+        userId,
+        items: [{ productId, quantity, platform, offerPrice }],
+      });
+      await cart.save();
+    }
+
+    // Deduct the quantity from the stock of the selected platform
+    selectedVariant.stock -= quantity;
+    await product.save();
+
+    res.status(200).json({
+      message: "Product added to cart",
+      redirectUrl: `/productDetails?id=${productId}`,
+    });
+  } catch (error) {
+    console.log("error at add to cart :" + error);
+    return res.status(500).json({ message: error.message });
+  }
+};
+
 
   const cartLoad = async (req, res) => {
     try {
@@ -119,7 +139,7 @@ const addToCart = async (req, res) => {
         const cart = await cartModel.findOne({ userId: userId }).populate({
           path: "items.productId",
           model: "Product",
-          select: "productName images price category offer", // Include necessary fields
+          select: "productName images price category offer offerPrice", // Include necessary fields
         });
   
         if (cart) {
@@ -133,39 +153,37 @@ const addToCart = async (req, res) => {
             cart.items.map(async (item) => {
               const product = item.productId;
               const quantity = item.quantity;
-              
+  
               // Fetch the category for the product
               const category = await categoryModel.findById(product.category);
   
               // Apply the best discount (product or category)
-              const productOfferValue = product.offer.value || 0;
-              const productOfferType = product.offer.type || "percentage";
-              const categoryOfferValue = category ? category.offer.value || 0 : 0;
-              const categoryOfferType = category ? category.offer.type || "percentage" : "percentage";
+              const productOfferValue = product.offer?.value || 0;
+              const productOfferType = product.offer?.type || "percentage";
+              const categoryOfferValue = category?.offer?.value || 0;
+              const categoryOfferType = category?.offer?.type || "percentage";
   
-              
-              
-              
-              
               let productDiscountedPrice = product.price;
               let categoryDiscountedPrice = product.price;
   
+              // Calculate product offer discount with 80% restriction
               if (productOfferType === "percentage") {
                 productDiscountedPrice = product.price - (product.price * (productOfferValue / 100));
-              } else if (productOfferType === "flat") {
+              } else if (productOfferType === "flat" && productOfferValue <= product.price * 0.8) {
                 productDiscountedPrice = product.price - productOfferValue;
               }
   
+              // Calculate category offer discount with 80% restriction
               if (categoryOfferType === "percentage") {
                 categoryDiscountedPrice = product.price - (product.price * (categoryOfferValue / 100));
-              } else if (categoryOfferType === "flat") {
+              } else if (categoryOfferType === "flat" && categoryOfferValue <= product.price * 0.8) {
                 categoryDiscountedPrice = product.price - categoryOfferValue;
               }
-              
+  
               // Choose the best discount (lower price)
               const finalDiscountedPrice = Math.min(productDiscountedPrice, categoryDiscountedPrice);
               const discountedPrice = Math.max(finalDiscountedPrice, 0); // Ensure price doesn’t go below 0
-              
+  
               // Calculate subtotal for this item
               const itemTotal = product.price * quantity;
               const discountedItemTotal = discountedPrice * quantity;
@@ -216,7 +234,7 @@ const addToCart = async (req, res) => {
             deliveryCharge: "",
             message: "Cart is empty",
             empty: cartIsEmpty,
-            totalDiscount:""
+            totalDiscount: ""
           });
         }
       } else {

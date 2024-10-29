@@ -8,17 +8,17 @@ const orderModel = require("../../models/orderModel");
 const productDetailsLoad = async (req, res) => {
   try {
     const productId = req.query.id;
-    const product = await productModel.findById({ _id: productId }).populate("reviews.user")
+    const product = await productModel.findById({ _id: productId }).populate("reviews.user");
     const category = await categoryModel.findOne({ _id: product.category });
     const platforms = await productModel.aggregate([
       { $match: { productName: product.productName } },
       { $unwind: "$variant" },
       { $group: { _id: "$variant.platform" } },
     ]);
-   
-    let parsedPlatdforms = [];
+
+    let parsedPlatforms = [];
     platforms.forEach((platform) => {
-      parsedPlatdforms.push(platform._id);
+      parsedPlatforms.push(platform._id);
     });
 
     // Step 1: Fetch product offer (if any)
@@ -30,68 +30,68 @@ const productDetailsLoad = async (req, res) => {
     const categoryOfferType = category.offer?.type || "percentage"; // 'percentage' or 'flat'
 
     // Step 3: Calculate discounted prices based on the type of offer
-    let productDiscountedPrice, categoryDiscountedPrice;
+    let productDiscountedPrice = product.price,
+        categoryDiscountedPrice = product.price;
 
     // Calculate product offer discount
     if (productOfferType === "percentage") {
-      productDiscountedPrice =
-        product.price - product.price * (productOfferValue / 100);
-    } else if (productOfferType === "flat") {
+      productDiscountedPrice = product.price - product.price * (productOfferValue / 100);
+    } else if (productOfferType === "flat" && productOfferValue <= product.price * 0.8) {
       productDiscountedPrice = product.price - productOfferValue;
     }
 
     // Calculate category offer discount
     if (categoryOfferType === "percentage") {
-      categoryDiscountedPrice =
-        product.price - product.price * (categoryOfferValue / 100);
-    } else if (categoryOfferType === "flat") {
+      categoryDiscountedPrice = product.price - product.price * (categoryOfferValue / 100);
+    } else if (categoryOfferType === "flat" && categoryOfferValue <= product.price * 0.8) {
       categoryDiscountedPrice = product.price - categoryOfferValue;
     }
 
     // Step 4: Apply the higher discount
-    const finalDiscountedPrice = Math.min(
-      productDiscountedPrice,
-      categoryDiscountedPrice
-    );
-    let offerSelected = Math.min(productDiscountedPrice,categoryDiscountedPrice)===productDiscountedPrice?"product":"category"
+    const finalDiscountedPrice = Math.min(productDiscountedPrice, categoryDiscountedPrice);
+    const offerSelected = finalDiscountedPrice === productDiscountedPrice ? "product" : "category";
+
     // Ensure the price doesn’t go below zero
     const discountedPrice = Math.max(finalDiscountedPrice, 0);
+
+    // Update the product's offer price in the database
+    await productModel.findByIdAndUpdate(
+      { _id: productId },
+      { offerPrice: discountedPrice },
+      { new: true }
+    );
 
     if (req.session.user) {
       const user = await userModel.findById({ _id: req.session.user });
       return res.render("productDetails", {
         userDetails: user,
-        product: product,
-        category: category,
-        discountedPrice: discountedPrice, // Pass the discounted price to the page
+        product,
+        category,
+        discountedPrice, // Pass the discounted price to the page
         platforms,
         productOfferValue,
         categoryOfferValue,
         offerSelected,
-        appliedOfferType:
-          discountedPrice === productDiscountedPrice
-            ? productOfferType
-            : categoryOfferType, // Indicate which offer was applied
+        appliedOfferType: discountedPrice === productDiscountedPrice ? productOfferType : categoryOfferType, // Indicate which offer was applied
       });
     }
+
     return res.render("productDetails", {
-      product: product,
-      category: category,
-      discountedPrice: discountedPrice, // Pass the discounted price to the page
+      product,
+      category,
+      discountedPrice, // Pass the discounted price to the page
       platforms,
       productOfferValue,
       categoryOfferValue,
       offerSelected,
-      appliedOfferType:
-        discountedPrice === productDiscountedPrice
-          ? productOfferType
-          : categoryOfferType, // Indicate which offer was applied
+      appliedOfferType: discountedPrice === productDiscountedPrice ? productOfferType : categoryOfferType, // Indicate which offer was applied
     });
   } catch (error) {
     console.log("error loading product details page " + error);
     res.status(500).send("Server error");
   }
 };
+
 
 //all products
 const productsLoad = async (req, res) => {

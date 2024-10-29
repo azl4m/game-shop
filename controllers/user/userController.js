@@ -2,17 +2,7 @@ const userModel = require("../../models/userModel");
 const bcrypt = require("bcrypt");
 const nodeMailer = require("nodemailer");
 const productModel = require("../../models/productModel");
-const cartModel = require("../../models/cartModel");
-const addressModel = require("../../models/addressModel");
-const categoryModel = require("../../models/categoryModel");
-const orderModel = require("../../models/orderModel");
-const wishlistModel = require("../../models/wishlistModel");
-const couponModel = require("../../models/couponModel");
 const randomString = require("randomstring");
-const moment = require("moment");
-const mongoose = require("mongoose");
-const razorpay = require("razorpay");
-const razorpayInstance = require("../../config/razorpay");
 const dotenv = require("dotenv").config();
 const paymentTimeStamp = require("../../helpers/paymentTimeStamp");
 // const { default: items } = require("razorpay/dist/types/items");
@@ -72,7 +62,7 @@ const registerUser = async (req, res) => {
   }
 };
 
-//for loading ot verification page
+//for loading otp verification page
 const verifyOtpLoad = async (req, res) => {
   const email = req.session?.userData?.email;
   res.render("otp", { email: email });

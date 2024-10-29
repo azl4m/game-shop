@@ -426,7 +426,7 @@
                 <label for="payment-mode">Select Payment Mode:</label>
                 <select id="payment-mode" name="payment-mode">
                   <option value="">Select a Payment Mode</option>
-                  <option value="razorpay">Razorpay</option>
+                  <option id="razorpay-option" value="razorpay">Razorpay</option>
                   
                   <option id="cod-option" style="display: none;" value="cod">Cash On Delivery</option>
                  
@@ -597,6 +597,10 @@
   // Function to update payment options based on total price
 function updatePaymentOptions(totalPrice) {
   const codOption = document.getElementById("cod-option");
+  const razorpayOption = document.getElementById("razorpay-option")
+  if(totalPrice<=0){
+    razorpayOption.style.display="none"
+  }
   if (totalPrice < 1000) {
     codOption.style.display = "block"; // Show COD option
   } else {

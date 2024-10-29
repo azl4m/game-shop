@@ -19,11 +19,13 @@ function isOfferValid(offer, currentDate) {
 }
 function calculateDiscount(offer, price) {
   let discount = 0;
+  
   if (offer.type === "percentage") {
     discount = (price * offer.value) / 100;
   } else if (offer.type === "flat") {
-    discount = offer.value;
+    discount = offer.value <= price * 0.8 ? offer.value : 0;
   }
+  
   return discount;
 }
 
@@ -69,7 +71,8 @@ const getCheckoutPage = async (req, res) => {
         model: "Category",
       },
     });
-
+    console.log(cart.items.productId);
+    
     if (!cart) {
       return res.status(400).json({ message: "No items in cart" });
     }
@@ -124,18 +127,18 @@ const getCheckoutPage = async (req, res) => {
       totalDiscount
     );
 
-    // Fetch eligible coupons (coupons that haven't expired and meet the minCartValue requirement)
-    const eligibleCoupons = await couponModel.find({
+    const validCoupons = await couponModel.find({
       isActive: true,
-      expiresAt: { $gte: currentDate }, // Coupon hasn't expired
-      minCartValue: { $lte: subtotal }, // Cart meets the minimum value for coupon
-      $or: [
-        { discountType: "percentage" }, // Allow all percentage-based discounts
-        {
-          discountType: "flat",
-          discountValue: { $lte: { $multiply: [subtotal, 0.8] } }, // Flat discount should not exceed 80% of subtotal
-        },
-      ],
+      expiresAt: { $gte: currentDate },
+      minCartValue: { $lte: subtotal },
+    });
+    
+    // Filter flat discounts that exceed 80% of subtotal
+    const eligibleCoupons = validCoupons.filter((coupon) => {
+      if (coupon.discountType === "flat") {
+        return coupon.discountValue <= subtotal * 0.8;
+      }
+      return true; // Keep percentage-based discounts as is
     });
     res.render("checkout", {
       addresses: addresses,
@@ -162,7 +165,7 @@ const checkoutLoad = async (req, res) => {
 
     const cart = await cartModel.findOne({ userId }).populate({
       path: "items.productId",
-      select: "price name category offer",
+      select: "price name category offer offerPrice",
       populate: {
         path: "category",
         select: "offer", // Get category offer details
@@ -194,8 +197,9 @@ const checkoutLoad = async (req, res) => {
       if (!item.productId || !item.productId.price) {
         throw new Error("Cart item missing product or price information");
       }
-
-      let productPrice = item.productId.price;
+      console.log(item);
+      
+      let productPrice = item.productId.offerPrice;
       let productDiscount = 0;
       let categoryDiscount = 0;
 
@@ -226,13 +230,14 @@ const checkoutLoad = async (req, res) => {
 
       return {
         product: item.productId._id,
-        price: finalProductPrice, // Price after applying offer
+        price: item.productId.offerPrice, // Price after applying offer
         quantity: item.quantity,
         platform: item.platform,
         offerApplied: discount, // Record the discount applied
       };
     });
-    console.log(totalPrice);
+    console.log(cartItems);
+    
 
     // Subtract any coupon-based discount from the total price
     totalPrice -= reducedAmountFinal;
@@ -243,6 +248,8 @@ const checkoutLoad = async (req, res) => {
     if (req.session.wallet) {
       totalPrice -= req.session.wallet;
     }
+    console.log("total price :"+totalPrice);
+    
     const walletUsed = req.session.wallet || 0;
     // Function to generate unique order number
     function generateUniqueOrder() {
