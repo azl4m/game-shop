@@ -140,7 +140,7 @@
     border-radius: 5px;
     cursor: pointer;
   }
-  .coupon-container .btn-warning{
+  .coupon-container .btn-warning {
     color: white;
     border: none;
     padding: 10px 15px;
@@ -426,10 +426,13 @@
                 <label for="payment-mode">Select Payment Mode:</label>
                 <select id="payment-mode" name="payment-mode">
                   <option value="">Select a Payment Mode</option>
-                  <option id="razorpay-option" value="razorpay">Razorpay</option>
-                  
-                  <option id="cod-option" style="display: none;" value="cod">Cash On Delivery</option>
-                 
+                  <option id="razorpay-option" value="razorpay">
+                    Razorpay
+                  </option>
+
+                  <option id="cod-option" value="cod">
+                    Cash On Delivery
+                  </option>
                 </select>
                 <!-- Payment Details (Shown for Razorpay) -->
                 <div id="paymentDetails" style="display: none">
@@ -452,22 +455,21 @@
                     </span>
                   </td>
 
-                  <td><%=products.length%></td>
+                  <td><%=cart.items.length%></td>
                 </tr>
-                <%products.forEach(product=>{%>
+                <%let total=0%> <%cart.items.forEach(product=>{%>
                 <tr>
                   <td><%=product.name%> <%=product.platform%></td>
 
                   <td>
-                    <span class="price"><%=product.price%></span>
+                    <span class="price"><%=product.productId.offerPrice%></span>
                     <span>X</span>
                     <span class="price"><%=product.quantity%> </span>
                   </td>
                 </tr>
+                <!-- <%total+=product.productId.price%> -->
                 <%})%>
               </table>
-
-
 
               <div class="coupon-container">
                 <label for="coupon">Apply Coupon:</label>
@@ -485,51 +487,26 @@
                   <button class="btn-success w-100" type="submit">
                     Apply Coupon
                   </button>
-                  <% if (typeof appliedCoupon!=='undefined') { %>
-                  <p>Coupon Applied: <%= appliedCoupon.code %></p>
+
+                  <p id="couponApplied"></p>
                   <button
+                    id="removebutton"
                     class="btn-danger w-100"
-                    type="submit"
+                    type="button"
                     form="removeCouponForm"
+                    style="display: none"
                   >
                     Remove Coupon
                   </button>
-                  <% } %>
                 </form>
                 <!-- Hidden form for removing coupon -->
-                <form
-                  id="removeCouponForm"
-                  action="/removeCoupon"
-                  method="POST"
-                ></form>
               </div>
 
               <table>
                 <tr>
-                  <td>Offer Discount</td>
-                  <td><%=totalDiscount%></td>
-                </tr>
-                <tr>
-                  <td>Subtotal</td>
-                  <td><%=subtotal%></td>
-                </tr>
-                <tr>
-                  <td>Delivery</td>
-                  <td>
-                    <span class="price" style="color: black" id="delivery"
-                      ><%=delivery%></span
-                    >
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    <p>Tax</p>
-                  </td>
-                  <td>
-                    <span class="price" style="color: black"
-                      ><b id="tax"><%=tax%></b></span
-                    >
-                  </td>
+                  <td>Subtotal Excl tax</td>
+                  <%let originalTotal = subtotal%>
+                  <td><span id="subtotal"><%=Math.ceil(subtotal)%></span></td>
                 </tr>
 
                 <% if (typeof appliedCoupon!=="undefined") { %>
@@ -543,44 +520,70 @@
                   </td>
                 </tr>
 
-                <% } %> <% if (typeof reducedAmount!=="undefined") { %>
+                <% } %>
                 <tr>
                   <td>Amount Saved:</td>
                   <td>
-                    <span id="reducedAmount"><%=reducedAmount%></span>
+                    <span id="reducedAmount"></span>
                   </td>
                 </tr>
 
-                <% } %>
                 <tr>
                   <td>
-                    <p>Total</p>
+                    <p>Discounted Total</p>
                   </td>
                   <td>
-                    <span class="price" style="color: black"
-                      ><b id="totalPrice"><%=total%></b></span
-                    >
+                    <span
+                      id="totalPrice"
+                      class="price"
+                      style="color: black"
+                    ></span>
                   </td>
                 </tr>
               </table>
             </div>
             <div class="coupon-container">
               <label for="coupon">Wallet Balance</label>
-               <table>
+              <table>
                 <tr>
-                  <td>Balace</td>
+                  <td>Balance</td>
                   <td><%=userDetails.wallet.balance%></td>
                 </tr>
-               </table>
-                <button id="applyWalletBalance" class="btn-warning w-100" type="button">
-                  Redeem Amount
-                </button>
+              </table>
+              <button style="background-color: rgb(17, 141, 131);"
+                id="applyWalletBalance"
+                class="btn btn-warning w-100"
+                type="button"
+              >
+                Redeem Amount
+              </button>
             </div>
           </div>
-          <label>
-            <input type="checkbox" checked="checked" name="sameadr" /> Shipping
-            address same as billing
-          </label>
+          <table>
+            <tr>
+              <td>Delivery</td>
+              <td>
+                <span class="price" style="color: black" id="delivery"></span>
+              </td>
+            </tr>
+            <tr>
+              <td>Tax</td>
+              <td>
+                <span class="price" style="color: black" id="tax"></span>
+              </td>
+            </tr>
+            <tr>
+              <td>Final Price</td>
+              <td>
+                <span class="price" style="color: black" id="finalPrice"></span>
+              </td>
+            </tr>
+          </table>
+            <!-- <label>
+              <input type="checkbox" checked="checked" name="sameadr" /> Shipping
+              address same as billing
+            </label> -->
+          <input hidden type="number" name="walletUsed" id="walletUsed" value="0">
           <button type="submit" class="btn" id="submitLink">
             Proceed to order
           </button>
@@ -595,24 +598,24 @@
 
 <script>
   // Function to update payment options based on total price
-function updatePaymentOptions(totalPrice) {
-  const codOption = document.getElementById("cod-option");
-  const razorpayOption = document.getElementById("razorpay-option")
-  if(totalPrice<=0){
-    razorpayOption.style.display="none"
-  }
-  if (totalPrice < 1000) {
-    codOption.style.display = "block"; // Show COD option
-  } else {
-    codOption.style.display = "none"; // Hide COD option
-    if (document.getElementById("payment-mode").value === "cod") {
-      document.getElementById("payment-mode").value = "razorpay"; // Switch to Razorpay if COD is selected
+  function updatePaymentOptions(totalPrice) {
+    const codOption = document.getElementById("cod-option");
+    const razorpayOption = document.getElementById("razorpay-option");
+    if (totalPrice <= 0) {
+      razorpayOption.style.display = "none";
+    }
+    if (totalPrice < 1000) {
+      codOption.style.display = "block"; // Show COD option
+    } else {
+      codOption.style.display = "none"; // Hide COD option
+      if (document.getElementById("payment-mode").value === "cod") {
+        document.getElementById("payment-mode").value = "razorpay"; // Switch to Razorpay if COD is selected
+      }
     }
   }
-}
 
-// Example call after calculating total price
-updatePaymentOptions(totalPrice);
+  // Example call after calculating total price
+  updatePaymentOptions(totalPrice);
   // for toast
   function showToast(data, result) {
     // toast.className.replace("show","");
@@ -629,16 +632,16 @@ updatePaymentOptions(totalPrice);
     }, 3000); // The toast will disappear after 3 seconds
   }
 
-  document
-    .getElementById("payment-mode")
-    .addEventListener("change", function () {
-      const paymentDetails = document.getElementById("paymentDetails");
-      if (this.value === "razorpay") {
-        paymentDetails.style.display = "block";
-      } else {
-        paymentDetails.style.display = "none";
-      }
-    });
+  // document
+  //   .getElementById("payment-mode")
+  //   .addEventListener("change", function () {
+  //     const paymentDetails = document.getElementById("paymentDetails");
+  //     if (this.value === "razorpay") {
+  //       paymentDetails.style.display = "block";
+  //     } else {
+  //       paymentDetails.style.display = "none";
+  //     }
+  //   });
 
   // Function to display error messages
   function displayError(elementId, message) {
@@ -656,79 +659,172 @@ updatePaymentOptions(totalPrice);
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    
-    document.getElementById("applyWalletBalance").addEventListener("click", function() {
-  // Get wallet balance from the page
-  const walletBalance = "<%= userDetails.wallet.balance %>";
-  const totalPriceElement = document.getElementById("totalPrice");
-  let totalPrice = parseFloat(totalPriceElement.innerText);
-  updatePaymentOptions(totalPrice)
-  if (walletBalance > 0) {
-    // Calculate the reduced amount
-    const reducedAmount = Math.min(totalPrice, walletBalance); // Use the smaller value
+    const removebtn = document.getElementById("removebutton");
+    removebtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const reducedAmount = document.getElementById("reducedAmount");
+      console.log(reducedAmount);
+      const coupon = document.getElementById("coupon");
+      reducedAmount.innerHTML = "";
+      const totalPrice = document.getElementById("totalPrice");
+      totalPrice.innerHTML = "";
+      const subtotal = document.getElementById("subtotal");
+      const finalPrice = document.getElementById("finalPrice");
+      const taxField = document.getElementById("tax");
+      const deliveryField = document.getElementById("delivery");
+      let deliveryCharge = 0;
+      let tax = 0;
+      if (totalPrice.innerHTML) {
+        deliveryCharge = parseFloat(totalPrice.innerHTML) > 1000 ? 0 : 150;
+        deliveryField.innerHTML = deliveryCharge;
+        tax = Math.ceil(0.1 * parseFloat(totalPrice.innerHTML));
+        taxField.innerHTML = Math.ceil(tax);
+        finalPrice.innerHTML =Math.ceil(parseInt(totalPrice.innerHTML)  + deliveryCharge + tax);
+      } else {
+        deliveryCharge = parseFloat(subtotal.innerHTML) > 1000 ? 0 : 150;
+        tax = Math.ceil(0.1 * parseFloat(subtotal.innerHTML));
+        deliveryField.innerHTML = deliveryCharge;
+        taxField.innerHTML =Math.ceil(tax);
+        console.log(deliveryCharge, tax);
 
-    // Make an AJAX request to update the total on the server side
-    fetch("/applyWalletBalance", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        reducedAmount: reducedAmount,
-        totalPrice
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.success) {
-          // Update the total price on the frontend
-          totalPriceElement.innerText = data.updatedTotal
-          updatePaymentOptions(parseFloat(totalPriceElement.innerText))
-          showToast("Wallet balance applied successfully!",1)
-        } else {
-          showToast(data.message,0)
+        finalPrice.innerHTML =Math.ceil(parseInt(subtotal.innerHTML) + deliveryCharge + tax);
+      }
+      updatePaymentOptions(finalPrice.innerHTML)
+    });
+    const subtotal = document.getElementById("subtotal");
+    const finalPrice = document.getElementById("finalPrice");
+    const totalPrice = document.getElementById("totalPrice");
+    const taxField = document.getElementById("tax");
+    const deliveryField = document.getElementById("delivery");
+    let deliveryCharge = 0;
+    let tax = 0;
+    if (totalPrice.innerHTML) {
+      deliveryCharge = parseFloat(totalPrice.innerHTML) > 1000 ? 0 : 150;
+      deliveryField.innerHTML = deliveryCharge;
+      tax = Math.ceil(0.1 * parseFloat(totalPrice.innerHTML));
+      taxField.innerHTML = Math.ceil(tax);
+      finalPrice.innerHTML =Math.ceil(parseInt(totalPrice.innerHTML)  + deliveryCharge + tax);
+    } else {
+      deliveryCharge = parseFloat(subtotal.innerHTML) > 1000 ? 0 : 150;
+      tax = Math.ceil(0.1 * parseFloat(subtotal.innerHTML));
+      deliveryField.innerHTML = deliveryCharge;
+      taxField.innerHTML = Math.ceil(tax);
+
+      finalPrice.innerHTML =Math.ceil(parseInt(subtotal.innerHTML) + deliveryCharge + tax);
+    }
+    updatePaymentOptions(finalPrice.innerHTML)
+    const couponForm = document.getElementById("applyCouponForm");
+    const coupon = document.getElementById("coupon");
+    couponForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const couponid = coupon.value;
+      if (!couponid) {
+        showToast("please select a coupon", 0);
+        return;
+      }
+      try {
+        const response = await fetch("/applyCoupon", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            couponid,
+            total: "<%=subtotal%>",
+          }),
+        });
+        if (response.ok) {
+          const data = await response.json();
+          console.log("inside apply coupon fetch response");
+
+          const reducedAmount = document.getElementById("reducedAmount");
+
+          const totalPrice = document.getElementById("totalPrice");
+
+          reducedAmount.innerText = Math.ceil(data.discount);
+          totalPrice.innerHTML = Math.ceil(data.updatedTotal);
+          const removebtn = document.getElementById("removebutton");
+          removebtn.style.display = "block";
+          const couponcode = document.getElementById("couponApplied");
+          couponcode.innerHTML = `Coupon Applied: ${data.couponName}`;
+          const subtotal = document.getElementById("subtotal");
+          const finalPrice = document.getElementById("finalPrice");
+          const taxField = document.getElementById("tax");
+          const deliveryField = document.getElementById("delivery");
+          let deliveryCharge = 0;
+          let tax = 0;
+          if (totalPrice.innerHTML) {
+            deliveryCharge = parseFloat(totalPrice.innerHTML) > 1000 ? 0 : 150;
+            deliveryField.innerHTML = deliveryCharge;
+            tax = 0.1 * parseFloat(totalPrice.innerHTML);
+            taxField.innerHTML = Math.ceil(tax);
+            finalPrice.innerHTML =Math.ceil(parseInt(totalPrice.innerHTML)  + deliveryCharge + tax); 
+          } else {
+            deliveryCharge = parseFloat(subtotal.innerHTML) > 1000 ? 0 : 150;
+            tax = 0.1 * parseFloat(subtotal.innerHTML);
+            deliveryField.innerHTML = deliveryCharge;
+            taxField.innerHTML = Math.ceil(tax);
+
+            finalPrice.innerHTML =Math.ceil(parseFloat(subtotal.innerHTML) + deliveryCharge + tax) 
+          }
+          updatePaymentOptions(finalPrice.innerHTML)
         }
-      })
-      .catch((error) => {
-        console.error("Error applying wallet balance:", error);
-        showToast("Failed to apply wallet balance. Try again.",0)
+      } catch (error) {
+        console.error("error applying coupon :" + error.message);
+      }
+    });
+
+    document
+      .getElementById("applyWalletBalance")
+      .addEventListener("click", function () {
+        // Get wallet balance from the page
+        const walletBalance = "<%= userDetails.wallet.balance %>";
+        const totalPriceElement = document.getElementById("finalPrice");
+        let totalPrice = parseFloat(totalPriceElement.innerText);
+        updatePaymentOptions(totalPrice);
+        if (walletBalance > 0) {
+          // Calculate the reduced amount
+          const reducedAmount = Math.min(totalPrice, walletBalance); // Use the smaller value
+
+          // Make an AJAX request to update the total on the server side
+          fetch("/applyWalletBalance", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              reducedAmount: reducedAmount,
+              totalPrice,
+            }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                const walletUsed = document.getElementById("walletUsed")
+                // Update the total price on the frontend
+                totalPriceElement.innerText = Math.ceil(data.updatedTotal);
+                updatePaymentOptions(parseFloat(totalPriceElement.innerText));
+                walletUsed.value = 1;
+                showToast("Wallet balance applied successfully!", 1);
+              } else {
+                showToast(data.message, 0);
+              }
+            })
+            .catch((error) => {
+              console.error("Error applying wallet balance:", error);
+              showToast("Failed to apply wallet balance. Try again.", 0);
+            });
+        } else {
+          showToast("Insufficient wallet balance.", 0);
+        }
       });
-  } else {
-    showToast("Insufficient wallet balance.",0)
-  }
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     const addressSelect = document.getElementById("address");
 
     // Get form fields
     const emailField = document.getElementById("email");
     const nameField = document.getElementById("fname");
-    const priceField = document.getElementById("totalPrice");
+    const priceField = document.getElementById("finalPrice");
     const reducedAmountField = document.getElementById("reducedAmount");
     const couponidField = document.getElementById("couponCode");
     // const addressField = document.getElementById("address")
@@ -792,10 +888,13 @@ updatePaymentOptions(totalPrice);
       if (!isValid) {
         return; // If validation fails, stop further processing (i.e., prevent fetch)
       }
-      const deliverid = document.getElementById("delivery")
-      const deliveryVal = parseInt(deliverid.innerHTML)
+      const deliverid = document.getElementById("delivery");
+      const deliveryVal = parseInt(deliverid.innerHTML);
       const addressField = document.getElementById("address");
       const addressid = addressField.value;
+      const walletUsedField = document.getElementById("walletUsed")
+      const walletUsed = walletUsedField.value
+      const tax = parseFloat(taxField.innerHTML)
       try {
         const response = await fetch(`/checkout`, {
           method: "POST",
@@ -809,12 +908,13 @@ updatePaymentOptions(totalPrice);
             address: addressid,
             fname: nameVal, // Sending fname (full name)
             couponCode: couponCode,
-            delivery:deliveryVal
+            delivery: deliveryVal,
+            walletUsed,
+            tax
           }),
         });
         const data = await response.json();
         if (paymentVal === "cod" && response.ok) {
-         
           showToast("Order Placed", 1);
           setTimeout(() => {
             window.location.href = `orderSuccess?orderId=${data.orderId}`;
@@ -851,7 +951,7 @@ updatePaymentOptions(totalPrice);
                   }, 2000);
                 } else {
                   alert("Payment Verification failed, Please try again");
-                  window.location.href = `/paymentFailed?orderId=${data.orderId}`
+                  window.location.href = `/paymentFailed?orderId=${data.orderId}`;
                 }
               } catch (error) {
                 console.error("Error verifying payment:", error.message);

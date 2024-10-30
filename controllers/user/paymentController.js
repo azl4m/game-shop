@@ -34,10 +34,13 @@ const razorpayPaymentVerification = async (req, res) => {
         await walletHelper.addWalletTransaction(order.user,order.walletDeduction,"debit",`Wallet amount debited for order :${order.orderNumber} `)
       } 
       // Update order with successful payment details
+      
+      
       order.paymentStatus = "Success";
-      order.orderStatus = "Processing";
-      await paymentTimeStamp.statusTime(order.orderStatus, order._id);
-      await paymentTimeStamp.paymentStatusTime(order.paymentStatus, order._id);
+      // order.orderStatus = "Processing";
+      await paymentTimeStamp.statusAndTimeStamp("Processing",order._id)
+      // await paymentTimeStamp.statusTime(order.orderStatus, order._id);
+      // await paymentTimeStamp.paymentStatusTime(order.paymentStatus, order._id);
       order.paymentId = razorpay_payment_id; // Use the payment ID from Razorpay
       order.paymentDate = Date.now();
 
@@ -61,6 +64,7 @@ const razorpayPaymentVerification = async (req, res) => {
     }
   } catch (error) {
     console.log("error at payment verify" + error.message);
+    return res.status(500).json({message:error.message})
   }
 };
 

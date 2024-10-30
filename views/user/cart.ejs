@@ -72,6 +72,7 @@
                class="card card-registration card-registration-2"
                style="border: none;"
                >
+               <%if(!empty){%>
                <div class="card-body p-0">
                   <div class="row g-0">
                      <div class="col-lg-8">  
@@ -80,24 +81,25 @@
                               class="d-flex justify-content-between align-items-center mb-5"
                               >
                               <h1 class="fw-bold mb-0">Shopping Cart</h1>
-                              <h6 class="mb-0 text-muted"><%=items.length %> items</h6>
+                              <h6 class="mb-0 text-muted"><%=cart.items.length %> items</h6>
                            </div>
                            <hr class="my-4" />
-                           <%for(let i=0;i<items.length;i++){%>
+                           <%let subtotal=0;%>
+                           <%for(let i=0;i<cart.items.length;i++){%>
                            <div
                               class="row mb-4 d-flex justify-content-between align-items-center"
                               >
                               <div class="col-md-2 col-lg-2 col-xl-2">
                                  <img
-                                    src="<%=items[i].images[0]%>"
+                                    src="<%=cart.items[i].productId.images[0]%>"
                                     class="img-fluid rounded-3"
-                                    alt="<%=items[i].productName%>"
+                                    alt="<%=cart.items[i].productId.productName%>"
                                     />
                               </div>
                               <div class="col-md-3 col-lg-3 col-xl-3">
                                  <h6 class="text-muted"></h6>
-                                 <h5 class="mb-0"><%=items[i].productName%></h5>
-                                 <h6 class="mb-0"><%=items[i].platform%></h6>
+                                 <h5 class="mb-0"><%=cart.items[i].productId.productName%></h5>
+                                 <h6 class="mb-0"><%=cart.items[i].platform%></h6>
                               </div>
                               <div class="col-md-3 col-lg-3 col-xl-2 d-flex">
                                  <button
@@ -111,11 +113,11 @@
                                     id="form1"
                                     min="0"
                                     name="quantity"
-                                    value="<%=items[i].quantity%>"
+                                    value="<%=cart.items[i].quantity%>"
                                     type="number"
                                     class="form-control form-control-sm cart-quantity"
-                                    data-id="<%= items[i].productId%>" 
-                                    data-platform="<%=items[i].platform%>">
+                                    data-id="<%= cart.items[i].productId._id%>" 
+                                    data-platform="<%=cart.items[i].platform%>">
                                     
                                  <button
                                     data-mdb-button-init
@@ -125,21 +127,20 @@
                                  <i class="fas fa-plus"></i>
                                  </button>
                               </div>
-                              <!-- <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
-                                 <h6 class="mb-0">₹ <%=items[i].price.toFixed(2)%></h6>
-                              </div> -->
+                           
                               <div class="col-md-3 col-lg-2 col-xl-2 offset-lg-1">
-                                 <h6 class="mb-0">₹ <%=items[i].discountedPrice%></h6>
+                                 <h6 class="mb-0">₹ <%=Math.floor(cart.items[i].productId.offerPrice)%></h6>
                               </div>
                              
                               <div class="col-md-1 col-lg-1 col-xl-1 text-end">
                                  <a href="#!" class="text-muted"
-                                    ><a href="" class="remove-item" data-id="<%= items[i].productId%>" data-platform="<%=items[i].platform%>"><i class="fas fa-times"></i></a></i
+                                    ><a href="" class="remove-item" data-id="<%= cart.items[i].productId._id%>" data-platform="<%=cart.items[i].platform%>"><i class="fas fa-times"></i></a></i
                                     ></a>
                               </div>
                            </div>
+                           <%subtotal+= cart.items[i].productId.offerPrice*cart.items[i].quantity%>
                            <%}%>
-                           <div id="toast" class="toast"></div>
+                          
                            <hr class="my-4" />
                            <hr class="my-4" />
                            <div class="pt-5">
@@ -162,7 +163,7 @@
                                     <h5 class="text-uppercase">items </h5>
                                  </td>
                                  <td>
-                                    <h5><%=items.length %></h5>
+                                    <h5><%=cart.items.length %></h5>
                                  </td>
                               </tr>
                               <tr>
@@ -171,29 +172,19 @@
                                  </td>
                                  <td>
                                     <h5>
-                                       ₹<%=subtotal%>
+                                       ₹<%=Math.floor(subtotal)%>
+                                       <%let tax = subtotal*0.1%>
                                     </h5>
                                  </td>
                               </tr>
-                              <tr>
-                                 <td>
-                                    <h5 id="totalDiscount">Discount </h5>
-                                 </td>
-                                 <td>
-                                    <h5>
-                                      
-                                       ₹<%=totalDiscount%>
-                                   
-                                    </h5>
-                                 </td>
-                              </tr>
+                           
                               <tr>
                                  <td>
                                     <h5 id="tax">tax </h5>
                                  </td>
                                  <td>
                                     <h5>
-                                       ₹<%=tax%>
+                                       ₹<%=Math.ceil(tax)%>
                                     </h5>
                                  </td>
                               </tr>
@@ -201,7 +192,9 @@
                            <h5 class="text-uppercase mb-3">Shipping</h5>
                            <div class="mb-4 pb-2">
                               <select data-mdb-select-init>
-                                 <option value="1">Standard-Delivery- ₹<%=deliveryCharge%></option>
+                                 <%let delivery=subtotal+tax>1000?0:150%>
+                                 <option value="1">Standard-Delivery- ₹<%=delivery%></option>
+                              
                               </select>
                            </div>
                            
@@ -210,7 +203,7 @@
                            <div class="d-flex justify-content-between mb-5">
                              
                               <h5 class="text-uppercase">Total</h5>
-                              <h5 id="total">₹ <%=total%></h5>
+                              <h5 id="total">₹ <%=Math.ceil(delivery+subtotal+tax)%></h5>
                            </div>
                            <button
                               type="button"
@@ -224,10 +217,12 @@
                      </div>
                   </div>
                </div>
+               <%}%>
             </div>
          </div>
       </div>
    </div>
+   <div id="toast" class="toast"></div>
    <div id="empty" style="display: none;" class="" ><%=empty%></div>
    <div id="message" style="display: none;" class="" ><%=message%></div>
   </section>
@@ -254,8 +249,12 @@
 
     const isEmpty = emptyid.innerHTML.trim()
     const message = messageid.innerHTML.trim()
+    console.log(message);
+    
          if(isEmpty==="true"){
-          showToast(message,0)
+            console.log("inside empty");
+            
+          showToast(message.toString(),0)
           setTimeout(() => {
         window.location.href = '/products'; 
       }, 2000); 
