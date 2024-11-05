@@ -15,7 +15,7 @@
                <div class="card-action">Orders List</div>
                <div class="card-content">
                   <div class="table-responsive">
-                     <div class="row">
+                     <!-- <div class="row">
                         <div class="col-sm-6">
                            <div id="dataTables-example_filter" class="dataTables_filter">
                               <form action="" method="get">
@@ -31,7 +31,7 @@
                               </form>
                            </div>
                         </div>
-                     </div>
+                     </div> -->
                      <table
                         class="table table-striped table-bordered table-hover"
                         id="dataTables-example"
@@ -39,75 +39,79 @@
                         <thead>
                            <tr>
                               <th>Name</th>
-                              <th>Email</th>
                               <th>Price</th>
                               <th>Payment Method</th>
-                              <th>View More Details</th>
+                              <th>Order Status</th>
+                              <th>Change Status</th>
                            </tr>
                         </thead>
                         <tbody>
                             <% if (typeof data !== 'undefined') { %>
-                                <% for (let i = 0; i < data.length; i++) { %>
+                                <% for (let i = 0; i < data.cartItems.length; i++) { %>
                                     <tr class="odd gradeX">
-                                        <td><%= data[i].user.username %></td>
-                                        <td><%= data[i].user.email %></td>
-                                        <td><%= data[i].totalPrice %></td>
-                                        <td><%= data[i].paymentMethod %></td>
-                                        <!-- <td>
+                                        <td><%= data.cartItems[i].product.productName %></td>
+                                        <td><%= data.cartItems[i].finalPrice %></td>
+                                        <td><%= data.paymentMethod %></td>
+                                        <td><%= data.cartItems[i].orderStatus %></td>
+                                        <td>
                                           <form action="/admin/orderStatus" method="GET">
                                             <select class="form-select" name="status" onchange="this.form.submit()" style="width: auto; display: inline-block;">
                                               <option disabled selected>Change Status</option>
                                         
-                                              <% if (data[i].orderStatus === 'Pending') { %>
-                                                All options except Pending are available
+                                              <% if (data.cartItems[i].orderStatus === 'Pending') { %>
+                                                <!-- All options except Pending are available -->
                                                 <option value="Processing">Processing</option>
                                                 <option value="Shipped">Shipped</option>
                                                 <option value="outForDelivery">Out For Delivery</option>
                                                 <option value="Delivered">Delivered</option>
                                                 <option value="Cancelled">Cancelled</option>
                                         
-                                              <% } else if (data[i].orderStatus === 'Processing') { %>
-                                                Pending is not available, rest are available
+                                              <% } else if (data.cartItems[i].orderStatus === 'Processing') { %>
+                                                <!-- Pending is not available, rest are available -->
                                                 <option value="Shipped">Shipped</option>
                                                 <option value="outForDelivery">Out For Delivery</option>
                                                 <option value="Delivered">Delivered</option>
                                                 <option value="Cancelled">Cancelled</option>
                                         
-                                              <% } else if (data[i].orderStatus === 'Shipped') { %>
-                                                Pending and Processing are not available
+                                              <% } else if (data.cartItems[i].orderStatus === 'Shipped') { %>
+                                                <!-- Pending and Processing are not available -->
                                                 <option value="outForDelivery">Out For Delivery</option>
                                                 <option value="Delivered">Delivered</option>
                                                 <option value="Cancelled">Cancelled</option>
                                         
-                                              <% } else if (data[i].orderStatus === 'outForDelivery') { %>
-                                                Pending, Processing, and Shipped are not available
+                                              <% } else if (data.cartItems[i].orderStatus === 'outForDelivery') { %>
+                                                <!-- Pending, Processing, and Shipped are not available -->
                                                 <option value="Delivered">Delivered</option>
                                                 <option value="Cancelled">Cancelled</option>
                                         
-                                              <% } else if (data[i].orderStatus === 'Delivered' || data[i].orderStatus === 'Cancelled') { %>
-                                                No options available once Delivered or Cancelled
+                                              <% } else if (data.cartItems[i].orderStatus === 'Delivered' || data.cartItems[i].orderStatus === 'Cancelled') { %>
+                                                <!-- No options available once Delivered or Cancelled -->
                                                 <option disabled>No Further Actions</option>
                                         
-                                              <% } else if (data[i].orderStatus === 'Returned') { %>
+                                              <% } else if (data.cartItems[i].orderStatus === 'Returned') { %>
                                                 <option disabled>Order is Returned</option>
                                               <% } %>
                                         
                                             </select>
-                                            <input type="hidden" name="id" value="<%= data[i]._id %>">
+                                            <input type="hidden" id="orderid" name="orderid" value="<%=data._id%>">
+                                            <input type="hidden" id="itemid" name="itemid" value="<%=i%>">
                                           </form>
                                         </td>
-                                         -->
                                         
+                                        
+                                       
                                         <td>
-                                          <a href="/admin/orderDetails?id=<%=data[i]._id%>">View Order Details</a>
-                                        </td>
-                                        <td>
-                                          <%if(data[i].isCancelled){%>
-                                             <%if(!data[i].cancelAccepted){%>
-                                                <a href="/admin/acceptCancel?id=<%=data[i]._id%>">Accept Cancellation</a>
-                                                <%}%>
+                                          <%if(data.cartItems[i].isCancelled && data.cartItems[i].cancelAccepted==="PENDING"){%>
+                                                <button class="btn-success"><a style="text-decoration: none; color: white;" href="/admin/acceptCancel?orderid=<%=data._id%>&cartItem=<%=i%>">Accept Cancellation</a></button>
+                                                <button class="btn-danger"><a style="text-decoration: none; color: white;" href="/admin/rejectCancel?orderid=<%=data._id%>&cartItem=<%=i%>">Reject Cancellation</a></button>
                                              <%}%>
                                         </td>
+                                        <td>
+                                            <%if(data.cartItems[i].isReturned && data.cartItems[i].returnAccepted==="PENDING"){%>
+                                                  <button class="btn-success"><a style="text-decoration: none; color: white;" href="/admin/acceptReturn?orderid=<%=data._id%>&cartItem=<%=i%>">Accept Return</a></button> 
+                                                  <button class="btn-danger"><a style="text-decoration: none; color: white;" href="/admin/rejectReturn?orderid=<%=data._id%>&cartItem=<%=i%>">Reject Return</a></button>
+                                               <%}%>
+                                          </td>
                                     </tr>
                                 <% } %>
                             <% } %>

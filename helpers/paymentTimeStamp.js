@@ -59,6 +59,47 @@ const statusTime = async (status, id) => {
     console.log("error in statuse time stapm " + error.message);
   }
 };
+
+const statusTimeIndex = async (status, id, index) => {
+  try {
+    let updateQuery = {};
+
+    // Determine the correct field based on the status
+    switch (status) {
+      case "Pending":
+        updateQuery[`cartItems.${index}.statusTimestamps.pendingAt`] = new Date();
+        break;
+      case "Processing":
+        updateQuery[`cartItems.${index}.statusTimestamps.processingAt`] = new Date();
+        break;
+      case "Shipped":
+        updateQuery[`cartItems.${index}.statusTimestamps.shippedAt`] = new Date();
+        break;
+      case "outForDelivery":
+        updateQuery[`cartItems.${index}.statusTimestamps.outForDeliveryAt`] = new Date();
+        break;
+      case "Delivered":
+        updateQuery[`cartItems.${index}.statusTimestamps.deliveredAt`] = new Date();
+        break;
+      case "Cancelled":
+        updateQuery[`cartItems.${index}.statusTimestamps.cancelledAt`] = new Date();
+        break;
+      case "Returned":
+        updateQuery[`cartItems.${index}.statusTimestamps.returnedAt`] = new Date();
+        break;
+      default:
+        console.log("No status matched");
+        return;
+    }
+
+    // Update the specific cart item at the given index in the cartItems array
+    await Order.findByIdAndUpdate(id, {
+      $set: updateQuery,
+    });
+  } catch (error) {
+    console.log("Error in status time update: " + error.message);
+  }
+};
 const statusAndTimeStamp = async (status, id) => {
   try {
     switch (status) {
@@ -223,10 +264,50 @@ const returnStatusTime = async (status, id, index) => {
     console.error("Error updating return status: ", error);
   }
 };
+const cacnelStatusTime = async (status, id, index) => {
+  try {
+    let updateQuery = {};
+
+    switch (status) {
+      case "PENDING":
+        // Update the pending timestamp for the specific cart item
+        updateQuery[`cartItems.${index}.cancelTimeStamp.pendingAt`] =
+          new Date();
+        updateQuery[`cartItems.${index}.cancelAccepted`] = "PENDING";
+        break;
+
+      case "ACCEPTED":
+        // Update the accepted timestamp for the specific cart item
+        updateQuery[`cartItems.${index}.cancelTimeStamp.acceptedAt`] =
+          new Date();
+        updateQuery[`cartItems.${index}.cancelAccepted`] = "ACCEPTED";
+        break;
+
+      case "REJECTED":
+        // Update the rejected timestamp for the specific cart item
+        updateQuery[`cartItems.${index}.cancelTimeStamp.rejectedAt`] =
+          new Date();
+        updateQuery[`cartItems.${index}.cancelAccepted`] = "REJECTED";
+        break;
+
+      default:
+        throw new Error("Invalid cancel status");
+    }
+
+    // Update the order with the new timestamp for the specified cart item
+    await Order.findByIdAndUpdate(id, {
+      $set: updateQuery,
+    });
+  } catch (error) {
+    console.error("Error updating return status: ", error);
+  }
+};
 
 module.exports = {
   statusTime,
   paymentStatusTime,
   returnStatusTime,
   statusAndTimeStamp,
+  cacnelStatusTime,
+  statusTimeIndex
 };

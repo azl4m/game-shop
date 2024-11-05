@@ -1,211 +1,196 @@
 <%- include("../partials/user/header.ejs")%>
 
 <style>
+  /* General Styles */
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8f9fa;
+  }
+
   .container {
-    max-width: 1200px; /* Limit the width of the container */
+    max-width: 1200px;
+    margin: 2rem auto;
   }
 
-  h2,
-  h5 {
-    font-weight: bold;
-    color: #333; /* Darker color for better contrast */
+  h2 {
+    font-weight: 600;
+    margin-bottom: 1.5rem;
   }
 
-  .text-charcoal {
-    color: #333; /* Darker color for headers */
+  /* Order Card Styles */
+  .order-card {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
   }
 
-  .text-pebble {
-    color: #7a7a7a; /* Lighter color for supporting text */
+  .order-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
   }
 
-  .list-group-item {
-    border-radius: 10px; /* Rounded corners for list items */
-    border: none; /* Remove default border */
-    transition: box-shadow 0.3s; /* Smooth transition for hover effects */
+  .order-info h5 {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
   }
 
-  .list-group-item:hover {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Add shadow on hover */
+  .order-info p {
+    margin-bottom: 0;
+    color: #666;
   }
 
-  .alert {
-    border-radius: 8px; /* Rounded corners for alerts */
-    background-color: #d4edda; /* Light green background */
-    border: 1px solid #c3e6cb; /* Green border */
+  .product-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
   }
 
-  .btn {
-    border-radius: 25px; /* Rounded button corners */
+  .product-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-right: 1rem;
   }
 
-  .btn-primary {
-    background-color: #007bff; /* Primary button color */
-    border-color: #007bff; /* Primary button border color */
+  .product-details h6 {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
   }
 
-  .btn-success {
-    background-color: #28a745; /* Success button color */
-    border-color: #28a745; /* Success button border color */
+  .product-details ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0 0 0.5rem 0;
+    font-size: 0.875rem;
   }
 
-  .btn-danger {
-    background-color: #dc3545; /* Danger button color */
-      border-color: #dc3545; /* Danger button border color */
+  .product-actions {
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
   }
 
-  .btn:hover {
-    opacity: 0.8; /* Slightly dim buttons on hover */
+  .product-actions .btn {
+    margin-bottom: 0.5rem;
   }
 
-  .img-fluid {
-    max-width: 80px; /* Limit image size */
-    height: auto; /* Maintain aspect ratio */
-  }
-
-  @media (max-width: 576px) {
-    .hidden-sm-down {
-      display: none; /* Hide on small screens */
+  /* Responsive Styles */
+  @media (max-width: 767px) {
+    .order-info {
+      flex-direction: column;
+      align-items: flex-start;
     }
-  }
 
-  @media (min-width: 576px) {
-    .hidden-md-up {
-      display: none; /* Hide on medium and up screens */
+    .order-info h5,
+    .order-info p {
+      margin-bottom: 0.5rem;
     }
-  }
-  #invoiceDiv {
-    border-radius: 5px;
-  }
-  #invoiceDiv:hover {
-    background-color: #007bff;
-    transform: scale(0.99); /* Slightly enlarge the div */
-    cursor: pointer;
+
+    .product-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .product-image {
+      margin-right: 0;
+      margin-bottom: 1rem;
+    }
+
+    .product-actions {
+      margin-left: 0;
+      margin-top: 1rem;
+      align-items: flex-start;
+    }
+
+    .product-actions .btn {
+      margin-right: 0.75rem;
+    }
   }
 </style>
 
-<div class="container mt-3 mt-md-5">
-  <h2 class="text-charcoal hidden-sm-down">Your Orders</h2>
-  <h5 class="text-charcoal hidden-md-up">Your Orders</h5>
-  <div class="row">
-    <div class="col-12">
-      <div class="list-group mb-5">
-        <div class="list-group-item p-4 bg-snow" style="position: relative">
-          <div class="row w-100 no-gutters">
-            <div class="col-6 col-md">
-              <h6 class="text-charcoal mb-0">Order Number</h6>
-              <a href="#" class="text-pebble mb-0"><%= order.orderNumber %></a>
-            </div>
-            <div class="col-6 col-md">
-              <h6 class="text-charcoal mb-0">Date</h6>
-              <p class="text-pebble mb-0">
-                <%= moment(order.orderDate).format("MMM Do, YYYY") %>
-              </p>
-            </div>
-            <div class="col-6 col-md">
-              <h6 class="text-charcoal mb-0">Total</h6>
-              <p class="text-pebble mb-0">₹<%= order.totalPrice %></p>
-            </div>
-            <div class="col-6 col-md">
-              <h6 class="text-charcoal mb-0">Shipped To</h6>
-              <p class="text-pebble mb-0"><%= order.shippingAddress.name %></p>
-            </div>
-          </div>
-        </div>
+<div class="container">
+  <h2>Your Orders</h2>
 
-        <!-- Dynamic Delivery Date Estimation -->
-        <div class="list-group-item p-4 bg-white">
-          <div class="row no-gutters">
-            <div class="col-12 col-md-9 pr-0 pr-md-3">
-              <div class="alert p-2 alert-success w-100 mb-3 text-center">
-                <h6 class="text-green mb-0">
-                  <b>
-                    <% if (order.isCancelled && !order.cancelAccepted) { %>
-                    Cancellation Request Pending <% } else { %> <%=
-                    order.orderStatus %> <% } %>
-                  </b>
-                </h6>
+  <% order.cartItems.forEach((item,i) => { %>
 
-                <%if(order.orderStatus !=="Delivered" && order.orderStatus !==
-                "Cancelled"){%>
-                <p class="text-green hidden-sm-down mb-0">
-                  Est. delivery between <%= moment(order.orderDate).add(5,
-                  'days').format("MMM Do") %> – <%=
-                  moment(order.orderDate).add(9, 'days').format("MMM Do") %>
-                </p>
-                <%}%>
-              </div>
-            </div>
+    <%if(item.orderStatus === "Delivered" && item.isReturned && item.returnAccept === "PENDING"){%>
+    <div class="alert alert-warning mb-0">
+      <h6 class="mb-0">Return Accept Pending</h6>
+    </div>
+    <%if(item.orderStatus ==="Delivered" && item.isReturned && item.returnAccept === "REJECTED"){%>
+      <div class="alert alert-warning mb-0">
+        <h6 class="mb-0">Sorry we couldnot accept your return request</h6>
+      </div>
+      <%}%>
+    <%}%>
+    <%if(item.isCancelled && item.cancelAccept === "PENDING"){%>
+    <div class="alert alert-warning mb-0">
+      <h6 class="mb-0">Cancel Accept Pending</h6>
+    </div>
+    <%}%>
+    <%if(item.orderStatus !=="Delivered" && item.isCancelled && item.cancelAccept === "REJECTED"){%>
+      <div class="alert alert-warning mb-0">
+        <h6 class="mb-0">Sorry we couldnot accept your cancel request</h6>
+      </div>
+      <%}%>
 
-            <div class="col-12 col-md-3">
-              <% if(!order.isCancelled&&order.orderStatus!=="Delivered"){ %>
-              <a
-                href="/cancelOrder?id=<%=order._id%>"
-                class="btn btn-danger w-100 mb-2"
-                >Cancel Order</a
-              >
-              <%}%> <% if(order.paymentStatus==="Failed"){ %>
-              <a
-                href="/retryPayment?id=<%=order._id%>"
-                data-href="<%=order._id%>"
-                id="retrylink"
-                class="btn btn-success w-100 mb-2"
-                >Pay now</a
-              >
-              <%}%>
-            </div>
-
-            <div class="row no-gutters mt-3">
-              <% order.cartItems.forEach(item => { %>
-              <div class="col-12 d-flex align-items-start mb-3">
-                <div class="col-3 col-md-1 pr-0">
-                  <img
-                    class="img-fluid"
-                    src="<%=item.product.images[0]%>"
-                    alt=""
-                  />
-                </div>
-                <div class="col-9 col-md-8 pr-3">
-                  <h6 class="text-charcoal mb-1">
-                    <a href="#" class="text-charcoal"
-                      ><%= item.quantity %> x <%= item.product.productName %></a
-                    >
-                  </h6>
-                  <ul class="list-unstyled text-pebble mb-1 small">
-                    <li><b>Platform:</b> <%= item.platform %></li>
-                  </ul>
-                  <h6 class="text-charcoal mb-0"><b>₹<%= item.price %></b></h6>
-                </div>
-                <div class="col-12 col-md-3 hidden-sm-down">
-                  <a
-                    href="/productDetails?id=<%=item.product._id%>"
-                    class="btn btn-success w-100 mb-1"
-                    >Buy It Again</a
-                  >
-                  <%if(order.orderStatus==="Delivered"){%>
-                  <a
-                    class="btn btn-warning w-100 mb-1"
-                    href="/downloadInvoice?orderId=<%=order._id%>&productId=<%=item.product._id%>&platform=<%=item.platform%>"
-                    >Download Invoice</a
-                  >
-                  <a class="btn btn-primary w-100 mb-1" href="/addReview?productId=<%=item.product._id%>">Writa a review</a>
-                  <% if (!item.isReturned) { %>
-                  <a
-                    href="/requestReturn?orderid=<%= order._id %>&product=<%= item.product._id %>&platform=<%=item.platform%>"
-                    class="btn btn-danger w-100"
-                    >Request a Return</a
-                  >
-                  <% } %> <%}%>
-                </div>
-              </div>
-              <% }) %>
-            </div>
-          </div>
-        </div>
+  <div class="order-card">
+    <div class="order-info">
+      <div>
+        <h5>Order #<%= order.orderNumber %></h5>
+        <p><%= moment(order.orderDate).format("MMM Do, YYYY") %></p>
+      </div>
+      <div>
+        <p>Total: ₹<%= order.totalPrice %></p>
+        <p>Shipped to: <%= order.shippingAddress.name %></p>
       </div>
     </div>
+
+    <div class="product-item">
+      <img src="<%= item.product.images[0] %>" alt="Product Image" class="product-image">
+      <div class="product-details">
+        <h6><%= item.quantity %> x <%= item.product.productName %></h6>
+        <ul>
+          <li><b>Platform:</b> <%= item.platform %></li>
+        </ul>
+        <p><b>₹<%= item.price %></b></p>
+      </div>
+      <div class="product-actions">
+        <a class="btn btn-primary" href="/trackItem?orderId=<%=order._id%>&cartItemIndex=<%=i%>">Track item</a>
+        <% if (!item.isCancelled && item.orderStatus !== "Delivered" && item.orderStatus !== "Returned") { %>
+          <a href="/requestCancel?orderid=<%= order._id %>&product=<%= item.product._id %>&platform=<%=item.platform%>" class="btn btn-danger">Cancel Product</a>
+        <% } %>
+        <% if (order.paymentStatus === "Failed") { %>
+          <a href="/retryPayment?id=<%=order._id%>" id="retrylink" data-href="<%=order._id%>" class="btn btn-success">Pay Now</a>
+        <% } %>
+        <% if(item.orderStatus === "Delivered") { %>
+          <a href="/downloadInvoice?orderId=<%=order._id%>&productId=<%=item.product._id%>&platform=<%=item.platform%>" class="btn btn-warning">Download Invoice</a>
+          <a href="/addReview?productId=<%=item.product._id%>" class="btn btn-primary">Write a Review</a>
+          <% if (!item.isReturned) { %>
+            <a href="/requestReturn?orderid=<%= order._id %>&product=<%= item.product._id %>&platform=<%=item.platform%>" class="btn btn-danger">Request Return</a>
+          <% } %>
+        <% } %>
+      </div>
+    </div>
+
+    <div class="alert alert-info mb-0">
+      <h6 class="mb-0"><b><%= item.orderStatus === "Delivered" ? "Order Delivered" : item.orderStatus %></b></h6>
+      <% if(item.orderStatus !== "Delivered" && item.orderStatus !== "Cancelled" && item.orderStatus !== "Returned"){ %>
+        <p class="mb-0">Est. delivery between <%= moment(order.orderDate).add(5, 'days').format("MMM Do") %> – <%= moment(order.orderDate).add(9, 'days').format("MMM Do") %></p>
+      <% } %>
+    </div>
   </div>
+  <% }) %>
 </div>
+<%- include("../partials/user/footer.ejs")%>
+
+
 <script>
   window.addEventListener("DOMContentLoaded", function () {
     const retrylink = document.getElementById("retrylink");
@@ -275,7 +260,7 @@
             alert(data.message || "Payment verification failed");
             window.location.href = `/paymentFailed?orderId=${data.orderId}`;
           }
-        })
+        }) 
         .catch((err) => {
           console.error("Error verifying payment:", err);
           alert("Payment verification failed");
@@ -284,4 +269,3 @@
   });
 </script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-<%- include("../partials/user/footer.ejs")%>

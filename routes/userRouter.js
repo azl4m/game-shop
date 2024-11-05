@@ -88,8 +88,9 @@ user.get('/ordersListing',addminAuth.isLogout,auth.isLogin,orderController.order
 user.get('/orderDetails',addminAuth.isLogout,auth.isLogin,orderController.orderDetails)
 user.get('/requestReturn',addminAuth.isLogout,auth.isLogin,orderController.requestReturn)
 user.get('/orderSuccess',addminAuth.isLogout,auth.isLogin,orderController.orderSuccessLoad)
-user.get('/cancelOrder',addminAuth.isLogout,auth.isLogin,orderController.requestCancel)
+user.get('/requestCancel',addminAuth.isLogout,auth.isLogin,orderController.requestCancel)
 user.get('/downloadInvoice',addminAuth.isLogout,auth.isLogin,orderController.downloadInvoice)
+user.get("/trackItem",auth.isLogin,orderController.trackItem)
 //razorpay
 user.post("/verifyPayment",addminAuth.isLogout,auth.isLogin,paymentController.razorpayPaymentVerification)
 user.get("/paymentFailed",auth.isLogin,paymentController.paymentFailure)

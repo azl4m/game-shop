@@ -1,0 +1,157 @@
+<%- include("../partials/user/header.ejs")%>
+<style>
+  body {
+    font-family: 'Inter', 'Segoe UI', Tahoma, sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+  padding: 0;
+}
+
+.tracking-container {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2, h4 {
+  color: #333;
+}
+
+.order-item-details {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.order-item-details img {
+  width: 100px;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.timeline {
+  list-style-type: none;
+  padding: 0;
+}
+
+.timeline li {
+  position: relative;
+  padding-left: 30px;
+  margin-bottom: 10px;
+  color: #666;
+}
+
+.timeline li::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  top: 5px;
+  width: 10px;
+  height: 10px;
+  background-color: #ddd;
+  border-radius: 50%;
+}
+
+.timeline li.active::before {
+  background-color: #28a745;
+}
+
+.timeline li.active {
+  color: #333;
+  font-weight: bold;
+}
+
+</style>
+<div class="tracking-container">
+    <h2 class="" style="text-align: center;">Product Tracking</h2>
+    
+    <!-- Order Item Details -->
+    <div class="order-item-details">
+      <img src="<%= cartItem.product.images[0] %>" alt="Product Image">
+      <h3><%= cartItem.product.productName %></h3>
+      <p><b>Platform:</b> <%= cartItem.platform %></p>
+      <p><b>Quantity:</b> <%= cartItem.quantity %></p>
+      <p><b>Price:</b> ₹<%= cartItem.finalPrice %></p>
+      <% if (order.couponUsed) { %>
+        <p><b>Coupon Applied:</b> <%= order.couponUsed.code %> - <%= order.discount %>% off</p>
+      <% } %>
+    </div>
+    
+    <!-- Tracking Status Timeline -->
+    <div class="tracking-status">
+      <h4>Status Timeline</h4>
+      <ul class="timeline">
+        <li class="<%= cartItem.orderStatus === 'Pending' ? 'active' : '' %>">Pending - <%= cartItem.statusTimestamps.pendingAt %></li>
+        <li class="<%= cartItem.orderStatus === 'Processing' ? 'active' : '' %>">Processing - <%= cartItem.statusTimestamps.processingAt %></li>
+        <li class="<%= cartItem.orderStatus === 'Shipped' ? 'active' : '' %>">Shipped - <%= cartItem.statusTimestamps.shippedAt %></li>
+        <li class="<%= cartItem.orderStatus === 'Out for Delivery' ? 'active' : '' %>">Out for Delivery - <%= cartItem.statusTimestamps.outForDeliveryAt %></li>
+        <li class="<%= cartItem.orderStatus === 'Delivered' ? 'active' : '' %>">Delivered - <%= cartItem.statusTimestamps.deliveredAt %></li>
+        
+        <% if (cartItem.isCancelled) { %>
+          <li class="cancelled-status <%= cartItem.orderStatus === 'Cancelled' ? 'active' : '' %>">
+            <strong>Cancellation Status:</strong> <%= cartItem.cancelAccepted %> - <%= cartItem.cancelTimeStamp.acceptedAt %>
+          </li>
+        <% } %>
+  
+        <% if (cartItem.isReturned) { %>
+          <li class="returned-status <%= cartItem.orderStatus === 'Returned' ? 'active' : '' %>">
+            <strong>Return Status:</strong> <%= cartItem.returnAccepted %> - <%= cartItem.returnTimeStamp.acceptedAt %>
+          </li>
+        <% } %>
+      </ul>
+    </div>
+  </div>
+  
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    const orderId = "<%=order._id%>"; // This should come from your backend or URL parameter
+    try {
+      const response = await fetch(`/api/order/${orderId}`);
+      const order = await response.json();
+
+      // Populate order details
+      document.getElementById("orderId").innerText = order._id;
+      document.getElementById("orderStatus").innerText = order.orderStatus;
+      document.getElementById("couponCode").innerText =
+        order.couponCode || "None";
+      document.getElementById("discounts").innerText = order.discounts || "0";
+      document.getElementById("totalPrice").innerText = order.totalPrice;
+
+      // Populate items list
+      const itemsList = document.getElementById("orderItems");
+      order.cartItems.forEach((item, index) => {
+        const listItem = document.createElement("li");
+        listItem.innerHTML = `
+        <strong>${item.product.productName}</strong> - 
+        Platform: ${item.platform}, Quantity: ${item.quantity}, 
+        Status: ${item.cancelAccepted || "N/A"}
+      `;
+        itemsList.appendChild(listItem);
+      });
+
+      // Update order tracker status
+      const statusSteps = [
+        "Pending",
+        "Processing",
+        "Shipped",
+        "Out for Delivery",
+        "Delivered",
+      ];
+      statusSteps.forEach((status, index) => {
+        const stepElement = document.querySelectorAll(".tracker-step")[index];
+        if (
+          order.orderStatus === status ||
+          order.statusTimestamps[status.toLowerCase() + "At"]
+        ) {
+          stepElement.classList.add("completed");
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching order data:", error);
+    }
+  });
+</script>
+<%- include("../partials/user/footer.ejs")%>

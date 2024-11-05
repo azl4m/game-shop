@@ -64,10 +64,13 @@ const requestReturn = async (req, res) => {
 //cancel
 const requestCancel = async (req, res) => {
   try {
-    const orderid = req.query.id;
-    const order = await orderModel.findByIdAndUpdate(orderid, {
-      $set: { isCancelled: true },
-    });
+    const{platform,orderid,product} = req.query
+    const update = await orderModel.updateOne(
+      { _id: orderid, "cartItems.product": product,
+        "cartItems.platform": platform
+       }, // Match the order and the cart item by product ID
+      { $set: { "cartItems.$.isCancelled": true } } // Use the positional operator to update the specific item
+    );
     return res.redirect("/orderDetails?id=" + orderid);
   } catch (error) {
     console.log("error at requestcancel :" + error.message);
@@ -194,7 +197,23 @@ const downloadInvoice = async (req, res) => {
   }
 };
 
+const trackItem = async(req,res)=>{
+  const { orderId, cartItemIndex } = req.query
+  try {
+    const order = await orderModel.findById(orderId).populate("cartItems.product couponUsed")
+    if (!order || !order.cartItems[cartItemIndex]) {
+      return res.status(404).send("Order or item not found.");
+    }
 
+    const cartItem = order.cartItems[cartItemIndex];
+    console.log(cartItem);
+    
+    return res.render('orderTracking', { order, cartItem });
+  } catch (error) {
+    console.error("Error fetching cart item tracking data:", error);
+    res.status(500).send("Error fetching tracking data.");
+  }
+}
 
 module.exports = {
   orderDetails,
@@ -202,6 +221,7 @@ module.exports = {
   requestCancel,
   requestReturn,
   ordersLoad,
-  downloadInvoice
+  downloadInvoice,
+  trackItem
 
 };

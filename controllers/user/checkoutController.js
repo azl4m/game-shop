@@ -76,7 +76,7 @@ const getCheckoutPage = async (req, res) => {
     }, 0);
     // let total= subtotal
     // subtotal+=0.1*subtotal
-    console.log("subtotal :" + subtotal);
+    // console.log("subtotal :" + subtotal);
 
     if (!cart) {
       return res.status(400).json({ message: "No items in cart" });
@@ -186,7 +186,7 @@ const checkoutLoad = async (req, res) => {
 
     const { fname, paymentMode, delivery,tax } = req.body;
     let { reducedAmount, couponCode } = req.body;
-    const walletUsed = req.session.wallet || 0;
+    const   walletUsed = req.session.wallet || 0;
 
     const reducedAmountFinal = reducedAmount || 0;
     const couponCodeFinal = couponCode || null;
@@ -220,14 +220,18 @@ const checkoutLoad = async (req, res) => {
         offerDiscount: item.productId.price - item.productId.offerPrice,
         offerPrice: item.productId.offerPrice,
         couponDiscount: couponDiscount, // New field for the coupon discount
-        walletUsed: walletDiscount,
+        walletDeduction: walletDiscount,
         finalPrice,
       };
     });
+    console.log(cartItems);
+    
     // console.log(cartItems);
     let totalPrice =
       Math.ceil(cartItems.reduce((acc, item) => acc + item.finalPrice, 0) - walletUsed)
       totalPrice=totalPrice<0?0:totalPrice
+      console.log("total price :"+totalPrice);
+      
      
   
 
@@ -610,6 +614,8 @@ const applyWalletBalance = async (req, res) => {
   try {
     const userId = req.session.user;
     const { reducedAmount, totalPrice } = req.body;
+    console.log(reducedAmount);
+    
     req.session.wallet = reducedAmount;
     // Fetch the user's wallet balance and cart
     const user = await userModel.findOne({ _id: userId });

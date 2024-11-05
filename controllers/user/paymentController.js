@@ -72,7 +72,6 @@ const razorpayWebhook = async (req, res) => {
   try {
     const crypto = require("crypto");
     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
-
     // Verify webhook signature
     const receivedSignature = req.headers["x-razorpay-signature"];
     const body = JSON.stringify(req.body);

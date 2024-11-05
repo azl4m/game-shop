@@ -47,6 +47,7 @@ admin.get('/orderDetails',auth.isLogin,orderController.orderDetails)
 admin.get('/acceptReturn',auth.isLogin,orderController.acceptReturn)
 admin.get('/rejectReturn',auth.isLogin,orderController.rejectReturn)
 admin.get("/acceptCancel",auth.isLogin,orderController.acceptCancel)
+admin.get("/rejectCancel",auth.isLogin,orderController.rejectCancel)
 //coupons amangement
 admin.get('/addCoupon',auth.isLogin,couponController.addCouponLoad)
 admin.post("/addCoupon",auth.isLogin,couponController.addCoupon)

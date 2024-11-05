@@ -862,6 +862,9 @@
       const nameRegex = /^[A-Za-z\s]+$/;
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       const phoneRegex = /^\d{10}$/;
+      const addressField = document.getElementById("address");
+
+      const addressid = addressField.value;
 
       let isValid = true;
 
@@ -883,6 +886,10 @@
         showToast("Please Select A Payment Mode", 0);
         isValid = false;
       }
+      if(!addressid.length){
+        showToast("Please select or add an address",0)
+        isValid=false;
+      }
       // Validate Street Address
 
       if (!isValid) {
@@ -890,11 +897,11 @@
       }
       const deliverid = document.getElementById("delivery");
       const deliveryVal = parseInt(deliverid.innerHTML);
-      const addressField = document.getElementById("address");
-      const addressid = addressField.value;
+      
       const walletUsedField = document.getElementById("walletUsed")
       const walletUsed = walletUsedField.value
       const tax = parseFloat(taxField.innerHTML)
+      
       try {
         const response = await fetch(`/checkout`, {
           method: "POST",
