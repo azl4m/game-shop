@@ -21,7 +21,7 @@ passport.use(
         }
         if (user && user.role === "admin") {
           req.session.admin = user._id;
-          return res.redirect("/admin/");
+          return req.res.redirect("/admin/");
         }
         if (user) {
           return done(null, user);
