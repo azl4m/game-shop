@@ -11,14 +11,18 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: "/auth/google/callback",
-      passReqToCallback:true
+      passReqToCallback: true,
     },
-    async (req,accessToken, refereshToken, profile, done) => {
-      try {     
+    async (req, accessToken, refereshToken, profile, done) => {
+      try {
         let user = await userModel.findOne({ googleId: profile.id });
-        if(user && !user.isActive){
-          return req.res.redirect("/login?message=blocked")
-                }
+        if (user && !user.isActive) {
+          return req.res.redirect("/login?message=blocked");
+        }
+        if (user && user.role === "admin") {
+          req.session.admin = user._id;
+          return res.redirect("/admin/");
+        }
         if (user) {
           return done(null, user);
         } else {
@@ -26,7 +30,7 @@ passport.use(
             username: profile.displayName,
             email: profile.emails[0].value,
             googleId: profile.id,
-            referralCode:generateReferralCode(profile.displayName)
+            referralCode: generateReferralCode(profile.displayName),
           });
           await user.save();
           return done(null, user);
@@ -40,8 +44,8 @@ passport.use(
   )
 );
 
-passport.serializeUser((user, done) => { 
-    done(null, user.id);
+passport.serializeUser((user, done) => {
+  done(null, user.id);
 });
 passport.deserializeUser(async (id, done) => {
   try {
