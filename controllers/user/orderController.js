@@ -15,7 +15,7 @@ const ordersLoad = async (req, res) => {
     const user = await userModel.findOne({ _id: userid });
     const orders = await orderModel.find({ user: userid });
     if (orders) {
-      res.render("orderslisting", {
+      res.render("ordersListing", {
         userDetails: user,
         orders: orders,
         empty: false,
