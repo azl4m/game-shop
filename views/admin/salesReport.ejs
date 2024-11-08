@@ -155,7 +155,7 @@
             <option value="monthly">Monthly</option>
             <option value="custom">Custom Range</option>
           </select>
-          <label for="format"></label>
+          <label for="format">Format</label>
           <select name="format" id="format" class="browser-default">
             <option value="pdf">pdf</option>
             <option value="excel">excel</option>
@@ -395,9 +395,10 @@
   const range = document.getElementById('range').value;
   const startDate = document.getElementById('startDate').value;
   const endDate = document.getElementById('endDate').value;
+  const format=document.getElementById("format").value
 
   // Construct query params
-  let query = `?range=${range}&download=${downloadVal}`;
+  let query = `?range=${range}&download=${downloadVal}&format=${format}`;
   if (range === 'custom' && startDate && endDate) {
     query += `&startDate=${startDate}&endDate=${endDate}`;
   }
