@@ -13,7 +13,7 @@ const ordersLoad = async (req, res) => {
   try {
     const userid = req.session.user;
     const user = await userModel.findOne({ _id: userid });
-    const orders = await orderModel.find({ user: userid });
+    const orders = await orderModel.find({ user: userid }).populate("cartItems.product")
     if (orders) {
       res.render("ordersListing", {
         userDetails: user,

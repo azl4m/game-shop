@@ -1,177 +1,148 @@
 <%- include("../partials/user/header.ejs")%>
-
 <style>
-    /* wallet.css */
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
-}
+
 
 .wallet-container {
-    max-width: 600px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background-color: #ffffff;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  /* font-family: Arial, sans-serif; */
+  background-color: #f0f2f5;
+  margin: 0;
+  padding: 0;
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: relative;
 }
 
 h1 {
-    text-align: center;
-    color: #333333;
+  text-align: center;
+  color: #333;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .wallet-balance {
-    text-align: center;
-    margin-bottom: 2rem;
-    padding: 1rem;
-    background-color: #e8f0fe;
-    border: 1px solid #bbdefb;
-    border-radius: 5px;
+  text-align: center;
+  padding: 1.5rem;
+  background-color: #e3f2fd;
+  border: 1px solid #bbdefb;
+  border-radius: 10px;
+  margin-bottom: 2rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1976d2;
 }
 
 .wallet-balance p {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #1976d2; /* Change this to your preferred color */
+  font-size: 1.8rem;
+  font-weight: bold;
 }
 
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+h2 {
+  text-align: left;
+  color: #555;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  padding-left: 0.5rem;
+  border-left: 4px solid #1976d2;
 }
 
-label {
-    font-size: 1rem;
-    font-weight: bold;
-    color: #333333;
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-input[type="number"] {
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 1rem;
+li {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: #f9f9f9;
+  transition: transform 0.3s;
+  display: flex;
+  align-items: center;
 }
 
-button {
-    padding: 0.7rem;
-    background-color: #1976d2; /* Change to your preferred button color */
-    color: #ffffff;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+li:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-button:hover {
-    background-color: #1565c0; /* Darker shade on hover */
+li strong {
+  color: #1976d2;
+  font-size: 1.2rem;
 }
 
-#walletMessage {
-    text-align: center;
-    margin-top: 1rem;
-    font-size: 1rem;
-    color: #d32f2f; /* Error color */
+li small {
+  color: #666;
 }
 
+.transaction-icon {
+  font-size: 2rem;
+  margin-right: 1rem;
+}
+
+.credit-icon {
+  color: #4caf50;
+}
+
+.debit-icon {
+  color: #d32f2f;
+}
+
+/* Responsive design */
 @media (max-width: 600px) {
-    .wallet-container {
-        padding: 1rem;
-    }
+  .wallet-container {
+      padding: 1rem;
+  }
 
-    h1 {
-        font-size: 1.5rem;
-    }
+  h1 {
+      font-size: 1.7rem;
+  }
 
-    input[type="number"], button {
-        font-size: 0.9rem;
-    }
+  .wallet-balance p {
+      font-size: 1.5rem;
+  }
+
+  li {
+      font-size: 0.9rem;
+  }
 }
-  /* Add your styles here */
-     /* Toast notification styles */
-     .toast {
-  visibility: hidden;
-  min-width: 250px;
-  margin-left: -125px;
-  color: white;
-  text-align: center;
-  border-radius: 2px;
-  padding: 16px;
-  position: fixed;
-  z-index: 1;
-  left: 50%;
-  bottom: 30px;
-  font-size: 17px;
-}
-
-/* Show the toast */
-.toast.show {
-  visibility: visible;
-  -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-  animation: fadein 0.5s, fadeout 0.5s 2.5s;
-}
-
-/* Animations */
-@-webkit-keyframes fadein {
-  from {bottom: 0; opacity: 0;} 
-  to {bottom: 30px; opacity: 1;}
-}
-
-@-webkit-keyframes fadeout {
-  from {bottom: 30px; opacity: 1;} 
-  to {bottom: 0; opacity: 0;}
-}
-
-@keyframes fadein {
-  from {bottom: 0; opacity: 0;} 
-  to {bottom: 30px; opacity: 1;}
-}
-
-@keyframes fadeout {
-  from {bottom: 30px; opacity: 1;} 
-  to {bottom: 0; opacity: 0;}
-}
-
-.zoom {
-  position: absolute;
-  border: 1px solid #000;
-  width: 100px; /* Adjust size */
-  height: 100px; /* Adjust size */
-  background-repeat: no-repeat;
-  background-size: 200%; /* Adjust to control zoom level */
-  pointer-events: none;
-  visibility: hidden;
-}
-
 </style>
 
 <div class="wallet-container">
-    <h1>Your Wallet</h1>
+  <h1>Your Wallet</h1>
 
-    <!-- Display current wallet balance -->
-    <div class="wallet-balance">
-      <p>Current Balance: ₹ <span id="walletBalance"><%= userDetails.wallet.balance %></span></p>
-    </div>
+  <!-- Display current wallet balance -->
+  <div class="wallet-balance">
+    <p>Current Balance: ₹ <span id="walletBalance"><%= userDetails.wallet.balance %></span></p>
+  </div>
 
-    <h2>Recent Transactions</h2>
-    <ul>
-      <% if (userDetails.wallet.transactions && userDetails.wallet.transactions.length > 0) { %>
-        <% userDetails.wallet.transactions.forEach(transaction => { %>
-          <li>
+  <!-- Recent Transactions -->
+  <h2>Recent Transactions</h2>
+  <ul>
+    <% if (userDetails.wallet.transactions && userDetails.wallet.transactions.length > 0) { %>
+      <% userDetails.wallet.transactions.forEach(transaction => { %>
+        <li>
+          <!-- Add transaction icon and styling -->
+          <span class="transaction-icon <%= transaction.type === 'credit' ? 'credit-icon' : 'debit-icon' %>">
+            <%= transaction.type === 'credit' ? '➕' : '➖' %>
+          </span>
+          <div>
             <strong><%= transaction.type === 'credit' ? 'Credited' : 'Debited' %>: ₹<%= transaction.amount %></strong><br/>
             <small><%= transaction.description %></small><br/>
             <small>Date: <%= new Date(transaction.date).toLocaleDateString() %></small>
-          </li>
-        <% }) %>
-      <% } else { %>
-        <li>No recent transactions</li>
-      <% } %>
-    </ul>
+          </div>
+        </li>
+      <% }) %>
+    <% } else { %>
+      <li>No recent transactions</li>
+    <% } %>
+  </ul>
+</div>
 
     <!-- Optionally, show user's wallet transactions here if needed -->
   </div>

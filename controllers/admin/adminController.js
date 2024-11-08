@@ -8,6 +8,7 @@ const multer = require("multer");
 const sharp = require("sharp");
 const fs = require("fs");
 const PDFDocument = require("pdfkit");
+const ExcelJS = require("exceljs")
 const borderForPdf = require("../../helpers/borderForPdf");
 const referralModel = require("../../models/referralModel")
 const pageNotFound = async (req, res) => {
@@ -39,7 +40,7 @@ const salesReport = async (req, res) => {
 
 const getSalesReport = async (req, res) => {
   try {
-    const { startDate, endDate, range, download } = req.query; // Range: 'daily', 'weekly', 'monthly', 'custom'
+    const { startDate, endDate, range, download,format } = req.query; // Range: 'daily', 'weekly', 'monthly', 'custom'
     let filter = {};
 
     // Determine the date range filter based on the request
@@ -88,8 +89,78 @@ const getSalesReport = async (req, res) => {
       totalSales += order.totalPrice; // Assuming totalAmount contains the final price
       totalDiscount += order.discount; // Assuming discount field exists in order
     });
+
+    if (download && format === "excel") {
+      // Generate Excel Report
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Sales Report");
+
+      // Add Header with Logo
+      worksheet.addRow(["Sales Report"]).font = { size: 16, bold: true };
+      worksheet.addRow([`Generated on: ${new Date().toLocaleDateString()}`]).font = { size: 12, italic: true };
+      worksheet.addRow([]);
+      
+      // Add Summary Section
+      worksheet.addRow(["Report Summary"]).font = { bold: true };
+      worksheet.addRow(["Total Orders", totalOrders]);
+      worksheet.addRow(["Total Sales", `Rs. ${totalSales.toFixed(2)}`]);
+      worksheet.addRow(["Total Discount", `Rs. ${totalDiscount.toFixed(2)}`]);
+      worksheet.addRow([]);
+      
+      // Add Column Headers for Order Details
+      worksheet.addRow(["Order #", "Order Date", "Shipping Address", "Status", "Total Price", "Discount", "Payment Method", "Payment Status"]);
+      worksheet.columns = [
+        { width: 10 },
+        { width: 15 },
+        { width: 30 },
+        { width: 15 },
+        { width: 15 },
+        { width: 15 },
+        { width: 15 },
+        { width: 15 },
+      ];
+
+      // Add Order Details
+      orders.forEach((order, index) => {
+        worksheet.addRow([
+          index + 1,
+          new Date(order.orderDate).toLocaleDateString(),
+          `${order.shippingAddress.name}, ${order.shippingAddress.street}, ${order.shippingAddress.city}, ${order.shippingAddress.state}`,
+          order.orderStatus,
+          `Rs. ${order.totalPrice}`,
+          `Rs. ${order.discount}`,
+          order.paymentMethod,
+          order.paymentStatus,
+        ]);
+
+        // Add Cart Items below each order
+        order.cartItems.forEach((item) => {
+          worksheet.addRow([
+            "",
+            "",
+            `- ${item.product.productName} (${item.platform})`,
+            "",
+            `Quantity: ${item.quantity}`,
+            "",
+            "",
+            `Price: Rs. ${item.price}`,
+          ]);
+        });
+      });
+
+      // Save the file and download
+      const filePath = path.join(__dirname, "sales_report.xlsx");
+      await workbook.xlsx.writeFile(filePath);
+
+      res.download(filePath, "sales_report.xlsx", (err) => {
+        if (err) {
+          res.status(500).send("Error generating the report");
+        }
+        fs.unlinkSync(filePath); // Optional: delete file after download
+      });
+    }
     // If the `download` query parameter is true, generate a PDF
-    if (download) {
+    else if (download && format === "pdf") {
       // Generate the PDF report
 
 
