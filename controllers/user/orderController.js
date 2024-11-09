@@ -206,9 +206,8 @@ const trackItem = async(req,res)=>{
     }
 
     const cartItem = order.cartItems[cartItemIndex];
-    console.log(cartItem);
-    
-    return res.render('orderTracking', { order, cartItem });
+    const userDetails = await userModel.findById(req.session.user)
+    return res.render('orderTracking', { order, cartItem,userDetails });
   } catch (error) {
     console.error("Error fetching cart item tracking data:", error);
     res.status(500).send("Error fetching tracking data.");
