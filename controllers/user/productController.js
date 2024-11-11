@@ -10,6 +10,7 @@ const productDetailsLoad = async (req, res) => {
     const productId = req.query.id;
     const product = await productModel.findById({ _id: productId }).populate("reviews.user");
     const category = await categoryModel.findOne({ _id: product.category });
+    const relatedProducts = await productModel.find({category:category._id}).limit(2)
     const platforms = await productModel.aggregate([
       { $match: { productName: product.productName } },
       { $unwind: "$variant" },
@@ -72,6 +73,7 @@ const productDetailsLoad = async (req, res) => {
         productOfferValue,
         categoryOfferValue,
         offerSelected,
+        relatedProducts,
         appliedOfferType: discountedPrice === productDiscountedPrice ? productOfferType : categoryOfferType, // Indicate which offer was applied
       });
     }

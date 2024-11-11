@@ -192,30 +192,14 @@
 <!-- Products -->
 <div class="template-small-container">
     <div class="template-row">
+      <%relatedProducts.forEach(product=>{%>
         <div class="template-col-4">
-            <img src="images/product-9.jpg">
-            <h4>Red Printed T-Shirt</h4>
-            <div class="template-rating">
-                <i class="template-fa template-fa-star"></i>
-                <i class="template-fa template-fa-star"></i>
-                <i class="template-fa template-fa-star"></i>
-                <i class="template-fa template-fa-star"></i>
-                <i class="template-fa template-fa-star-o"></i>
-            </div>
-            <p>$50.00</p>
+            <img src="<%=product.images[0]%>">
+            <h4><%=product.productName%></h4>
+           
+            <p>₹ <%=product.price%></p>
         </div>
-        <div class="template-col-4">
-            <img src="images/product-10.jpg">
-            <h4>Red Printed T-Shirt</h4>
-            <div class="rating">
-                <i class="template-fa template-fa-star"></i>
-                <i class="template-fa template-fa-star"></i>
-                <i class="template-fa template-fa-star"></i>
-                <i class="template-fa template-fa-star"></i>
-                <i class="template-fa template-fa-star-o"></i>
-            </div>
-            <p>$50.00</p>
-        </div>
+        <%})%
     </div>
 </div>
 <script>
