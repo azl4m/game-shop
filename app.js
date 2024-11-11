@@ -40,9 +40,9 @@ app.use((req, res, next) => {
   
 app.use("/",userRouter)
 app.use("/admin",adminRouter)
-// app.get('/*', (req, res) => {
-//     res.redirect("/pageNotFound")
-//     });
+app.get('/*', (req, res) => {
+    res.redirect("/pageNotFound")
+    });
 app.listen(PORT,()=>console.log("server running on :"+PORT))
 
 module.exports = app;
