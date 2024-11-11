@@ -13,31 +13,43 @@ passport.use(
       callbackURL: "https://thegameshop.shop/auth/google/callback",
       passReqToCallback: true,
     },
-    async (req, accessToken, refereshToken, profile, done) => {
+    async (req, accessToken, refreshToken, profile, done) => {
       try {
         let user = await userModel.findOne({ googleId: profile.id });
+
         if (user && !user.isActive) {
           return req.res.redirect("/login?message=blocked");
         }
+
         if (user && user.role === "admin") {
           req.session.admin = user._id;
           return req.res.redirect("/admin/");
         }
-        if (user) {
-          return done(null, user);
-        } else {
-          user = new userModel({
-            username: profile.displayName,
-            email: profile.emails[0].value,
-            googleId: profile.id,
-            referralCode: generateReferralCode(profile.displayName),
-          });
-          await user.save();
-          return done(null, user);
-        }
-      } catch (error) {
-        console.log("error in google auth :" + error);
 
+        // If no user found with googleId, try finding by email
+        if (!user) {
+          user = await userModel.findOne({ email: profile.emails[0].value });
+
+          // If a user exists with the email but not Google ID, update the Google ID
+          if (user) {
+            user.googleId = profile.id;
+            await user.save();
+          } else {
+            // If no user found with either googleId or email, create a new user
+            user = new userModel({
+              username: profile.displayName,
+              email: profile.emails[0].value,
+              googleId: profile.id,
+              referralCode: generateReferralCode(profile.displayName),
+            });
+            await user.save();
+          }
+        }
+
+        return done(null, user);
+
+      } catch (error) {
+        console.log("error in google auth: " + error);
         return done(error, null);
       }
     }
