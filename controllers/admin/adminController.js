@@ -32,7 +32,7 @@ const dashboardLoad = async (req, res) => {
 const salesReport = async (req, res) => {
   try {
     const orderCount = await orderModel.find().countDocuments();
-    return res.render("salesReport", { orderCount });
+    return res.render("salesReport1", { orderCount });
   } catch (error) {
     console.log("error loading sales report page" + error.message);
   }
@@ -319,11 +319,71 @@ const referralPost = async(req,res)=>{
     
   }
 }
+const fetchSales=async(req,res)=>{
+  try {
+      const{filter}=req.query
+      const data=[{totalordes:0},{couponApplyed:0},{cod:0},{online:0},{delivered:0},{offerAplyed:0}]
+      let startDate;
+      let endDate = new Date();
+      if (filter === 'today') {
+          startDate = new Date();
+          startDate.setHours(0, 0, 0, 0);
+      } else if (filter === 'monthly') {
+          startDate = new Date();
+          startDate.setDate(1); // Start of the month
+      } else if (filter === 'yearly') {
+          startDate = new Date();
+          startDate.setMonth(0); // Start of the year
+          startDate.setDate(1);
+      } else {
+          return res.status(400).json({ error: 'Invalid filter' });
+      }
+
+     
+      const orders=await Order.aggregate([
+          {
+              $match: {
+                  orderDate: { $gte: startDate, $lt: endDate }
+              }
+          },
+          {
+              $unwind:"$cartItems"
+          }
+      ])
+
+      data[0].totalordes = await Order.countDocuments({ orderDate: { $gte: startDate, $lt: endDate } });
+      
+
+      for(let i=0;i<orders.length;i++){
+          if(orders[i].paymentMethod === 'COD'){
+              data[2].cod  += orders[i].cartItems.finalAmount
+          }else{
+              data[3].online  += orders[i].cartItems.finalAmount
+          }
+
+          if(orders[i].cartItems.orderStatus === 'Delivered'){
+              data[4].delivered += 1
+          }
+          data[1].couponApplyed += orders[i].cartItems.couponDiscount
+          data[5].offerAplyed += orders[i].cartItems.offerDiscount
+
+      }
+      
+      const allOrders=await orderModel.find({ orderDate: { $gte: startDate, $lt: endDate } }).populate("cartItems.product")
+      
+      return res.json(allOrders)
+
+  } catch (error) {
+      console.log("error in sales report data "+error.message)
+      return res.status(500).json({ error: 'Internal Server Error' });
+  }
+}
 module.exports = {
   pageNotFound,
   dashboardLoad,
   getSalesReport,
   salesReport,
   referralLoad,
-  referralPost
+  referralPost,
+  fetchSales
 };
