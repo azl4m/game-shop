@@ -280,6 +280,8 @@ const loadHomePage = async (req, res) => {
       isListed: true,
       isDeleted: false,
     });
+    const featuredProducts = await productModel.find({isListed:true,isDeleted:false}).sort({"reviews.rating":-1}).limit(8)
+    const latestProducts = await productModel.find({isDeleted:false,isListed:true}).sort({createdAt:-1}).limit(4)
     if (req.session?.passport?.user) {
       req.session.user = req.session.passport.user;
     }
@@ -287,7 +289,7 @@ const loadHomePage = async (req, res) => {
       const user = await userModel.findById({ _id: req.session.user });
       return res.render("home", { userDetails: user, products: products });
     }
-    res.render("home", { products: products });
+    res.render("home", { products: featuredProducts,latestProducts });
   } catch (error) {
     console.log("homepage loading error :" + error.message);
     res.status(500).send("Server Error");

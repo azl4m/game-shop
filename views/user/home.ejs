@@ -43,9 +43,10 @@
         </div>
         <h2 class="template-title">Latest Products</h2>
         <div class="template-row">
+            <%for(let i=0;i<latestProducts.length;i++){%>
             <div class="template-col-4">
-                <img src="images/product-5.jpg">
-                <h4>Red Printed T-Shirt</h4>
+                <a href="/productDetails?id=<%=latestProducts[i]._id%>"><img src="<%=latestProducts[i].images[0]%>"></a>
+                <h4><%=latestProducts[i].productName%></h4>
                 <div class="rating">
                     <i class="template-fa template-fa-star"></i>
                     <i class="template-fa template-fa-star"></i>
@@ -53,94 +54,9 @@
                     <i class="template-fa template-fa-star"></i>
                     <i class="template-fa template-fa-star-o"></i>
                 </div>
-                <p>$50.00</p>
+                <p>₹<%=latestProducts[i].price%></p>
             </div>
-            <div class="template-col-4">
-                <img src="images/product-6.jpg">
-                <h4>Red Printed T-Shirt</h4>
-                <div class="rating">
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star-o"></i>
-                </div>
-                <p>$50.00</p>
-            </div>
-            <div class="template-col-4">
-                <img src="images/product-7.jpg">
-                <h4>Red Printed T-Shirt</h4>
-                <div class="rating">
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star-o"></i>
-                </div>
-                <p>$50.00</p>
-            </div>
-            <div class="template-col-4">
-                <img src="images/product-8.jpg">
-                <h4>Red Printed T-Shirt</h4>
-                <div class="rating">
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star-o"></i>
-                </div>
-                <p>$50.00</p>
-            </div>
-        </div>
-        <div class="template-row">
-            <div class="template-col-4">
-                <img src="images/product-9.jpg">
-                <h4>Red Printed T-Shirt</h4>
-                <div class="rating">
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star-o"></i>
-                </div>
-                <p>$50.00</p>
-            </div>
-            <div class="template-col-4">
-                <img src="images/product-10.jpg">
-                <h4>Red Printed T-Shirt</h4>
-                <div class="rating">
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star-o"></i>
-                </div>
-                <p>$50.00</p>
-            </div>
-            <div class="template-col-4">
-                <img src="images/product-11.jpg">
-                <h4>Red Printed T-Shirt</h4>
-                <div class="rating">
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star-o"></i>
-                </div>
-                <p>$50.00</p>
-            </div>
-            <div class="template-col-4">
-                <img src="images/product-12.jpg">
-                <h4>Red Printed T-Shirt</h4>
-                <div class="rating">
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star"></i>
-                    <i class="template-fa template-fa-star-o"></i>
-                </div>
-                <p>$50.00</p>
-            </div>
+            <%}%>
         </div>
     </div>
 
@@ -149,14 +65,13 @@
         <div class="template-small-container">
             <div class="template-row">
                 <div class="template-col-2">
-                    <img src="images/exclusive.png" class="offer-img">
+                    <img src="images/banner.jpg" class="offer-img">
                 </div>
                 <div class="template-col-2">
                     <p>Exclusively Available on RedStore</p>
-                    <h1>Smart Band 4</h1>
-                    <small>The Mi Smart Band 4 fearures a 39.9%larger (than Mi Band 3) AMOLED color full-touch display
-                        with adjustable brightness, so everything is clear as can be.<br></small>
-                    <a href="products.html" class="template-btn">Buy Now &#8594;</a>
+                    <h1>Fifa FC 25</h1>
+                    <small>Experience more ways to win for the club in EA SPORTS FC™ 25. Team up with friends in your favourite modes with the new 5v5 Rush and manage your club to victory as FC IQ delivers more tactical control than ever before.<br></small>
+                    <a href="/productDetails?id=66e9090f2352f7820b34d991" class="template-btn">Buy Now &#8594;</a>
                 </div>
             </div>
         </div>
