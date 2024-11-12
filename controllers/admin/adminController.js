@@ -8,9 +8,9 @@ const multer = require("multer");
 const sharp = require("sharp");
 const fs = require("fs");
 const PDFDocument = require("pdfkit");
-const ExcelJS = require("exceljs")
+const ExcelJS = require("exceljs");
 const borderForPdf = require("../../helpers/borderForPdf");
-const referralModel = require("../../models/referralModel")
+const referralModel = require("../../models/referralModel");
 const pageNotFound = async (req, res) => {
   try {
     res.render("page-404");
@@ -40,7 +40,7 @@ const salesReport = async (req, res) => {
 
 const getSalesReport = async (req, res) => {
   try {
-    const { startDate, endDate, range, download,format } = req.query; // Range: 'daily', 'weekly', 'monthly', 'custom'
+    const { startDate, endDate, range, download, format } = req.query; // Range: 'daily', 'weekly', 'monthly', 'custom'
     let filter = {};
 
     // Determine the date range filter based on the request
@@ -97,18 +97,29 @@ const getSalesReport = async (req, res) => {
 
       // Add Header with Logo
       worksheet.addRow(["Sales Report"]).font = { size: 16, bold: true };
-      worksheet.addRow([`Generated on: ${new Date().toLocaleDateString()}`]).font = { size: 12, italic: true };
+      worksheet.addRow([
+        `Generated on: ${new Date().toLocaleDateString()}`,
+      ]).font = { size: 12, italic: true };
       worksheet.addRow([]);
-      
+
       // Add Summary Section
       worksheet.addRow(["Report Summary"]).font = { bold: true };
       worksheet.addRow(["Total Orders", totalOrders]);
       worksheet.addRow(["Total Sales", `Rs. ${totalSales.toFixed(2)}`]);
       worksheet.addRow(["Total Discount", `Rs. ${totalDiscount.toFixed(2)}`]);
       worksheet.addRow([]);
-      
+
       // Add Column Headers for Order Details
-      worksheet.addRow(["Order #", "Order Date", "Shipping Address", "Status", "Total Price", "Discount", "Payment Method", "Payment Status"]);
+      worksheet.addRow([
+        "Order #",
+        "Order Date",
+        "Shipping Address",
+        "Status",
+        "Total Price",
+        "Discount",
+        "Payment Method",
+        "Payment Status",
+      ]);
       worksheet.columns = [
         { width: 10 },
         { width: 15 },
@@ -163,13 +174,12 @@ const getSalesReport = async (req, res) => {
     else if (download && format === "pdf") {
       // Generate the PDF report
 
-
       const doc = new PDFDocument({ size: "A4", margin: 50 });
       const filePath = path.join(__dirname, "sales_report.pdf");
       const stream = fs.createWriteStream(filePath);
 
       doc.pipe(stream);
- 
+
       borderForPdf.addPageBorder(doc);
 
       // Add Header with Logo
@@ -201,34 +211,41 @@ const getSalesReport = async (req, res) => {
       doc
         .fontSize(12)
         .fillColor("#333")
-        .text("Report Summary", { underline: true,align:"center" });
+        .text("Report Summary", { underline: true, align: "center" });
       doc.rect(doc.x, doc.y, 500, 100).stroke(); // Add a border box around summary
       doc.moveDown();
-      doc.fontSize(12).text(`Total Orders: ${totalOrders}`,{align:"center"}).te;
-      doc.text(`Total Sales: Rs.${totalSales.toFixed(2)}`,{align:"center"});
-      doc.text(`Total Discount: Rs.${totalDiscount.toFixed(2)}`,{align:"center"});
+      doc.fontSize(12).text(`Total Orders: ${totalOrders}`, { align: "center" })
+        .te;
+      doc.text(`Total Sales: Rs.${totalSales.toFixed(2)}`, { align: "center" });
+      doc.text(`Total Discount: Rs.${totalDiscount.toFixed(2)}`, {
+        align: "center",
+      });
       doc.moveDown();
 
       // Add Order Details with Styling
       doc
         .fontSize(14)
         .fillColor("#000080")
-        .text("Order Details", { underline: true ,align:"center"});
+        .text("Order Details", { underline: true, align: "center" });
       // Pagination settings
       const ordersPerPage = 4; // Define how many orders per page
       let currentOrder = 0;
       orders.forEach((order, index) => {
-        if(currentOrder===3){
+        if (currentOrder === 3) {
           doc.addPage();
           borderForPdf.addPageBorder(doc); // Add border to the new page
-          doc.text("Order Details:", { underline: true,align:"center" });
+          doc.text("Order Details:", { underline: true, align: "center" });
         }
-        
+
         // Check if we need to add a new page
-        else if (currentOrder > 0 && currentOrder % ordersPerPage === 0 && currentOrder!==4) {
+        else if (
+          currentOrder > 0 &&
+          currentOrder % ordersPerPage === 0 &&
+          currentOrder !== 4
+        ) {
           doc.addPage();
           borderForPdf.addPageBorder(doc); // Add border to the new page
-          doc.text("Order Details:", { underline: true,align:"center" });
+          doc.text("Order Details:", { underline: true, align: "center" });
         }
         doc.moveDown();
         doc
@@ -294,90 +311,97 @@ const getSalesReport = async (req, res) => {
   }
 };
 
-const referralLoad = async(req,res)=>{
+const referralLoad = async (req, res) => {
   try {
-    const referral = await referralModel.findOne()
-    return res.render("referralOffer",{referral})
+    const referral = await referralModel.findOne();
+    return res.render("referralOffer", { referral });
   } catch (error) {
-    console.log("error loading referral :"+error.message);
-    return res.status(500).json({message:"Internal Server Error"})
-    
+    console.log("error loading referral :" + error.message);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-}
-const referralPost = async(req,res)=>{
+};
+const referralPost = async (req, res) => {
   try {
-    const{amount,isActive} = req.body
+    const { amount, isActive } = req.body;
     const referral = new referralModel({
-      referralAmount:amount,
-      isActive:isActive==="true"?true:false
-    })
-    await referral.save()
-    res.redirect("/admin/referralOffer")
+      referralAmount: amount,
+      isActive: isActive === "true" ? true : false,
+    });
+    await referral.save();
+    res.redirect("/admin/referralOffer");
   } catch (error) {
-    console.log("error at referralpost :"+error.message);
-    return res.status(500).json({message:"Internal Server Error"})
-    
+    console.log("error at referralpost :" + error.message);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
-}
-const fetchSales=async(req,res)=>{
+};
+const fetchSales = async (req, res) => {
   try {
-      const{filter}=req.query
-      const data=[{totalordes:0},{couponApplyed:0},{cod:0},{online:0},{delivered:0},{offerAplyed:0}]
-      let startDate;
-      let endDate = new Date();
-      if (filter === 'today') {
-          startDate = new Date();
-          startDate.setHours(0, 0, 0, 0);
-      } else if (filter === 'monthly') {
-          startDate = new Date();
-          startDate.setDate(1); // Start of the month
-      } else if (filter === 'yearly') {
-          startDate = new Date();
-          startDate.setMonth(0); // Start of the year
-          startDate.setDate(1);
+    console.log("inside fetchsales");
+
+    const { filter } = req.query;
+    const data = [
+      { totalordes: 0 },
+      { couponApplyed: 0 },
+      { cod: 0 },
+      { online: 0 },
+      { delivered: 0 },
+      { offerAplyed: 0 },
+    ];
+    let startDate;
+    let endDate = new Date();
+    if (filter === "today") {
+      startDate = new Date();
+      startDate.setHours(0, 0, 0, 0);
+    } else if (filter === "monthly") {
+      startDate = new Date();
+      startDate.setDate(1); // Start of the month
+    } else if (filter === "yearly") {
+      startDate = new Date();
+      startDate.setMonth(0); // Start of the year
+      startDate.setDate(1);
+    } else {
+      return res.status(400).json({ error: "Invalid filter" });
+    }
+
+    const orders = await Order.aggregate([
+      {
+        $match: {
+          orderDate: { $gte: startDate, $lt: endDate },
+        },
+      },
+      {
+        $unwind: "$cartItems",
+      },
+    ]);
+
+    data[0].totalordes = await Order.countDocuments({
+      orderDate: { $gte: startDate, $lt: endDate },
+    });
+
+    for (let i = 0; i < orders.length; i++) {
+      if (orders[i].paymentMethod === "COD") {
+        data[2].cod += orders[i].cartItems.finalAmount;
       } else {
-          return res.status(400).json({ error: 'Invalid filter' });
+        data[3].online += orders[i].cartItems.finalAmount;
       }
 
-     
-      const orders=await Order.aggregate([
-          {
-              $match: {
-                  orderDate: { $gte: startDate, $lt: endDate }
-              }
-          },
-          {
-              $unwind:"$cartItems"
-          }
-      ])
-
-      data[0].totalordes = await Order.countDocuments({ orderDate: { $gte: startDate, $lt: endDate } });
-      
-
-      for(let i=0;i<orders.length;i++){
-          if(orders[i].paymentMethod === 'COD'){
-              data[2].cod  += orders[i].cartItems.finalAmount
-          }else{
-              data[3].online  += orders[i].cartItems.finalAmount
-          }
-
-          if(orders[i].cartItems.orderStatus === 'Delivered'){
-              data[4].delivered += 1
-          }
-          data[1].couponApplyed += orders[i].cartItems.couponDiscount
-          data[5].offerAplyed += orders[i].cartItems.offerDiscount
-
+      if (orders[i].cartItems.orderStatus === "Delivered") {
+        data[4].delivered += 1;
       }
-      
-      const allOrders=await orderModel.find({ orderDate: { $gte: startDate, $lt: endDate } }).populate("cartItems.product")
-      
-      return res.json(allOrders)
+      data[1].couponApplyed += orders[i].cartItems.couponDiscount;
+      data[5].offerAplyed += orders[i].cartItems.offerDiscount;
+    }
 
+    const allOrders = await orderModel
+      .find({ orderDate: { $gte: startDate, $lt: endDate } })
+      .populate("cartItems.product");
+
+    return res.json(allOrders);
   } catch (error) {
-      console.log("error in sales report data "+error.message)
-      return res.status(500).json({ error: 'Internal Server Error' });
+    console.log("error in sales report data " + error.message);
+    return res.status(500).json({ error: "Internal Server Error" });
   }
-}
+};
 module.exports = {
   pageNotFound,
   dashboardLoad,
@@ -385,5 +409,5 @@ module.exports = {
   salesReport,
   referralLoad,
   referralPost,
-  fetchSales
+  fetchSales,
 };
