@@ -7,8 +7,7 @@ const categoryController = require('../controllers/admin/categoryController')
 const couponController = require('../controllers/admin/couponController')
 const orderController = require('../controllers/admin/orderController')
 const userController = require('../controllers/admin/userController')
-const dashboardController = require('../controllers/admin/dashboardController')
-
+const dashboardController = require("../controllers/admin/dashboardController")
 
 admin.get("/pageNotFound",adminController.pageNotFound)
 // load dashboard
