@@ -160,8 +160,8 @@
                             console.log("inside j loop")
                             
                             const row = `<tr>
-                                <td>${data[i].orderId}</td>
-                                <td>${data[i].cartItems[j].product.name}</td>
+                                <td>${data[i].orderNumber}</td>
+                                <td>${data[i].cartItems[j].product.productName}</td>
                                 <td>${data[i].cartItems[j].quantity}</td>
                                 <td>${data[i].cartItems[j].price}</td>
                                 <td>${data[i].cartItems[j].offerDiscount+data[i].cartItems[j].couponDiscount}</td>
