@@ -363,7 +363,7 @@ const fetchSales = async (req, res) => {
       return res.status(400).json({ error: "Invalid filter" });
     }
 
-    const orders = await Order.aggregate([
+    const orders = await orderModel.aggregate([
       {
         $match: {
           orderDate: { $gte: startDate, $lt: endDate },
@@ -374,7 +374,7 @@ const fetchSales = async (req, res) => {
       },
     ]);
 
-    data[0].totalordes = await Order.countDocuments({
+    data[0].totalordes = await orderModel.countDocuments({
       orderDate: { $gte: startDate, $lt: endDate },
     });
 
@@ -395,7 +395,7 @@ const fetchSales = async (req, res) => {
     const allOrders = await orderModel
       .find({ orderDate: { $gte: startDate, $lt: endDate } })
       .populate("cartItems.product");
-
+      
     return res.json(allOrders);
   } catch (error) {
     console.log("error in sales report data " + error.message);
