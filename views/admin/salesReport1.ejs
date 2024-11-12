@@ -165,14 +165,14 @@
                                 <td>${data[i].cartItems[j].quantity}</td>
                                 <td>${data[i].cartItems[j].price}</td>
                                 <td>${data[i].cartItems[j].offerDiscount+data[i].cartItems[j].couponDiscount}</td>
-                                <td>${data[i].cartItems[j].finalAmount}</td>
+                                <td>${data[i].cartItems[j].finalPrice}</td>
                             </tr>`;
                             tableBody.innerHTML += row;
 
                             totalOrders++; // Increase order count for each item
-                            totalPrice += data[i].cartItems[j].finalAmount; // Add final amount to total price
+                            totalPrice += data[i].cartItems[j].finalPrice; // Add final amount to total price
                             totalDiscount += data[i].cartItems[j].offerDiscount + data[i].cartItems[j].couponDiscount;
-                            totalFinal +=  data[i].cartItems[j].finalAmount
+                            totalFinal +=  data[i].cartItems[j].finalPrice
                         }
                         
                         
@@ -198,9 +198,9 @@
                 // Generate and download the report as PDF
                 downloadButton.addEventListener("click", () => {
                     const tableContent = document.getElementById("dataTables-example").outerHTML;
-                    const companyName = "Your Company Name";
+                    const companyName = "THE GAME SHOP";
                     const companyAddress = "1234 Street Name, City, Country";
-                    const companyLogoUrl = "/images/logo.png";
+                    const companyLogoUrl = "/images/game-shop.png";
 
                     // PDF content structure
                     const pdfContent = `
