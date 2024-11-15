@@ -287,7 +287,7 @@ const loadHomePage = async (req, res) => {
     }
     if (req.session.user) {
       const user = await userModel.findById({ _id: req.session.user });
-      return res.render("home", { userDetails: user, products: products });
+      return res.render("home", { userDetails: user, products: featuredProducts,latestProducts });
     }
     res.render("home", { products: featuredProducts,latestProducts });
   } catch (error) {
