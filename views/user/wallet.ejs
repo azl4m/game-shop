@@ -55,7 +55,7 @@ ul {
   margin: 0;
 }
 
-li {
+.wallet-li {
   padding: 1rem;
   margin-bottom: 1rem;
   border-radius: 8px;
@@ -66,17 +66,17 @@ li {
   align-items: center;
 }
 
-li:hover {
+.wallet-li:hover {
   transform: translateY(-5px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-li strong {
+.wallet-li strong {
   color: #1976d2;
   font-size: 1.2rem;
 }
 
-li small {
+.wallet-li small {
   color: #666;
 }
 
@@ -126,7 +126,7 @@ li small {
   <ul>
     <% if (userDetails.wallet.transactions && userDetails.wallet.transactions.length > 0) { %>
       <% userDetails.wallet.transactions.forEach(transaction => { %>
-        <li>
+        <li class="wallet-li">
           <!-- Add transaction icon and styling -->
           <span class="transaction-icon <%= transaction.type === 'credit' ? 'credit-icon' : 'debit-icon' %>">
             <%= transaction.type === 'credit' ? '➕' : '➖' %>
@@ -139,7 +139,7 @@ li small {
         </li>
       <% }) %>
     <% } else { %>
-      <li>No recent transactions</li>
+      <li class="wallet-li">No recent transactions</li>
     <% } %>
   </ul>
 </div>
