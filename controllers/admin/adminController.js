@@ -23,7 +23,21 @@ const pageNotFound = async (req, res) => {
 
 const dashboardLoad = async (req, res) => {
   try {
-    res.render("dashboard");
+    const ordersCount = await orderModel.find().countDocuments();
+    const allorders = await orderModel.find({});
+    let sales = 0;
+    let revenue = 0;
+    allorders.forEach(order=>{
+      order.cartItems.forEach(item=>{
+        if(item.orderStatus==="Delivered"){
+          revenue+=item.finalPrice
+          sales+=item.quantity
+        }
+      })
+    })
+    const productsCount = await productModel.find({isDeleted:false}).countDocuments()
+    const usersCount = await userModel.find().countDocuments()
+    res.render("dashboard",{sales,revenue,productsCount,usersCount});
   } catch (error) {}
 };
 
@@ -395,7 +409,7 @@ const fetchSales = async (req, res) => {
     const allOrders = await orderModel
       .find({ orderDate: { $gte: startDate, $lt: endDate } })
       .populate("cartItems.product");
-      
+
     return res.json(allOrders);
   } catch (error) {
     console.log("error in sales report data " + error.message);
